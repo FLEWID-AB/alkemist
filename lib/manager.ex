@@ -15,12 +15,6 @@ defmodule Manager do
     end
   end
 
-  # TODO: move to config
-  def authorization_provider,
-    do: Application.get_env(:manager, :authorization_provider, Manager.Authorization)
-
-  def repo, do: Application.get_env(:manager, :default_repo)
-
   @doc """
   When used, dispatch to the appropriate controller/view/etc.
   """

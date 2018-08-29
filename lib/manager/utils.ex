@@ -1,14 +1,22 @@
 defmodule Manager.Utils do
   @moduledoc """
-  Provices some helper functions for the CRUD actions
+  Provides some helper functions for the CRUD actions
   """
 
-  @doc """
+  @doc ~S"""
   converts a string from lowercase with lowdashes
   to a readable Label
-  Example:
-  > to_label(:report_rows)
-  Report Rows
+
+  ## Examples:
+
+    iex> Utils.to_label(:my_model)
+    "My Model"
+
+    iex> Utils.to_label("my_model")
+    "My Model"
+
+    iex> Utils.to_label(nil)
+    ""
   """
   def to_label(val) do
     "#{val}"
@@ -17,13 +25,16 @@ defmodule Manager.Utils do
     |> Enum.join(" ")
   end
 
-  @doc """
+  @doc ~S"""
   Returns the struct name as atom
-  Example:
-  > get_struct(Db.User)
-  :user
-  > get_struct(%User{})
-  :user
+
+  ## Examples:
+
+    iex> Utils.get_struct(Manager.Post)
+    :post
+
+    iex> Utils.get_struct(%Manager.Post{})
+    :post
   """
   def get_struct(resource) when is_map(resource) do
     get_struct(resource.__struct__)
@@ -37,7 +48,17 @@ defmodule Manager.Utils do
     String.to_atom(source)
   end
 
-  # Generate the singular name
+  @doc ~S"""
+  Returns the singular name for an Ecto Schema
+
+  ## Examples:
+
+    iex> Utils.singular_name(%Manager.Post{})
+    "Post"
+
+    iex> Utils.singular_name(Manager.Post)
+    "Post"
+  """
   def singular_name(resource) when is_map(resource), do: singular_name(resource.__struct__)
 
   def singular_name(resource) do
@@ -46,7 +67,17 @@ defmodule Manager.Utils do
     |> to_label()
   end
 
-  # Generate the plural name
+  @doc ~S"""
+  Returns the plural name for an Ecto Schema
+
+  ## Examples:
+
+    iex> Utils.plural_name(%Manager.Post{})
+    "Posts"
+
+    iex> Utils.plural_name(Manager.Post)
+    "Posts"
+  """
   def plural_name(resource) when is_map(resource), do: plural_name(resource.__struct__)
 
   def plural_name(resource) do

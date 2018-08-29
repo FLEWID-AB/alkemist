@@ -18,6 +18,10 @@ defmodule Manager.Config do
     config(:router_helpers, Manager.Router.Helpers, application)
   end
 
+  def authorization_provider(application \\ :manager) do
+    config(:authorization_provider, Manager.Authorization, application)
+  end
+
   defp config(application) do
     Application.get_env(application, Manager, [])
   end

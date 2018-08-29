@@ -200,8 +200,6 @@ defmodule Manager.Assign do
   end
 
   defp default_csv_opts(opts, resource) do
-    show_aside = Keyword.has_key?(opts, :filters)
-
     opts
     |> Keyword.put_new(:repo, Manager.Config.repo())
     |> Keyword.put_new(:query, resource)

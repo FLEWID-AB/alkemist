@@ -23,7 +23,7 @@ defmodule Manager.ViewHelpers do
     * opts - options for the link (class, title, data-methods)
   """
   def action_link(label, conn, action, resource, opts \\ []) do
-    if Manager.authorization_provider().authorize_action(resource, conn, action) do
+    if Manager.Config.authorization_provider().authorize_action(resource, conn, action) do
       opts =
         opts
         |> Keyword.put_new(:to, resource_action_path(conn, resource, action))

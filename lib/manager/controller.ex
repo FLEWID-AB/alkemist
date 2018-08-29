@@ -33,7 +33,7 @@ defmodule Manager.Controller do
     quote do
       conn = unquote(conn)
 
-      if Manager.authorization_provider().authorize_action(@resource, conn, :index) == true do
+      if Manager.Config.authorization_provider().authorize_action(@resource, conn, :index) == true do
         opts = unquote(opts)
 
         opts =
@@ -80,7 +80,7 @@ defmodule Manager.Controller do
       if resource == nil do
         Manager.Controller.not_found(conn)
       else
-        if Manager.authorization_provider().authorize_action(resource, conn, :show) do
+        if Manager.Config.authorization_provider().authorize_action(resource, conn, :show) do
           opts =
             Enum.reduce([repo: [], singular_name: [], rows: [], panels: [:show]], opts, fn {key,
                                                                                             v},
@@ -114,7 +114,7 @@ defmodule Manager.Controller do
     quote do
       conn = unquote(conn)
 
-      if Manager.authorization_provider().authorize_action(@resource, conn, :create) do
+      if Manager.Config.authorization_provider().authorize_action(@resource, conn, :create) do
         opts =
           unquote(opts)
           |> Keyword.put_new(:changeset, :changeset)
@@ -148,7 +148,7 @@ defmodule Manager.Controller do
       if resource == nil do
         Manager.Controller.not_found(conn)
       else
-        if Manager.authorization_provider().authorize_action(resource, conn, :update) do
+        if Manager.Config.authorization_provider().authorize_action(resource, conn, :update) do
           opts =
             opts
             |> Keyword.put_new(:changeset, :changeset)
@@ -205,7 +205,7 @@ defmodule Manager.Controller do
     quote do
       conn = unquote(conn)
 
-      if Manager.authorization_provider().authorize_action(@resource, conn, :create) do
+      if Manager.Config.authorization_provider().authorize_action(@resource, conn, :create) do
         opts =
           unquote(opts)
           |> Keyword.put_new(:changeset, :changeset)
@@ -265,7 +265,7 @@ defmodule Manager.Controller do
       if resource == nil do
         Manager.Controller.not_found(conn)
       else
-        if Manager.authorization_provider().authorize_action(resource, conn, :update) do
+        if Manager.Config.authorization_provider().authorize_action(resource, conn, :update) do
           params = unquote(params)
 
           opts =
@@ -327,7 +327,7 @@ defmodule Manager.Controller do
       if resource == nil do
         Manager.Controller.not_found(conn)
       else
-        if Manager.authorization_provider().authorize_action(resource, conn, :delete) do
+        if Manager.Config.authorization_provider().authorize_action(resource, conn, :delete) do
           res =
             if opts[:delete_func] do
               opts[:delete_func].(resource)
