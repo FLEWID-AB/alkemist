@@ -1,5 +1,5 @@
-defmodule Manager.UtilsTest do
+defmodule Alkemist.UtilsTest do
   use ExUnit.Case, async: true
-  alias Manager.Utils
-  doctest Manager.Utils
+  alias Alkemist.Utils
+  doctest Alkemist.Utils
 end

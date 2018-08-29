@@ -1,4 +1,4 @@
-defmodule Manager.Config do
+defmodule Alkemist.Config do
   @moduledoc """
   This module encapsulates all config.exs options
 
@@ -6,24 +6,24 @@ defmodule Manager.Config do
 
   ### config.exs:
 
-    config :manager, Manager,
+    config :alkemist, Alkemist,
       repo: MyApp.Repo
   """
 
-  def repo(application \\ :manager) do
+  def repo(application \\ :alkemist) do
     config(:repo, nil, application)
   end
 
-  def router_helpers(application \\ :manager) do
-    config(:router_helpers, Manager.Router.Helpers, application)
+  def router_helpers(application \\ :alkemist) do
+    config(:router_helpers, Alkemist.Router.Helpers, application)
   end
 
-  def authorization_provider(application \\ :manager) do
-    config(:authorization_provider, Manager.Authorization, application)
+  def authorization_provider(application \\ :alkemist) do
+    config(:authorization_provider, Alkemist.Authorization, application)
   end
 
   defp config(application) do
-    Application.get_env(application, Manager, [])
+    Application.get_env(application, Alkemist, [])
   end
 
   defp config(key, default, application) do

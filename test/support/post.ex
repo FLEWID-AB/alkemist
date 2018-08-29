@@ -1,4 +1,4 @@
-defmodule Manager.Post do
+defmodule Alkemist.Post do
   @moduledoc """
   This is a schema to test various field types
   """
@@ -8,7 +8,7 @@ defmodule Manager.Post do
     field(:title, :string)
     field(:body, :string)
     field(:published, :boolean)
-    belongs_to(:category, Manager.Category)
+    belongs_to(:category, Alkemist.Category)
 
     timestamps()
   end

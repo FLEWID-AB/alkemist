@@ -1,4 +1,4 @@
-defmodule Manager.SearchView do
+defmodule Alkemist.SearchView do
   @moduledoc """
   This Module contains helper methods to render the filter form
   """
@@ -23,7 +23,7 @@ defmodule Manager.SearchView do
     filters = Keyword.fetch!(opts, :filters)
 
     path =
-      apply(Manager.Config.router_helpers(), String.to_atom("#{opts[:struct]}_path"), [
+      apply(Alkemist.Config.router_helpers(), String.to_atom("#{opts[:struct]}_path"), [
         conn,
         :index
       ])

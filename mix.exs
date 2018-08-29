@@ -1,12 +1,12 @@
-defmodule Manager.MixProject do
+defmodule Alkemist.MixProject do
   use Mix.Project
 
-  @version "0.0.1"
+  @version "0.0.1-dev"
 
   def project do
     [
-      app: :manager,
-      version: "0.1.0",
+      app: :alkemist,
+      version: @version,
       elixir: "~> 1.6",
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -18,12 +18,17 @@ defmodule Manager.MixProject do
       package: package(),
 
       # Docs
-      name: "Manager",
+      name: "Alkemist",
       docs: docs(),
 
       # Test
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [coveralls: :test],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.html": :test,
+        inch: :test
+      ],
       elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
@@ -67,7 +72,7 @@ defmodule Manager.MixProject do
 
   defp docs do
     [
-      main: "Manager",
+      main: "Alkemist",
       source_ref: "v#{@version}"
     ]
   end
@@ -77,7 +82,7 @@ defmodule Manager.MixProject do
       files: ["lib", "mix.exs", "README.md", "assets"],
       maintainers: ["Philip Mannheimer", "Julia Will", "Benjamin Betzing"],
       licenses: ["MIT"],
-      links: %{"Github" => ""}
+      links: %{"Github" => "https://github.com/FLEWID-AB/alkemist"}
     ]
   end
 

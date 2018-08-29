@@ -1,4 +1,4 @@
-defmodule Manager.Router do
+defmodule Alkemist.Router do
   @moduledoc """
   Provides helper functions to generate admin resource paths.
 
@@ -7,7 +7,7 @@ defmodule Manager.Router do
   ```elixir
   defmodule MyApp.Router do
     use Phoenix.Router
-    use Manager.Router
+    use Alkemist.Router
 
   end
   ```

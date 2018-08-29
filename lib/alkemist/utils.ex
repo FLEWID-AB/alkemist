@@ -1,4 +1,4 @@
-defmodule Manager.Utils do
+defmodule Alkemist.Utils do
   @moduledoc """
   Provides some helper functions for the CRUD actions
   """
@@ -30,10 +30,10 @@ defmodule Manager.Utils do
 
   ## Examples:
 
-    iex> Utils.get_struct(Manager.Post)
+    iex> Utils.get_struct(Alkemist.Post)
     :post
 
-    iex> Utils.get_struct(%Manager.Post{})
+    iex> Utils.get_struct(%Alkemist.Post{})
     :post
   """
   def get_struct(resource) when is_map(resource) do
@@ -53,10 +53,10 @@ defmodule Manager.Utils do
 
   ## Examples:
 
-    iex> Utils.singular_name(%Manager.Post{})
+    iex> Utils.singular_name(%Alkemist.Post{})
     "Post"
 
-    iex> Utils.singular_name(Manager.Post)
+    iex> Utils.singular_name(Alkemist.Post)
     "Post"
   """
   def singular_name(resource) when is_map(resource), do: singular_name(resource.__struct__)
@@ -72,10 +72,10 @@ defmodule Manager.Utils do
 
   ## Examples:
 
-    iex> Utils.plural_name(%Manager.Post{})
+    iex> Utils.plural_name(%Alkemist.Post{})
     "Posts"
 
-    iex> Utils.plural_name(Manager.Post)
+    iex> Utils.plural_name(Alkemist.Post)
     "Posts"
   """
   def plural_name(resource) when is_map(resource), do: plural_name(resource.__struct__)

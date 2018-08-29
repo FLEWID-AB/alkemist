@@ -1,11 +1,11 @@
-defmodule ManagerView do
-  use Manager, :view
-  # use Rummage.Phoenix.View, helpers: Manager.Config.router_helpers()
-  import Manager.SearchView
-  import Manager.FormView
+defmodule AlkemistView do
+  use Alkemist, :view
+  # use Rummage.Phoenix.View, helpers: Alkemist.Config.router_helpers()
+  import Alkemist.SearchView
+  import Alkemist.FormView
 
   # TODO: make that a config value
-  @helpers Manager.Config.router_helpers()
+  @helpers Alkemist.Config.router_helpers()
 
   @doc """
   Boolean indicator if a column is sortable

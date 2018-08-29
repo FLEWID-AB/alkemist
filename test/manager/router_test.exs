@@ -1,4 +1,4 @@
-defmodule Manager.RouterTest do
+defmodule Alkemist.RouterTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
@@ -16,7 +16,7 @@ defmodule Manager.RouterTest do
 
   defmodule Router do
     use Phoenix.Router
-    use Manager.Router
+    use Alkemist.Router
 
     manager_resources("/posts", PostController)
   end

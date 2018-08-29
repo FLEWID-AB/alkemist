@@ -1,4 +1,4 @@
-# Manager
+# Alkemist
 
 **TODO: Add description**
 
@@ -10,7 +10,7 @@ by adding `manager` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:manager, "~> 0.1.0"}
+    {:alkemist, "~> 0.1.0"}
   ]
 end
 ```

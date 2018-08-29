@@ -1,4 +1,4 @@
-defmodule Manager.Category do
+defmodule Alkemist.Category do
   @moduledoc """
   This is a Schema for testing with associations
   """
@@ -7,7 +7,7 @@ defmodule Manager.Category do
 
   schema "categories" do
     field(:name, :string)
-    has_many(:posts, Manager.Post)
+    has_many(:posts, Alkemist.Post)
 
     timestamps()
   end

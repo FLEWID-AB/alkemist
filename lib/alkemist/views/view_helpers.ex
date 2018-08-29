@@ -1,12 +1,12 @@
-defmodule Manager.ViewHelpers do
+defmodule Alkemist.ViewHelpers do
   @moduledoc """
   Provides helpers for the CRUD views and templates
   """
   import Phoenix.HTML.Link
   import Phoenix.HTML
   import Phoenix.HTML.Tag
-  alias Manager.{Utils}
-  @helpers Manager.Config.router_helpers()
+  alias Alkemist.{Utils}
+  @helpers Alkemist.Config.router_helpers()
 
   @doc """
   Returns if a list has any entries
@@ -23,7 +23,7 @@ defmodule Manager.ViewHelpers do
     * opts - options for the link (class, title, data-methods)
   """
   def action_link(label, conn, action, resource, opts \\ []) do
-    if Manager.Config.authorization_provider().authorize_action(resource, conn, action) do
+    if Alkemist.Config.authorization_provider().authorize_action(resource, conn, action) do
       opts =
         opts
         |> Keyword.put_new(:to, resource_action_path(conn, resource, action))

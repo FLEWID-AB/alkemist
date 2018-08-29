@@ -1,4 +1,4 @@
-defmodule Manager.FormView do
+defmodule Alkemist.FormView do
   @moduledoc """
   This module contains helper methods to render the new and
   edit forms
@@ -6,7 +6,7 @@ defmodule Manager.FormView do
 
   import Phoenix.HTML.Form
   import Phoenix.HTML.Tag
-  import Manager.ErrorHelpers
+  import Alkemist.ErrorHelpers
 
   # TODO: add form group method
   # TODO: add select, date and boolean support

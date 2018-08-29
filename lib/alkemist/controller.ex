@@ -1,4 +1,4 @@
-defmodule Manager.Controller do
+defmodule Alkemist.Controller do
   @moduledoc """
   Provides helper macros to use inside of CRUD controllers.
 
@@ -7,7 +7,7 @@ defmodule Manager.Controller do
   ```elixir
   defmodule MyAppWeb.MyController do
     use MyAppWeb, :controller
-    use Manager.Controller
+    use Alkemist.Controller
 
     # Specify the Ecto Schema as resource
     @resource MyApp.MySchema
@@ -18,22 +18,23 @@ defmodule Manager.Controller do
   """
   defmacro __using__(_) do
     quote do
-      import Manager.Assign
-      import Manager.Controller
+      import Alkemist.Assign
+      import Alkemist.Controller
     end
   end
 
-  alias Manager.Assign
-  alias Manager.Utils
+  alias Alkemist.Assign
+  alias Alkemist.Utils
 
   @doc """
-  Renders the default index view table. See Manager.Assign for possible options
+  Renders the default index view table. See Alkemist.Assign for possible options
   """
   defmacro render_index(conn, params, opts) do
     quote do
       conn = unquote(conn)
 
-      if Manager.Config.authorization_provider().authorize_action(@resource, conn, :index) == true do
+      if Alkemist.Config.authorization_provider().authorize_action(@resource, conn, :index) ==
+           true do
         opts = unquote(opts)
 
         opts =
@@ -60,9 +61,9 @@ defmodule Manager.Controller do
             assigns
           end
 
-        Phoenix.Controller.render(conn, ManagerView, "index.html", assigns)
+        Phoenix.Controller.render(conn, AlkemistView, "index.html", assigns)
       else
-        Manager.Controller.forbidden(conn)
+        Alkemist.Controller.forbidden(conn)
       end
     end
   end
@@ -75,12 +76,12 @@ defmodule Manager.Controller do
     quote do
       conn = unquote(conn)
       opts = unquote(opts)
-      resource = unquote(resource) |> Manager.Controller.load_resource(@resource, opts)
+      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
 
       if resource == nil do
-        Manager.Controller.not_found(conn)
+        Alkemist.Controller.not_found(conn)
       else
-        if Manager.Config.authorization_provider().authorize_action(resource, conn, :show) do
+        if Alkemist.Config.authorization_provider().authorize_action(resource, conn, :show) do
           opts =
             Enum.reduce([repo: [], singular_name: [], rows: [], panels: [:show]], opts, fn {key,
                                                                                             v},
@@ -98,9 +99,9 @@ defmodule Manager.Controller do
             end)
 
           assigns = Assign.show_assigns(resource, opts)
-          Phoenix.Controller.render(conn, ManagerView, "show.html", assigns)
+          Phoenix.Controller.render(conn, AlkemistView, "show.html", assigns)
         else
-          Manager.Controller.forbidden(conn)
+          Alkemist.Controller.forbidden(conn)
         end
       end
     end
@@ -114,7 +115,7 @@ defmodule Manager.Controller do
     quote do
       conn = unquote(conn)
 
-      if Manager.Config.authorization_provider().authorize_action(@resource, conn, :create) do
+      if Alkemist.Config.authorization_provider().authorize_action(@resource, conn, :create) do
         opts =
           unquote(opts)
           |> Keyword.put_new(:changeset, :changeset)
@@ -129,7 +130,7 @@ defmodule Manager.Controller do
 
         render_form(conn, :new, opts)
       else
-        Manager.Controller.forbidden(conn)
+        Alkemist.Controller.forbidden(conn)
       end
     end
   end
@@ -143,12 +144,12 @@ defmodule Manager.Controller do
       conn = unquote(conn)
       conn = unquote(conn)
       opts = unquote(opts)
-      resource = unquote(resource) |> Manager.Controller.load_resource(@resource, opts)
+      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
 
       if resource == nil do
-        Manager.Controller.not_found(conn)
+        Alkemist.Controller.not_found(conn)
       else
-        if Manager.Config.authorization_provider().authorize_action(resource, conn, :update) do
+        if Alkemist.Config.authorization_provider().authorize_action(resource, conn, :update) do
           opts =
             opts
             |> Keyword.put_new(:changeset, :changeset)
@@ -163,7 +164,7 @@ defmodule Manager.Controller do
 
           render_form(conn, :edit, opts)
         else
-          Manager.Controller.forbidden(conn)
+          Alkemist.Controller.forbidden(conn)
         end
       end
     end
@@ -193,7 +194,7 @@ defmodule Manager.Controller do
         end)
 
       assigns = Assign.form_assigns(@resource, opts)
-      Phoenix.Controller.render(unquote(conn), ManagerView, "#{action}.html", assigns)
+      Phoenix.Controller.render(unquote(conn), AlkemistView, "#{action}.html", assigns)
     end
   end
 
@@ -205,7 +206,7 @@ defmodule Manager.Controller do
     quote do
       conn = unquote(conn)
 
-      if Manager.Config.authorization_provider().authorize_action(@resource, conn, :create) do
+      if Alkemist.Config.authorization_provider().authorize_action(@resource, conn, :create) do
         opts =
           unquote(opts)
           |> Keyword.put_new(:changeset, :changeset)
@@ -219,7 +220,7 @@ defmodule Manager.Controller do
             opts
           end
 
-        repo = Keyword.get(opts, :repo, Manager.Config.repo())
+        repo = Keyword.get(opts, :repo, Alkemist.Config.repo())
 
         case repo.insert(opts[:changeset]) do
           {:ok, new_resource} ->
@@ -234,7 +235,7 @@ defmodule Manager.Controller do
                 Utils.singular_name(@resource) <> " created successfully"
               )
               |> Phoenix.Controller.redirect(
-                to: apply(Manager.Config.router_helpers(), path, [conn, :show, new_resource])
+                to: apply(Alkemist.Config.router_helpers(), path, [conn, :show, new_resource])
               )
             end
 
@@ -247,7 +248,7 @@ defmodule Manager.Controller do
             end
         end
       else
-        Manager.Controller.forbidden(conn)
+        Alkemist.Controller.forbidden(conn)
       end
     end
   end
@@ -260,12 +261,12 @@ defmodule Manager.Controller do
     quote do
       conn = unquote(conn)
       opts = unquote(opts)
-      resource = unquote(resource) |> Manager.Controller.load_resource(@resource, opts)
+      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
 
       if resource == nil do
-        Manager.Controller.not_found(conn)
+        Alkemist.Controller.not_found(conn)
       else
-        if Manager.Config.authorization_provider().authorize_action(resource, conn, :update) do
+        if Alkemist.Config.authorization_provider().authorize_action(resource, conn, :update) do
           params = unquote(params)
 
           opts =
@@ -281,7 +282,7 @@ defmodule Manager.Controller do
               opts
             end
 
-          repo = Keyword.get(opts, :repo, Manager.Config.repo())
+          repo = Keyword.get(opts, :repo, Alkemist.Config.repo())
 
           case repo.update(opts[:changeset]) do
             {:ok, new_resource} ->
@@ -296,7 +297,7 @@ defmodule Manager.Controller do
                   Utils.singular_name(@resource) <> " updated successfully"
                 )
                 |> Phoenix.Controller.redirect(
-                  to: apply(Manager.Config.router_helpers(), path, [conn, :show, new_resource])
+                  to: apply(Alkemist.Config.router_helpers(), path, [conn, :show, new_resource])
                 )
               end
 
@@ -309,7 +310,7 @@ defmodule Manager.Controller do
               end
           end
         else
-          Manager.Controller.forbidden(conn)
+          Alkemist.Controller.forbidden(conn)
         end
       end
     end
@@ -322,17 +323,17 @@ defmodule Manager.Controller do
     quote do
       conn = unquote(conn)
       opts = unquote(opts)
-      resource = unquote(resource) |> Manager.Controller.load_resource(@resource, opts)
+      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
 
       if resource == nil do
-        Manager.Controller.not_found(conn)
+        Alkemist.Controller.not_found(conn)
       else
-        if Manager.Config.authorization_provider().authorize_action(resource, conn, :delete) do
+        if Alkemist.Config.authorization_provider().authorize_action(resource, conn, :delete) do
           res =
             if opts[:delete_func] do
               opts[:delete_func].(resource)
             else
-              repo = Keyword.get(opts, :repo, Manager.Config.repo())
+              repo = Keyword.get(opts, :repo, Alkemist.Config.repo())
               repo.delete(resource)
             end
 
@@ -349,7 +350,7 @@ defmodule Manager.Controller do
                   Utils.singular_name(@resource) <> " deleted successfully"
                 )
                 |> Phoenix.Controller.redirect(
-                  to: apply(Manager.Config.router_helpers(), path, [conn, :index])
+                  to: apply(Alkemist.Config.router_helpers(), path, [conn, :index])
                 )
               end
 
@@ -362,12 +363,12 @@ defmodule Manager.Controller do
                 conn
                 |> Phoenix.Controller.put_flash(:error, "Oops, something went wrong")
                 |> Phoenix.Controller.redirect(
-                  to: apply(Manager.Config.router_helpers(), path, [conn, :index])
+                  to: apply(Alkemist.Config.router_helpers(), path, [conn, :index])
                 )
               end
           end
         else
-          Manager.Controller.forbidden(conn)
+          Alkemist.Controller.forbidden(conn)
         end
       end
     end
@@ -412,7 +413,7 @@ defmodule Manager.Controller do
         end)
 
       assigns = Assign.csv_assigns(params, @resource, opts)
-      csv = Manager.CSVExport.create_csv(assigns[:columns], assigns[:entries])
+      csv = Alkemist.CSVExport.create_csv(assigns[:columns], assigns[:entries])
 
       conn
       |> Plug.Conn.put_resp_content_type("text/csv")
@@ -439,14 +440,14 @@ defmodule Manager.Controller do
     conn
     |> Phoenix.Controller.put_flash(:error, "You are not authorized to access this page")
     |> Phoenix.Controller.redirect(
-      to: Manager.Config.router_helpers().page_path(conn, :dashboard)
+      to: Alkemist.Config.router_helpers().page_path(conn, :dashboard)
     )
   end
 
   def not_found(conn) do
     conn
     |> Plug.Conn.put_status(:not_found)
-    |> Phoenix.Controller.render(Manager.ErrorView, "404.html")
+    |> Phoenix.Controller.render(Alkemist.ErrorView, "404.html")
   end
 
   @doc """
@@ -456,13 +457,13 @@ defmodule Manager.Controller do
     do: load_resource(String.to_integer(resource), mod, opts)
 
   def load_resource(resource, mod, opts) when is_integer(resource) do
-    repo = Keyword.get(opts, :repo, Manager.Config.repo())
+    repo = Keyword.get(opts, :repo, Alkemist.Config.repo())
     load_resource(repo.get(mod, resource), mod, opts)
   end
 
   def load_resource(resource, _mod, opts) do
     if opts[:preload] do
-      repo = Keyword.get(opts, :repo, Manager.Config.repo())
+      repo = Keyword.get(opts, :repo, Alkemist.Config.repo())
       resource |> repo.preload(opts[:preload])
     else
       resource

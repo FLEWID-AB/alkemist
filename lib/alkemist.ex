@@ -1,17 +1,17 @@
-defmodule Manager do
+defmodule Alkemist do
   @moduledoc """
-  Manager is an admin tool for Phoenix applications.
+  Alkemist is an admin tool for Phoenix applications.
   TODO: write better documentation
   """
 
   def view do
     quote do
-      use Phoenix.View, root: "lib/manager/templates", namespace: Manager
+      use Phoenix.View, root: "lib/alkemist/templates", namespace: Alkemist
 
       import Phoenix.Controller, only: [get_flash: 2, view_module: 1]
       use Phoenix.HTML
 
-      import Manager.ViewHelpers
+      import Alkemist.ViewHelpers
     end
   end
 

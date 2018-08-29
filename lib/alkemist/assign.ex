@@ -1,9 +1,9 @@
-defmodule Manager.Assign do
+defmodule Alkemist.Assign do
   @moduledoc """
   Provides helper functions for generic CRUD assigns
   """
   import Ecto.Query
-  alias Manager.Utils
+  alias Alkemist.Utils
 
   # TODO: move into config
   @default_collection_actions [:new]
@@ -15,7 +15,7 @@ defmodule Manager.Assign do
       link_opts: [method: :delete, data: [confirm: "Do you really want to delete this record?"]]
     ]
   ]
-  @default_search_hook Manager.DefaultSearchHook
+  @default_search_hook Alkemist.DefaultSearchHook
 
   @doc """
   Creates the default assigns for a controller index action.
@@ -185,7 +185,7 @@ defmodule Manager.Assign do
     show_aside = Keyword.has_key?(opts, :filters)
 
     opts
-    |> Keyword.put_new(:repo, Manager.Config.repo())
+    |> Keyword.put_new(:repo, Alkemist.Config.repo())
     |> Keyword.put_new(:query, resource)
     |> Keyword.put_new(:collection_actions, @default_collection_actions)
     |> Keyword.put_new(:member_actions, @default_member_actions)
@@ -201,7 +201,7 @@ defmodule Manager.Assign do
 
   defp default_csv_opts(opts, resource) do
     opts
-    |> Keyword.put_new(:repo, Manager.Config.repo())
+    |> Keyword.put_new(:repo, Alkemist.Config.repo())
     |> Keyword.put_new(:query, resource)
     |> Keyword.put_new(:columns, get_default_columns(resource))
     |> Keyword.put_new(:scopes, [])
@@ -245,7 +245,7 @@ defmodule Manager.Assign do
       |> Keyword.put_new(:changeset, resource.changeset(resource.__struct__, %{}))
       |> Keyword.put_new(:resource, resource)
       |> Keyword.put_new(:singular_name, Utils.singular_name(resource))
-      |> Keyword.put_new(:repo, Manager.Config.repo())
+      |> Keyword.put_new(:repo, Alkemist.Config.repo())
       |> Keyword.put_new(:mod, resource.__struct__)
 
     if Keyword.get(opts, :form_partial) do
@@ -253,13 +253,13 @@ defmodule Manager.Assign do
     else
       opts
       |> Keyword.put_new(:fields, get_default_form_fields(resource))
-      |> Keyword.put(:form_partial, {ManagerView, "form.html"})
+      |> Keyword.put(:form_partial, {AlkemistView, "form.html"})
     end
   end
 
   defp default_show_opts(opts, resource) do
     opts
-    |> Keyword.put_new(:repo, Manager.Config.repo())
+    |> Keyword.put_new(:repo, Alkemist.Config.repo())
     |> Keyword.put_new(:singular_name, Utils.singular_name(resource))
     |> Keyword.put_new(:rows, get_default_columns(resource))
     |> Keyword.put_new(:resource, resource)

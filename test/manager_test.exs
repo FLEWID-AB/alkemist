@@ -1,4 +1,4 @@
-defmodule ManagerTest do
+defmodule AlkemistTest do
   use ExUnit.Case
-  doctest Manager
+  doctest Alkemist
 end
