@@ -1,0 +1,20 @@
+<div class="col-md-8">
+	<%= form_for @changeset, @action, fn f -> %>
+		<div class="card">
+			<div class="card-header">
+				<h5><%= @singular_name %> Details</h5>
+			</div>
+			<div class="card-body">
+				<%= for field <- @form_fields do %>
+					<%= render_form_field(f, field) %>
+				<% end %>
+			</div>
+		</div>
+
+		<div class="form-group row justify-content-end">
+			<div class="col text-right">
+				<%= submit "Save", class: "btn btn-primary" %>
+			</div>
+		</div>
+	<% end %>
+</div>

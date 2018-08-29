@@ -1,0 +1,64 @@
+<div class="row">
+  <div class="col-md-8">
+    <h1>List of <%= @plural_name %></h1>
+  </div>
+  <div class="col-md-4 page-actions">
+    <ul class="nav justify-content-end">
+      <%= for action <- @collection_actions do %>
+      <li class="nav-item">
+        <%= collection_action(@conn, action, @mod) %>
+      </li>
+      <% end %>
+      <%= if assigns[:has_export] do %>
+        <li class="nav-item">
+          <%= export_action(@conn, @struct) %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</div>
+
+<%= if any?(@scopes) do %>
+  <div class="row">
+    <div class="col">
+      <nav>
+        <ul class="nav nav-tabs">
+          <%= for scope <- @scopes do %>
+            <%= scope_link(@conn, scope, @struct) %>
+          <% end %>
+        </ul>
+      </nav>
+    </div>
+  </div>
+<% end %>
+<div class="table-responsive">
+<table class="table index-table table-hover">
+  <thead>
+    <tr>
+      <%= for {field, _cb, opts} = column <- @columns do %>
+      <th class="<%= opts[:type] %>">
+        <%= Keyword.get(opts, :label) %>
+      </th>
+      <% end %>
+      <th class="member-actions">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= for row <- @entries do %>
+      <tr>
+        <%= for {_, cb, opts} <- @columns do %>
+          <td class="<%= opts[:type] %>">
+            <%= string_value(cb, row) %>
+          </td>
+        <% end %>
+        <td class="member-actions">
+          <%= for action <- @member_actions do %>
+            <%= member_action(@conn, action, row) %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+</div>
+<%= #pagination_link(@conn, @rummage, struct: @struct) %>

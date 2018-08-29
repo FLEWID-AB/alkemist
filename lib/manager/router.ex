@@ -1,7 +1,21 @@
 defmodule Manager.Router do
+  @moduledoc """
+  Provides helper functions to generate admin resource paths.
+
+  ## Usage:
+
+  ```elixir
+  defmodule MyApp.Router do
+    use Phoenix.Router
+    use Manager.Router
+
+  end
+  ```
+  """
   use Phoenix.Router
   @supported_actions [:index, :edit, :new, :show, :create, :update, :delete]
 
+  @doc false
   defmacro __using__(_opts \\ []) do
     quote do
       import unquote(__MODULE__)
@@ -15,10 +29,10 @@ defmodule Manager.Router do
 
   ```
   defmodule MyApp.Router do
-    use Phoenix.Router
-    use Manager.Router
+    ...
 
     scope "/admin", MyApp do
+      pipe_through :browser
       manager_resources "/users", UserController, except: [:delete]
     end
   end

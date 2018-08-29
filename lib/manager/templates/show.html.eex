@@ -1,0 +1,53 @@
+<div class="row">
+  <div class="col-md-6">
+    <h1><%= @singular_name %></h1>
+  </div>
+  <div class="col-md-2 page-actions">
+    <ul class="nav justify-content-end">
+      <li class="nav-item">
+        <%= action_link("Back to List", @conn, :index, @mod, [class: "nav-link"]) %>
+      </li>
+      <li class="nav-item">
+        <%= action_link("Edit", @conn, :edit, @resource, [class: "nav-link"]) %>
+      </li>
+    </ul>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8">
+    <div class="card card-details">
+      <div class="card-header">
+        <h5><%= @singular_name %> Details</h5>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm">
+          <%= for {_, cb, opts} <- @rows do %>
+          <tr>
+            <th scope="row"><%= opts[:label] %></th>
+            <td>
+              <%= string_value(cb, @resource) %>
+            </td>
+          </tr>
+          <% end %>
+        </table>
+      </div>
+    </div>
+
+    <%= for {label, opts} <- @panels do %>
+      <div class="card">
+        <div class="card-header">
+          <h5><%= label %></h5>
+        </div>
+        <div class="card-body">
+          <%= if opts[:partial] do %>
+            <% {view, partial} = opts[:partial] %>
+            <%= render(view, partial, assigns) %>
+          <% end %>
+          <%= if opts[:content] do %>
+            <%= opts[:content] %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

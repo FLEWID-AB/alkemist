@@ -8,6 +8,7 @@ defmodule Manager.MixProject do
       app: :manager,
       version: "0.1.0",
       elixir: "~> 1.6",
+      compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       build_embedded: Mix.env() == :prod,
       deps: deps(),
@@ -30,7 +31,13 @@ defmodule Manager.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [
+        :phoenix,
+        :logger,
+        :inflex,
+        :atomic_map,
+        :rummage_ecto
+      ]
     ]
   end
 
@@ -48,6 +55,7 @@ defmodule Manager.MixProject do
       {:inflex, "~> 1.10.0"},
       {:atomic_map, github: 'ruby2elixir/atomic_map'},
       {:csv, "~> 2.0"},
+      {:rummage_ecto, "~> 1.2"},
       # Test and dev
       {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.0", only: :test},

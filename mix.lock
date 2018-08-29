@@ -29,6 +29,8 @@
   "poison": {:hex, :poison, "3.1.0", "d9eb636610e096f86f25d9a46f35a9facac35609a7591b3be3326e99a0484665", [:mix], [], "hexpm"},
   "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], [], "hexpm"},
   "postgrex": {:hex, :postgrex, "0.13.5", "3d931aba29363e1443da167a4b12f06dcd171103c424de15e5f3fc2ba3e6d9c5", [:mix], [{:connection, "~> 1.0", [hex: :connection, repo: "hexpm", optional: false]}, {:db_connection, "~> 1.1", [hex: :db_connection, repo: "hexpm", optional: false]}, {:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: false]}], "hexpm"},
+  "rummage_ecto": {:hex, :rummage_ecto, "1.2.0", "06b9f77a5a7b4a319b3d9992de4bcb37ea70bcbea5d4b5cc328b74c1b3958be1", [:mix], [{:ecto, "~> 2.1", [hex: :ecto, repo: "hexpm", optional: false]}], "hexpm"},
+  "rummage_phoenix": {:hex, :rummage_phoenix, "1.2.0", "cd9804c98e15ec90711e696df82df7f1f1fb56cc4eda4555247934d4d357792a", [:mix], [{:phoenix, "~> 1.2.1", [hex: :phoenix, repo: "hexpm", optional: false]}, {:phoenix_html, "~> 2.6", [hex: :phoenix_html, repo: "hexpm", optional: false]}, {:rummage_ecto, "~> 1.2.0", [hex: :rummage_ecto, repo: "hexpm", optional: false]}], "hexpm"},
   "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.1", "28a4d65b7f59893bc2c7de786dec1e1555bd742d336043fe644ae956c3497fbe", [:make, :rebar], [], "hexpm"},
   "unicode_util_compat": {:hex, :unicode_util_compat, "0.3.1", "a1f612a7b512638634a603c8f401892afbf99b8ce93a45041f8aaca99cadb85e", [:rebar3], [], "hexpm"},
 }

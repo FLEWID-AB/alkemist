@@ -1,0 +1,6 @@
+<h1>New <%= @singular_name %></h1>
+
+<%= if @form_partial do %>
+  <% {view, partial} = @form_partial %>
+  <%= render(view, partial, Map.put(assigns, :action, action_path(@struct, [@conn, :create]))) %>
+<% end %>
