@@ -22,6 +22,10 @@ defmodule Alkemist.Config do
     config(:authorization_provider, Alkemist.Authorization, application)
   end
 
+  def layout(application \\ :alkemist) do
+    config(:layout, {Alkemist.LayoutView, "app.html"}, application)
+  end
+
   defp config(application) do
     Application.get_env(application, Alkemist, [])
   end

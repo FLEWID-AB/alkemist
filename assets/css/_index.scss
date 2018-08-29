@@ -1,0 +1,24 @@
+.index-table {
+  font-size: .8rem;
+  td.member-actions,
+  th.member-actions {
+    text-align: right;
+    a {
+      &:hover, &:active {
+        text-decoration: none;
+      }
+      i {
+        margin-left: .5rem;
+      }
+    }
+  }
+  td.boolean,
+  th.boolean {
+    text-align: center;
+  }
+}
+
+.pagination {
+  font-size: .8rem;
+  justify-content: flex-end;
+}

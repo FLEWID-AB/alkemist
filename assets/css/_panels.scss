@@ -1,0 +1,9 @@
+.card-body {
+  table.table {
+    tr:first-child {
+      td, th {
+        border-top: none;
+      }
+    }
+  }
+}

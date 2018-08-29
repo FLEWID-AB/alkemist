@@ -61,7 +61,9 @@ defmodule Alkemist.Controller do
             assigns
           end
 
-        Phoenix.Controller.render(conn, AlkemistView, "index.html", assigns)
+        conn
+        |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
+        |> Phoenix.Controller.render(AlkemistView, "index.html", assigns)
       else
         Alkemist.Controller.forbidden(conn)
       end
@@ -99,7 +101,10 @@ defmodule Alkemist.Controller do
             end)
 
           assigns = Assign.show_assigns(resource, opts)
-          Phoenix.Controller.render(conn, AlkemistView, "show.html", assigns)
+
+          conn
+          |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
+          |> Phoenix.Controller.render(AlkemistView, "show.html", assigns)
         else
           Alkemist.Controller.forbidden(conn)
         end
@@ -194,7 +199,11 @@ defmodule Alkemist.Controller do
         end)
 
       assigns = Assign.form_assigns(@resource, opts)
-      Phoenix.Controller.render(unquote(conn), AlkemistView, "#{action}.html", assigns)
+      conn = unquote(conn)
+
+      conn
+      |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
+      |> Phoenix.Controller.render(AlkemistView, "#{action}.html", assigns)
     end
   end
 
@@ -361,6 +370,7 @@ defmodule Alkemist.Controller do
                 path = String.to_atom("#{Utils.get_struct(@resource)}_path")
 
                 conn
+                |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
                 |> Phoenix.Controller.put_flash(:error, "Oops, something went wrong")
                 |> Phoenix.Controller.redirect(
                   to: apply(Alkemist.Config.router_helpers(), path, [conn, :index])
@@ -438,6 +448,7 @@ defmodule Alkemist.Controller do
 
   def forbidden(conn) do
     conn
+    |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
     |> Phoenix.Controller.put_flash(:error, "You are not authorized to access this page")
     |> Phoenix.Controller.redirect(
       to: Alkemist.Config.router_helpers().page_path(conn, :dashboard)
