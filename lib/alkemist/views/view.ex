@@ -5,13 +5,6 @@ defmodule AlkemistView do
   import Alkemist.FormView
 
   @doc """
-  Returns the current user if it is provided in the authorization provider
-  """
-  def current_user(conn) do
-    Alkemist.Config.authorization_provider().current_user(conn)
-  end
-
-  @doc """
   Boolean indicator if a column is sortable
   """
   def is_sortable?({_col, _cb, opts}) do

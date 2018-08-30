@@ -1,12 +1,14 @@
 <header class="app-header navbar">
   <a class="navbar-brand" href="/">
-    <%# <img class="navbar-brand-full" id="main-logo" src="<%= static_path(@conn, "/images/ellevio-logo.svg") %>"> %>
+    <%= if assigns[:logo] do %>
+    <img class="navbar-brand-full" id="main-logo" src="<%= static_path(@conn, assigns[:logo]) %>">
+    <% end %>
   </a>
-  <%= if assigns[:current_user] do %>
+  <%= if current_user(@conn) do %>
   <ul class="nav navbar-nav ml-auto mr-4">
     <li class="nav-item dropdown">
       <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-        <%= @current_user.name %>
+        <%= current_user_name(@conn) %>
       </a>
       <div class="dropdown-menu dropdown-menu-right pt-0">
         <div class="dropdown-header text-center">

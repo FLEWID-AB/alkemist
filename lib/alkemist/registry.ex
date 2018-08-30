@@ -27,7 +27,6 @@ defmodule Alkemist.MenuRegistry do
   end
 
   def handle_call(:get_all, _from, state) do
-    IO.inspect(state)
     {:reply, state, state}
   end
 

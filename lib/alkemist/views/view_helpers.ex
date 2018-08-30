@@ -14,6 +14,20 @@ defmodule Alkemist.ViewHelpers do
   def any?(list), do: Enum.empty?(list) === false
 
   @doc """
+  Returns the current user if it is provided in the authorization provider
+  """
+  def current_user(conn) do
+    Alkemist.Config.authorization_provider().current_user(conn)
+  end
+
+  @doc """
+  Returns the current user's name if it is provided in the authorization provider
+  """
+  def current_user_name(conn) do
+    Alkemist.Config.authorization_provider().current_user_name(conn)
+  end
+
+  @doc """
   Create an action link
   Params:
     * label - Plain text or html label to name the link

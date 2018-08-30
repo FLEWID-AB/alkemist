@@ -1,7 +1,10 @@
 <div class="sidebar">
+  
   <nav class="sidebar-nav">
     <ul class="nav">
-      
+      <%= for {_, menu} <- menu_items() do %>
+        <%= action_link(menu.label, @conn, :index, menu.resource, [class: "nav-link", wrap: {:li, [class: "nav-item"]}]) %>
+      <% end %>
     </ul>
   </nav>
 </div>
