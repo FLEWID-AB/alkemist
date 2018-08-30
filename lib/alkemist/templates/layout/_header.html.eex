@@ -1,0 +1,30 @@
+<header class="app-header navbar">
+  <a class="navbar-brand" href="/">
+    <%# <img class="navbar-brand-full" id="main-logo" src="<%= static_path(@conn, "/images/ellevio-logo.svg") %>"> %>
+  </a>
+  <%= if assigns[:current_user] do %>
+  <ul class="nav navbar-nav ml-auto mr-4">
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+        <%= @current_user.name %>
+      </a>
+      <div class="dropdown-menu dropdown-menu-right pt-0">
+        <div class="dropdown-header text-center">
+          <strong>Account</strong>
+        </div>
+        <a class="dropdown-item" href="<%= #user_path(@conn, :show, @current_user) %>">
+          <i class="fas fa-fw fa-user"></i> Profile
+        </a>
+        <a class="dropdown-item" href="<%= #session_path(@conn, :logout) %>">
+          <i class="fas fa-sign-out-alt fa-fw"></i> Logout
+        </a>
+      </div>
+    </li>
+  </ul>
+  <% end %>
+  <%= if assigns[:show_aside] && @show_aside == true do %>
+    <button class="navbar-toggler aside-menu-toggler" type="button" data-toggle="aside-menu-show">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  <% end %>
+</header>

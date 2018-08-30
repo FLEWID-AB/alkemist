@@ -7,10 +7,12 @@ defmodule Alkemist.Controller do
   ```elixir
   defmodule MyAppWeb.MyController do
     use MyAppWeb, :controller
+
+    # Specify the Ecto Schema as resource - it is important to call this above
+    # use Alkemist.Controller!
+    @resource MyApp.MySchema
     use Alkemist.Controller
 
-    # Specify the Ecto Schema as resource
-    @resource MyApp.MySchema
   end
   ```
 
@@ -20,11 +22,24 @@ defmodule Alkemist.Controller do
     quote do
       import Alkemist.Assign
       import Alkemist.Controller
+
+      if @resource !== nil do
+        menu(Alkemist.Utils.plural_name(@resource))
+      end
     end
   end
 
   alias Alkemist.Assign
   alias Alkemist.Utils
+
+  defmacro menu(label) do
+    quote do
+      Alkemist.MenuRegistry.register_menu_item(__MODULE__, %{
+        label: unquote(label),
+        resource: @resource
+      })
+    end
+  end
 
   @doc """
   Renders the default index view table. See Alkemist.Assign for possible options

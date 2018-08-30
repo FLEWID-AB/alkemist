@@ -4,8 +4,12 @@ defmodule AlkemistView do
   import Alkemist.SearchView
   import Alkemist.FormView
 
-  # TODO: make that a config value
-  @helpers Alkemist.Config.router_helpers()
+  @doc """
+  Returns the current user if it is provided in the authorization provider
+  """
+  def current_user(conn) do
+    Alkemist.Config.authorization_provider().current_user(conn)
+  end
 
   @doc """
   Boolean indicator if a column is sortable
@@ -85,7 +89,7 @@ defmodule AlkemistView do
 
   def action_path(struct, params) do
     path_function_name = String.to_atom("#{struct}_path")
-    apply(@helpers, path_function_name, params)
+    apply(Alkemist.Config.router_helpers(), path_function_name, params)
   end
 
   @doc """

@@ -43,17 +43,17 @@ defmodule Alkemist.Router do
   * :only - when provided, only routes for the provided actions are created
   """
   defmacro manager_resources(path, controller, opts) do
-    add_resources(path, controller, opts, do: nil)
+    add_resources(path, controller, opts)
   end
 
   @doc """
   See `manager_resources/3`
   """
   defmacro manager_resources(path, controller) do
-    add_resources(path, controller, [], do: nil)
+    add_resources(path, controller, [])
   end
 
-  defp add_resources(path, controller, opts, do: context) do
+  defp add_resources(path, controller, opts) do
     cleaned_opts =
       opts
       |> clean_opts(:except)
@@ -70,7 +70,7 @@ defmodule Alkemist.Router do
         get(path <> "/export", controller, :export)
       end
 
-      resources(path, controller, unquote(cleaned_opts), do: unquote(context))
+      resources(path, controller, unquote(cleaned_opts), do: nil)
     end
   end
 
