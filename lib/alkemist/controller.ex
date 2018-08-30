@@ -32,12 +32,11 @@ defmodule Alkemist.Controller do
   alias Alkemist.Assign
   alias Alkemist.Utils
 
-  defmacro menu(label) do
+  defmacro menu(label, opts \\ []) do
     quote do
-      Alkemist.MenuRegistry.register_menu_item(__MODULE__, %{
-        label: unquote(label),
-        resource: @resource
-      })
+      label = unquote(label)
+      opts = unquote(opts) |> Keyword.put(:resource, @resource)
+      Alkemist.MenuRegistry.register_menu_item(__MODULE__, label, opts)
     end
   end
 
