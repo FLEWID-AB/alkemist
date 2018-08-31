@@ -2,7 +2,7 @@ defmodule Alkemist.Controller do
   @moduledoc """
   Provides helper macros to use inside of CRUD controllers.
 
-  ## Usage:
+  ## Example with minimal configuration:
 
   ```elixir
   defmodule MyAppWeb.MyController do
@@ -13,11 +13,62 @@ defmodule Alkemist.Controller do
     @resource MyApp.MySchema
     use Alkemist.Controller
 
+    # use if you want to customize the menu
+    menu "My Custom Label"
+
+    def index(conn, params) do
+      render_index(conn, params)
+    end
+
+    def show(conn, %{"id" => id}) do
+      render_show(conn, id)
+    end
+
+    def edit(conn, %{"id" => id}) do
+      render_edit(conn, id)
+    end
+
+    def new(conn, _params) do
+      render_new(conn)
+    end
+
+    def create(conn, %{"my_schema" => params}) do
+      do_create(conn, params)
+    end
+
+    def update(conn, %{"id" => id, "my_schema" => params}) do
+      do_update(conn, id, params)
+    end
+
+    def delete(conn, %{"id" => id}) do
+      do_delete(conn, id)
+    end
+
+    def export(conn, params) do
+      csv(conn, params)
+    end
   end
   ```
-
-  TODO: document usage of functions like form_partial, columns, etc
   """
+
+  alias Alkemist.Assign
+  alias Alkemist.Utils
+
+  # Type definitions
+  @type scope :: {atom(), keyword(), (%{} -> Ecto.Query.t())}
+  @type column :: atom() | {String.t(), (%{} -> any())}
+  @typedoc """
+  Used to create custom filters in the filter form. Type can be in `[:string, :boolean, :select, :date]`,
+  default is `:string`. If the type is `:select`, a collection to build the select must be passed (see `Phoenix.HTMl.Form.select/4`)
+  """
+  @type filter ::
+          {atom(),
+           %{
+             optional(:label) => String.t(),
+             optional(:type) => atom(),
+             optional(:collection) => []
+           }}
+
   defmacro __using__(_) do
     quote do
       import Alkemist.Assign
@@ -29,9 +80,39 @@ defmodule Alkemist.Controller do
     end
   end
 
-  alias Alkemist.Assign
-  alias Alkemist.Utils
+  @doc """
+  Customize the Menu item in the sidebar.
+  You can call this function within the controller root
+  after including Alkemist.Controller and setting the @resource
 
+  ## Examples:
+
+  ### Display no menu:
+
+  ```elixir
+  menu false
+  ```
+
+  ### Display a custom label:
+
+  ```elixir
+  menu "My Custom Menu Label"
+  ```
+
+  ### Add this menu item to a dropdown menu:
+
+  If the same label for the parent is used multiple times, all menu items with the same parent will be grouped under it
+
+  ```elixir
+  menu "Label", parent: "Dropdown Menu Title"
+  ```
+
+  ### Alter the order and the order of the parent within the sidebar:
+
+  ```elixir
+  menu "Label", parent: "Parent", index: 2, parent_index: 1
+  ```
+  """
   defmacro menu(label, opts \\ []) do
     quote do
       label = unquote(label)
@@ -41,9 +122,71 @@ defmodule Alkemist.Controller do
   end
 
   @doc """
-  Renders the default index view table. See Alkemist.Assign for possible options
+  Renders the default index view table.
+
+  ## Params:
+
+  * conn - the conn from the controller action
+  * params - the params that are passed to the controller action
+  * opts - a `t:Keyword.t/0` with options
+
+  ## Options:
+
+  * repo - use a custom `Ecto.Repo`
+  * columns - List of `t:column/0` customize the columns that will display in the index table
+  * scopes - List of `t:scope/0` to define custom filter scopes
+  * filters - define filters for the search form
+  * preload - resources to preload along with each resource
+  * search_hook - define a custom library for building the search query
+
+
+  ## Example with options:
+
+  ```elixir
+  def index(conn, params) do
+    opts = [
+      # Columns can either be an atom, or a `tuple` with a label and a custom modifier function
+      columns: [
+        :id,
+        :title,
+        :body,
+        {"Author", fn i -> i.author.name end}
+        ],
+      scopes: [
+        {:published, [], fn i -> i.published == true end}
+      ],
+      preload: [:author]
+    ]
+    render_index(conn, params, opts)
+  end
+  ```
+
+  ## Example with custom functions:
+
+  ```elixir
+  def index(conn, params) do
+    render_index(conn, params)
+  end
+
+  def columns do
+    [
+      :id,
+      :title,
+      :body,
+      {"Author", fn i -> i.author.name end}
+    ]
+  end
+
+  def scopes do
+    [published: [], fn i -> i.published == true end]
+  end
+
+  def preload do
+    [:author]
+  end
+  ```
   """
-  defmacro render_index(conn, params, opts) do
+  defmacro render_index(conn, params, opts \\ []) do
     quote do
       conn = unquote(conn)
 
@@ -88,7 +231,7 @@ defmodule Alkemist.Controller do
   Renders the default show page
   TODO: document methods and options
   """
-  defmacro render_show(conn, resource, opts) do
+  defmacro render_show(conn, resource, opts \\ []) do
     quote do
       conn = unquote(conn)
       opts = unquote(opts)
@@ -130,7 +273,7 @@ defmodule Alkemist.Controller do
   Renders the "new" action
   TODO: document opts
   """
-  defmacro render_new(conn, opts) do
+  defmacro render_new(conn, opts \\ []) do
     quote do
       conn = unquote(conn)
 
@@ -158,7 +301,7 @@ defmodule Alkemist.Controller do
   Renders the "edit action"
   TODO: document opts
   """
-  defmacro render_edit(conn, resource, opts) do
+  defmacro render_edit(conn, resource, opts \\ []) do
     quote do
       conn = unquote(conn)
       conn = unquote(conn)
@@ -193,7 +336,7 @@ defmodule Alkemist.Controller do
   Renders the form
   TODO: document opts
   """
-  defmacro render_form(conn, action, opts) do
+  defmacro render_form(conn, action, opts \\ []) do
     quote do
       opts = unquote(opts)
       action = unquote(action)
@@ -225,7 +368,7 @@ defmodule Alkemist.Controller do
   Creates a new resource
   TODO: document opts
   """
-  defmacro do_create(conn, params, opts) do
+  defmacro do_create(conn, params, opts \\ []) do
     quote do
       conn = unquote(conn)
 
@@ -280,7 +423,7 @@ defmodule Alkemist.Controller do
   Performs an update to the resource
   TODO: document opts
   """
-  defmacro do_update(conn, resource, params, opts) do
+  defmacro do_update(conn, resource, params, opts \\ []) do
     quote do
       conn = unquote(conn)
       opts = unquote(opts)
@@ -342,7 +485,7 @@ defmodule Alkemist.Controller do
   @doc """
   TODO: document opts
   """
-  defmacro do_delete(conn, resource, opts) do
+  defmacro do_delete(conn, resource, opts \\ []) do
     quote do
       conn = unquote(conn)
       opts = unquote(opts)

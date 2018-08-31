@@ -6,7 +6,6 @@ defmodule Alkemist.ViewHelpers do
   import Phoenix.HTML
   import Phoenix.HTML.Tag
   alias Alkemist.{Utils}
-  @helpers Alkemist.Config.router_helpers()
 
   @doc """
   Returns if a list has any entries
@@ -69,11 +68,16 @@ defmodule Alkemist.ViewHelpers do
 
   def resource_action_path(conn, resource, action) when is_map(resource) do
     struct = Utils.get_struct(resource)
-    path = apply(@helpers, String.to_atom("#{struct}_path"), [conn, action, resource])
+
+    apply(Alkemist.Config.router_helpers(), String.to_atom("#{struct}_path"), [
+      conn,
+      action,
+      resource
+    ])
   end
 
   def resource_action_path(conn, resource, action) do
     struct = Utils.get_struct(resource)
-    path = apply(@helpers, String.to_atom("#{struct}_path"), [conn, action])
+    apply(Alkemist.Config.router_helpers(), String.to_atom("#{struct}_path"), [conn, action])
   end
 end

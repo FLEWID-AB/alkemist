@@ -1,4 +1,11 @@
 defmodule Alkemist.MenuRegistry do
+  @moduledoc """
+  The MenuRegistry is used to store and retrieve menu items for the
+  sidebar.
+
+  You can define custom labels and options in your resource controllers.
+  See `Alkemist.Controller`
+  """
   use GenServer
 
   @me __MODULE__

@@ -5,7 +5,6 @@ defmodule Alkemist.Assign do
   import Ecto.Query
   alias Alkemist.Utils
 
-  # TODO: move into config
   @default_collection_actions [:new]
   @default_member_actions [
     show: [icon: "fas fa-fw fa-eye"],
