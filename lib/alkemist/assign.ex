@@ -14,7 +14,7 @@ defmodule Alkemist.Assign do
       link_opts: [method: :delete, data: [confirm: "Do you really want to delete this record?"]]
     ]
   ]
-  @default_search_hook Alkemist.DefaultSearchHook
+  @default_search_hook Alkemist.Config.search_hook()
 
   @doc """
   Creates the default assigns for a controller index action.
@@ -61,6 +61,8 @@ defmodule Alkemist.Assign do
     {query, rummage} =
       query
       |> Rummage.Ecto.rummage(params["rummage"], repo: repo, search: opts[:search_hook])
+
+    IO.inspect(rummage)
 
     entries =
       query

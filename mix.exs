@@ -58,9 +58,10 @@ defmodule Alkemist.MixProject do
       {:phoenix_html, "~> 2.10"},
       {:ecto, "~> 2.2"},
       {:inflex, "~> 1.10.0"},
-      {:atomic_map, github: 'ruby2elixir/atomic_map'},
+      {:atomic_map, github: "ruby2elixir/atomic_map"},
       {:csv, "~> 2.0"},
       {:rummage_ecto, "~> 1.2"},
+      {:rummage_phoenix, github: "annkissam/rummage_phoenix"},
       # Test and dev
       {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.0", only: :test},

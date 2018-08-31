@@ -73,6 +73,7 @@ defmodule Alkemist.Controller do
     quote do
       import Alkemist.Assign
       import Alkemist.Controller
+      use Rummage.Phoenix.Controller
 
       if @resource !== nil do
         menu(Alkemist.Utils.plural_name(@resource))
@@ -135,8 +136,8 @@ defmodule Alkemist.Controller do
   * repo - use a custom `Ecto.Repo`
   * columns - List of `t:column/0` customize the columns that will display in the index table
   * scopes - List of `t:scope/0` to define custom filter scopes
-  * filters - define filters for the search form
-  * preload - resources to preload along with each resource
+  * filters - List of `t:filter/0` to define filters for the search form
+  * preload - resources to preload along with each resource (see `Ecto.Query`)
   * search_hook - define a custom library for building the search query
 
 

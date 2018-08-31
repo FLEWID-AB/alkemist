@@ -47,14 +47,4 @@ defmodule Alkemist.Authorization do
   ```
   """
   def current_user_name(_conn), do: nil
-
-  @doc """
-  define the logout url
-
-  ## Example:
-
-  ```elixir
-  def logout_path(conn), do: MyApp.Router.Helpers.session_path(conn, :logout)
-  """
-  def logout_path(_conn), do: ""
 end

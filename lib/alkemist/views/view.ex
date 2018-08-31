@@ -1,6 +1,6 @@
 defmodule AlkemistView do
   use Alkemist, :view
-  # use Rummage.Phoenix.View, helpers: Alkemist.Config.router_helpers()
+  use Rummage.Phoenix.View, helpers: Alkemist.Config.router_helpers()
   import Alkemist.SearchView
   import Alkemist.FormView
 

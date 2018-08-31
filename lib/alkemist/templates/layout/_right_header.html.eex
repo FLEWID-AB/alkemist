@@ -1,0 +1,9 @@
+<%= if current_user(@conn) do %>
+  <ul class="nav navbar-nav ml-auto mr-4">
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+        <%= current_user_name(@conn) %>
+      </a>
+    </li>
+  </ul>
+<% end %>
