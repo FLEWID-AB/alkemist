@@ -32,5 +32,6 @@
   "rummage_ecto": {:hex, :rummage_ecto, "1.2.0", "06b9f77a5a7b4a319b3d9992de4bcb37ea70bcbea5d4b5cc328b74c1b3958be1", [:mix], [{:ecto, "~> 2.1", [hex: :ecto, repo: "hexpm", optional: false]}], "hexpm"},
   "rummage_phoenix": {:git, "https://github.com/annkissam/rummage_phoenix.git", "f92cbece8ccdcb2d7e5ae938bc5b3280f931a29b", []},
   "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.1", "28a4d65b7f59893bc2c7de786dec1e1555bd742d336043fe644ae956c3497fbe", [:make, :rebar], [], "hexpm"},
+  "turbo_ecto": {:hex, :turbo_ecto, "0.1.7", "5265b20c0899a3b95713bcdc3111fb27a136ffed9e3829832f707a1fb76cd087", [:mix], [{:ecto, "~> 2.2", [hex: :ecto, repo: "hexpm", optional: false]}], "hexpm"},
   "unicode_util_compat": {:hex, :unicode_util_compat, "0.3.1", "a1f612a7b512638634a603c8f401892afbf99b8ce93a45041f8aaca99cadb85e", [:rebar3], [], "hexpm"},
 }

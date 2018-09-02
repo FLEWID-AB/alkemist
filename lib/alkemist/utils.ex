@@ -85,4 +85,36 @@ defmodule Alkemist.Utils do
     |> Inflex.pluralize()
     |> to_label()
   end
+
+  @doc """
+  Removes any empty values from the params
+
+  ## Examples:
+    iex> Utils.clean_params(%{"q" => %{"title_like" => ""}, "page" => "1"})
+    %{"page" => "1"}
+  """
+  def clean_params(params) do
+    nil_values = [nil, %{}, [], ""]
+
+    params
+    |> Map.to_list()
+    |> Enum.reduce([], fn {k, v}, acc ->
+      if v in nil_values do
+        acc
+      else
+        if is_map(v) do
+          value = clean_params(v)
+
+          if value in nil_values do
+            acc
+          else
+            acc ++ [{k, value}]
+          end
+        else
+          acc ++ [{k, v}]
+        end
+      end
+    end)
+    |> Enum.into(%{})
+  end
 end

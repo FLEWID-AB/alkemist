@@ -1,8 +1,8 @@
 defmodule AlkemistView do
   use Alkemist, :view
-  use Rummage.Phoenix.View, helpers: Alkemist.Config.router_helpers()
   import Alkemist.SearchView
   import Alkemist.FormView
+  import Alkemist.PaginationView
 
   @doc """
   Boolean indicator if a column is sortable
@@ -105,8 +105,8 @@ defmodule AlkemistView do
       end
 
     query_params =
-      %{scope: scope}
-      |> add_search_param(conn.params)
+      get_default_link_params(conn)
+      |> Map.put(:scope, scope)
 
     content_tag(:li, class: "nav-item") do
       link(label, to: action_path(struct, [conn, :index, query_params]), class: class)

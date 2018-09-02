@@ -66,18 +66,46 @@ defmodule Alkemist.ViewHelpers do
     end
   end
 
-  def resource_action_path(conn, resource, action) when is_map(resource) do
+  def get_default_link_params(conn) do
+    conn.params
+    |> Alkemist.Utils.clean_params()
+    |> Map.to_list()
+    |> Enum.reduce([], fn {k, v}, acc ->
+      case k do
+        a when a in ["scope", "q", "s"] ->
+          if v in [nil, %{}, [], ""] do
+            acc
+          else
+            acc ++ [{k, v}]
+          end
+
+        _ ->
+          acc
+      end
+    end)
+    |> Enum.into(%{})
+  end
+
+  def resource_action_path(conn, resource, action, params \\ %{})
+
+  def resource_action_path(conn, resource, action, params) when is_map(resource) do
     struct = Utils.get_struct(resource)
 
     apply(Alkemist.Config.router_helpers(), String.to_atom("#{struct}_path"), [
       conn,
       action,
-      resource
+      resource,
+      params
     ])
   end
 
-  def resource_action_path(conn, resource, action) do
+  def resource_action_path(conn, resource, action, params) do
     struct = Utils.get_struct(resource)
-    apply(Alkemist.Config.router_helpers(), String.to_atom("#{struct}_path"), [conn, action])
+
+    apply(Alkemist.Config.router_helpers(), String.to_atom("#{struct}_path"), [
+      conn,
+      action,
+      params
+    ])
   end
 end

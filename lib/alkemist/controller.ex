@@ -73,7 +73,6 @@ defmodule Alkemist.Controller do
     quote do
       import Alkemist.Assign
       import Alkemist.Controller
-      use Rummage.Phoenix.Controller
 
       if @resource !== nil do
         menu(Alkemist.Utils.plural_name(@resource))
@@ -138,7 +137,7 @@ defmodule Alkemist.Controller do
   * scopes - List of `t:scope/0` to define custom filter scopes
   * filters - List of `t:filter/0` to define filters for the search form
   * preload - resources to preload along with each resource (see `Ecto.Query`)
-  * search_hook - define a custom library for building the search query
+  * search_provider - define a custom library for building the search query
 
 
   ## Example with options:
@@ -154,7 +153,7 @@ defmodule Alkemist.Controller do
         {"Author", fn i -> i.author.name end}
         ],
       scopes: [
-        {:published, [], fn i -> i.published == true end}
+        {:published, [], fn(q) -> where(q, [p], p.published == true) end}
       ],
       preload: [:author]
     ]
@@ -196,19 +195,22 @@ defmodule Alkemist.Controller do
         opts = unquote(opts)
 
         opts =
-          Enum.reduce([:repo, :columns, :scopes, :filters, :preload, :search_hook], opts, fn key,
-                                                                                             opts ->
-            cond do
-              Keyword.has_key?(opts, key) ->
-                opts
+          Enum.reduce(
+            [:repo, :columns, :scopes, :filters, :preload, :search_provider],
+            opts,
+            fn key, opts ->
+              cond do
+                Keyword.has_key?(opts, key) ->
+                  opts
 
-              Keyword.has_key?(__MODULE__.__info__(:functions), key) ->
-                Keyword.put(opts, key, apply(__MODULE__, key, []))
+                Keyword.has_key?(__MODULE__.__info__(:functions), key) ->
+                  Keyword.put(opts, key, apply(__MODULE__, key, []))
 
-              true ->
-                opts
+                true ->
+                  opts
+              end
             end
-          end)
+          )
 
         assigns = Assign.index_assigns(unquote(params), @resource, opts)
 
@@ -567,7 +569,7 @@ defmodule Alkemist.Controller do
         end
 
       opts =
-        Enum.reduce([:repo, :search_hook], opts, fn key, opts ->
+        Enum.reduce([:repo, :search_provider], opts, fn key, opts ->
           cond do
             Keyword.has_key?(opts, key) ->
               opts

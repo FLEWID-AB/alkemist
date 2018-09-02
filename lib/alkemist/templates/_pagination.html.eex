@@ -1,1 +1,1 @@
-<%= inspect(@struct) %>
+<%= pagination_links(@conn, @pagination, @resource) %>

@@ -40,7 +40,8 @@ defmodule Alkemist.Config do
     router_helpers: Alkemist.Router.Helpers,
     authorization_provider: Alkemist.Authorization,
     query: [
-      search: Alkemist.Query.Search
+      search: Alkemist.Query.Search,
+      paginate: Alkemist.Query.Paginate
     ],
     views: [
       layout: {Alkemist.LayoutView, "app.html"},
@@ -89,9 +90,17 @@ defmodule Alkemist.Config do
   @doc """
   Returns the search hook to use by default
   """
-  def search_hook(application \\ :alkemist) do
+  def search_provider(application \\ :alkemist) do
     query = get(:query, application)
     Keyword.get(query, :search, @defaults[:query][:search])
+  end
+
+  @doc """
+  Returns the pagination provider to use by default
+  """
+  def pagination_provider(application \\ :alkemist) do
+    query = get(:query, application)
+    Keyword.get(query, :paginate, @defaults[:query][:paginate])
   end
 
   defp config(application) do
