@@ -41,4 +41,16 @@ defmodule Alkemist.ViewHelpersTest do
     link = ViewHelpers.action_link("Posts", conn, :index, Alkemist.Post, wrap: {:li, []})
     assert Phoenix.HTML.safe_to_string(link) =~ "<li><a"
   end
+
+  test "get_default_link_params will automatically populate q, s and scope" do
+    params = %{"scope" => "foo", "q" => %{}, "s" => "title+asc", "unused" => "foo"}
+
+    assert %{"scope" => "foo", "s" => "title+asc"} ==
+             ViewHelpers.get_default_link_params(%{params: params})
+  end
+
+  test "get_default_link_params will not return empty values" do
+    params = %{"scope" => "", "q" => %{}, "s" => nil}
+    assert %{} == ViewHelpers.get_default_link_params(%{params: params})
+  end
 end

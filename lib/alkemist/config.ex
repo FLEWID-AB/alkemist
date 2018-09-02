@@ -13,13 +13,17 @@ defmodule Alkemist.Config do
       # required when using the auto generated code
       router_helpers: MyAppWeb.Router.Helpers,
 
-      # Set a custom title or brand name
+      # Set a custom title or brand name (optional)
       title: "MyApp",
 
-      # implement a custom Authorization Provider
+      # implement a custom Authorization Provider (optional)
       authorization_provider: MyApp.Authorization,
 
-      search_provider: MyApp.CustomSearch,
+      # custom implementations for search and pagination (optional)
+      query: [
+        search: Alkemist.Query.Search,
+        paginate: Alkemist.Query.Paginate
+      ],
 
       # use custom views (optional)
       views: [
@@ -31,6 +35,12 @@ defmodule Alkemist.Config do
 
         # custom view partial for the left header menu, default {Alkemist.LayoutView, "_left_header.html"}
         left_header: {MyAppWeb.SharedView, "header_left.html"}
+
+        # custom view partial for the sidebar to render the left menu, default `{Alkemist.LayoutView, "_sidebar_navigation.html"}`
+        sidebar: {MyAppWeb.SharedView, "sidebar.html"},
+
+        # custom view partial for the right sidebar. By default it renders the filters
+        aside: {MyAppWeb.SharedView, "aside.html"}
       ]
   """
 
@@ -46,7 +56,9 @@ defmodule Alkemist.Config do
     views: [
       layout: {Alkemist.LayoutView, "app.html"},
       right_header: {Alkemist.LayoutView, "_right_header.html"},
-      left_header: {Alkemist.LayoutView, "_left_header.html"}
+      left_header: {Alkemist.LayoutView, "_left_header.html"},
+      sidebar: {Alkemist.LayoutView, "_sidebar_navigation.html"},
+      aside: {Alkemist.LayoutView, "_aside.html"}
     ]
   ]
 

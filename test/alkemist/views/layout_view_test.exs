@@ -8,8 +8,14 @@ defmodule Alkemist.LayoutViewTest do
              Keyword.get(Alkemist.Config.get(:views), :right_header)
   end
 
-  test "left_header_view returns value from config" do
+  test "views return value from config" do
     assert LayoutView.left_header_view() == Keyword.get(Alkemist.Config.get(:views), :left_header)
+
+    assert LayoutView.right_header_view() ==
+             Keyword.get(Alkemist.Config.get(:views), :right_header)
+
+    assert LayoutView.sidebar_view() == Keyword.get(Alkemist.Config.get(:views), :sidebar)
+    assert LayoutView.aside_view() == Keyword.get(Alkemist.Config.get(:views), :aside)
   end
 
   test "site_title returns value from config" do

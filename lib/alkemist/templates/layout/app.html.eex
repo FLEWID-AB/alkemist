@@ -10,7 +10,7 @@
 <body class="app header-fixed sidebar-fixed sidebar-md-show <%= if assigns[:show_aside] do "aside-menu-show" end %>">
       <%= render "_header.html", assigns %>
       <div class="app-body">
-        <%= render "_sidebar_navigation.html", assigns %>
+        <%= render sidebar_view(), assigns %>
 
         <main role="main" class="main">
           <div class="container-fluid">
@@ -22,7 +22,7 @@
             </div>
           </div>
         </main>
-        <%= render "_aside.html", assigns %>
+        <%= render aside_view(), assigns %>
       </div>
     <script src="<%= static_path(@conn, "/js/alkemist.js") %>"></script>
   </body>

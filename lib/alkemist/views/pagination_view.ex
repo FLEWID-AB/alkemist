@@ -4,6 +4,9 @@ defmodule Alkemist.PaginationView do
 
   @max_page_links 5
 
+  @doc """
+  Creates Bootstrap 4 pagination links
+  """
   def pagination_links(conn, pagination, resource) do
     if pagination.total_pages > 1 do
       content_tag(:ul, class: "pagination") do

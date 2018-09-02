@@ -23,6 +23,20 @@ defmodule Alkemist.LayoutView do
   end
 
   @doc """
+  Returns the view module and template for the sidebar see `Alkemist.Config`
+  """
+  def sidebar_view do
+    Keyword.get(Alkemist.Config.get(:views), :sidebar)
+  end
+
+  @doc """
+  Returns the view module and template for the aside menu. See `Alkemist.Config`
+  """
+  def aside_view do
+    Keyword.get(Alkemist.Config.get(:views), :aside)
+  end
+
+  @doc """
   Returns the site title to display in the title and in the header
   """
   def site_title do
