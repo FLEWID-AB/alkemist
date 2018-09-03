@@ -79,7 +79,7 @@ defmodule Alkemist.MixProject do
 
   defp package do
     [
-      files: ["lib", "mix.exs", "README.md", "static"],
+      files: ["lib", "mix.exs", "README.md", "priv"],
       maintainers: ["Philip Mannheimer", "Julia Will", "Benjamin Betzing"],
       licenses: ["MIT"],
       links: %{"Github" => "https://github.com/FLEWID-AB/alkemist"}

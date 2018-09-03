@@ -17,7 +17,7 @@ exports.config = {
 
   paths: {
     watched: ["static", "css", "js"],
-    public: "../static"
+    public: "../priv/static"
   },
 
   plugins: {
