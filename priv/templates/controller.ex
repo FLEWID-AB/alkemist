@@ -11,6 +11,10 @@ defmodule <%= controller_name %>Controller do
     render_show(conn, id)
   end
 
+  def new(conn, _params) do
+    render_new(conn)
+  end
+
   def edit(conn, %{"id" => id}) do
     render_edit(conn, id)
   end

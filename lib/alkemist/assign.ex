@@ -63,7 +63,6 @@ defmodule Alkemist.Assign do
 
     query = opts[:search_provider].run(query, params)
     pagination = opts[:pagination_provider].run(query, params, repo: repo)
-    IO.inspect(pagination)
 
     entries =
       query
@@ -128,15 +127,14 @@ defmodule Alkemist.Assign do
   def form_assigns(resource, opts \\ []) do
     opts = default_form_opts(opts, resource)
     changeset = generate_changeset(resource, opts)
-
+    IO.inspect(opts[:fields])
     fields =
       if opts[:fields] do
-        opts[:fields]
-        |> Enum.map(fn f -> map_form_field(f, resource) end)
+        map_form_fields(opts[:fields], [], resource)
       else
         []
       end
-
+    IO.inspect(fields)
     [
       struct: Utils.get_struct(resource),
       changeset: changeset,
@@ -316,6 +314,28 @@ defmodule Alkemist.Assign do
   defp map_column(field, resource) do
     map_column({field, fn row -> Map.get(row, field) end}, resource)
   end
+
+  defp map_form_fields([field|tail], results, resource) when is_map(field) do
+    fields = Map.get(field, :fields, [])
+    |> Enum.map(fn f -> map_form_field(f, resource) end)
+    results = results ++ [Map.put(field, :fields, fields)]
+    map_form_fields(tail, results, resource)
+  end
+
+  defp map_form_fields([field|tail], results, resource) do
+    group = if Enum.empty?(results) do
+      %{title: "#{Utils.singular_name(resource)} Details", fields: []}
+    else
+      Enum.at(results, 0)
+    end
+    field = map_form_field(field, resource)
+    fields = Map.get(group, :fields, []) ++ [field]
+    results = [Map.put(group, :fields, fields)]
+
+    map_form_fields(tail, results, resource)
+  end
+
+  defp map_form_fields([], results, _resource), do: results
 
   defp map_form_field({field, opts}, resource) do
     opts =

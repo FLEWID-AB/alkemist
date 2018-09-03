@@ -61,7 +61,7 @@ defmodule Alkemist.FormView do
   defp input_element(form, {key, [type: :select, collection: collection]}) do
     {
       :safe,
-      elem(select(form, key, collection, class: "form-control"), 1) ++ error_message(form, key)
+      elem(select(form, key, collection, class: "form-control select2", prompt: "Choose..."), 1) ++ error_message(form, key)
     }
   end
 

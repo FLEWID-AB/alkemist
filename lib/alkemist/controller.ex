@@ -73,6 +73,7 @@ defmodule Alkemist.Controller do
     quote do
       import Alkemist.Assign
       import Alkemist.Controller
+      import Ecto.Query
 
       if @resource !== nil do
         menu(Alkemist.Utils.plural_name(@resource))
@@ -528,10 +529,14 @@ defmodule Alkemist.Controller do
                 opts[:error_callback].(message)
               else
                 path = String.to_atom("#{Utils.get_struct(@resource)}_path")
-
+                message = if message == :forbidden do
+                  "You are not authorized to delete this resource"
+                else
+                  "Oops, something went wrong"
+                end
                 conn
                 |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
-                |> Phoenix.Controller.put_flash(:error, "Oops, something went wrong")
+                |> Phoenix.Controller.put_flash(:error, message)
                 |> Phoenix.Controller.redirect(
                   to: apply(Alkemist.Config.router_helpers(), path, [conn, :index])
                 )

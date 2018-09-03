@@ -1,15 +1,17 @@
 <div class="col-md-8">
 	<%= form_for @changeset, @action, fn f -> %>
+		<%= for group <- @form_fields do %>
 		<div class="card">
 			<div class="card-header">
-				<h5><%= @singular_name %> Details</h5>
+				<h5><%= group.title %></h5>
 			</div>
 			<div class="card-body">
-				<%= for field <- @form_fields do %>
+				<%= for field <- group.fields do %>
 					<%= render_form_field(f, field) %>
 				<% end %>
 			</div>
 		</div>
+		<% end %>
 
 		<div class="form-group row justify-content-end">
 			<div class="col text-right">

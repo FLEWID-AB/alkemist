@@ -8,3 +8,11 @@ import select2 from "select2"
 //import contentHandler from './contentHandler'
 
 select2($)
+
+$(document).ready(function () {
+  $.fn.datepicker.setDefaults({
+    format: 'YYYY-mm-dd'
+  })
+  $('select.select2').select2()
+  $('input.datepicker').datepicker()
+});
