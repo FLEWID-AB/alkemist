@@ -41,7 +41,7 @@ defmodule Alkemist.MixProject do
         :logger,
         :inflex,
         :atomic_map,
-        :rummage_ecto
+        :turbo_ecto
       ]
     ]
   end
@@ -58,9 +58,9 @@ defmodule Alkemist.MixProject do
       {:phoenix_html, "~> 2.10"},
       {:ecto, "~> 2.2"},
       {:inflex, "~> 1.10.0"},
-      {:atomic_map, github: 'ruby2elixir/atomic_map'},
+      {:atomic_map, github: "ruby2elixir/atomic_map"},
       {:csv, "~> 2.0"},
-      {:rummage_ecto, "~> 1.2"},
+      {:turbo_ecto, "~> 0.1.7"},
       # Test and dev
       {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.0", only: :test},
@@ -79,7 +79,7 @@ defmodule Alkemist.MixProject do
 
   defp package do
     [
-      files: ["lib", "mix.exs", "README.md", "assets"],
+      files: ["lib", "mix.exs", "README.md", "priv"],
       maintainers: ["Philip Mannheimer", "Julia Will", "Benjamin Betzing"],
       licenses: ["MIT"],
       links: %{"Github" => "https://github.com/FLEWID-AB/alkemist"}

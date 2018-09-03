@@ -1,14 +1,19 @@
 defmodule AlkemistView do
   use Alkemist, :view
-  # use Rummage.Phoenix.View, helpers: Alkemist.Config.router_helpers()
   import Alkemist.SearchView
   import Alkemist.FormView
-
-  # TODO: make that a config value
-  @helpers Alkemist.Config.router_helpers()
+  import Alkemist.PaginationView
 
   @doc """
   Boolean indicator if a column is sortable
+
+  ## Examples:
+
+    iex> AlkemistView.is_sortable?({:col, nil, [sortable: true]})
+    true
+
+    iex> AlkemistView.is_sortable?({:col, nil, []})
+    false
   """
   def is_sortable?({_col, _cb, opts}) do
     Keyword.get(opts, :sortable, false) == true
@@ -35,6 +40,9 @@ defmodule AlkemistView do
     action_link(label, conn, action, resource, link_opts)
   end
 
+  @doc """
+  Creates a collection action link above the index table
+  """
   def collection_action(conn, action, resource) do
     {action, opts} = action
 
@@ -56,36 +64,22 @@ defmodule AlkemistView do
     action_link(label, conn, action, resource, link_opts)
   end
 
+  @doc """
+  Create a link to the export action
+  """
   def export_action(conn, struct) do
-    query_params =
-      %{}
-      |> add_scope_param(conn.params)
-      |> add_search_param(conn.params)
+    query_params = get_default_link_params(conn)
 
     params = [conn, :export, query_params]
     action(struct, params, label: "Export", link_opts: [class: "nav-link"])
   end
 
-  defp add_scope_param(query_params, params) do
-    case Map.get(params, "scope") do
-      nil -> query_params
-      scope -> Map.put(query_params, "scope", scope)
-    end
-  end
-
-  defp add_search_param(query_params, params) do
-    case Map.get(params, "rummage") do
-      nil ->
-        query_params
-
-      rummage ->
-        Map.put(query_params, "rummage", %{"search" => Map.get(rummage, "search", %{})})
-    end
-  end
-
+  @doc """
+  Returns the path for a controller action
+  """
   def action_path(struct, params) do
     path_function_name = String.to_atom("#{struct}_path")
-    apply(@helpers, path_function_name, params)
+    apply(Alkemist.Config.router_helpers(), path_function_name, params)
   end
 
   @doc """
@@ -108,8 +102,8 @@ defmodule AlkemistView do
       end
 
     query_params =
-      %{scope: scope}
-      |> add_search_param(conn.params)
+      get_default_link_params(conn)
+      |> Map.put(:scope, scope)
 
     content_tag(:li, class: "nav-item") do
       link(label, to: action_path(struct, [conn, :index, query_params]), class: class)

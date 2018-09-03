@@ -1,11 +1,13 @@
 # Alkemist
 
-**TODO: Add description**
+Build highly customizable admin interfaces for your Phoenix Applications with ease.
+
+The docs can be found at [https://hexdocs.pm/alkemist](https://hexdocs.pm/alkemist).
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `manager` to your list of dependencies in `mix.exs`:
+The package can be installed
+by adding `alkemist` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -15,7 +17,25 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/manager](https://hexdocs.pm/manager).
+To serve the static assets that are included in the package add the following
+in your `endpoint.ex`:
+
+```elixir
+plug Plug.Static,
+    at: "/alkemist", from: :alkemist, gzip: false,
+    only: ~w(css fonts images js)
+```
+
+Add the application configuration in your `config.exs`:
+
+```elixir
+config :alkemist, Alkemist,
+  repo: MyApp.Repo,
+  router_helpers: MyAppWeb.Router.Helpers,
+  title: "My App"
+```
+
+## Adding controllers
+
+
 

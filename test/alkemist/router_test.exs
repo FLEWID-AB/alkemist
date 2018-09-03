@@ -18,10 +18,10 @@ defmodule Alkemist.RouterTest do
     use Phoenix.Router
     use Alkemist.Router
 
-    manager_resources("/posts", PostController)
+    alkemist_resources("/posts", PostController)
   end
 
-  describe "manager_resources" do
+  describe "alkemist_resources" do
     test "it matches all resource actions" do
       conn = call(Router, :get, "posts")
       assert conn.status == 200

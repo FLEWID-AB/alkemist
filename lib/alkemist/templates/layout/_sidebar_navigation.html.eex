@@ -1,0 +1,21 @@
+<div class="sidebar">
+  
+  <nav class="sidebar-nav">
+    <ul class="nav">
+      <%= for menu <- menu_items() do %>
+        <%= if menu.type == :branch do %>
+          <li class="nav-item nav-dropdown">
+            <a class="nav-link nav-dropdown-toggle" href="#"><%= Phoenix.HTML.raw menu.label %></a>
+            <ul class="nav-dropdown-items">
+              <%= for child <- menu.children do %>
+                <%= action_link(child.label, @conn, :index, child.resource, [class: "nav-link", wrap: {:li, [class: "nav-item"]}]) %>
+              <% end %>
+            </ul>
+          </li>
+        <% else %>
+          <%= action_link(menu.label, @conn, :index, menu.resource, [class: "nav-link", wrap: {:li, [class: "nav-item"]}]) %>
+        <% end %>
+      <% end %>
+    </ul>
+  </nav>
+</div>

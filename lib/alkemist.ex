@@ -10,7 +10,7 @@ defmodule Alkemist do
 
       import Phoenix.Controller, only: [get_flash: 2, view_module: 1]
       use Phoenix.HTML
-
+      import Alkemist.Router.Helpers
       import Alkemist.ViewHelpers
     end
   end

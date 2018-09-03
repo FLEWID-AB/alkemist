@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Alkemist</title>
+    <link rel="stylesheet" href="<%= static_path(@conn, "/alkemist/css/alkemist.css") %>">
+</head>
+<body class="app header-fixed sidebar-fixed sidebar-md-show <%= if assigns[:show_aside] do "aside-menu-show" end %>">
+      <%= render "_header.html", assigns %>
+      <div class="app-body">
+        <% {mod, template} = sidebar_view() %>
+        <%= render mod, template, assigns %>
+
+        <main role="main" class="main">
+          <div class="container-fluid">
+            <%= render "_flash.html", assigns %>
+            <div class="card main-content">
+              <div class="card-body">
+                <%= render @view_module, @view_template, assigns %>
+              </div>
+            </div>
+          </div>
+        </main>
+        <% {mod, template} = aside_view() %>
+        <%= render mod, template, assigns %>
+      </div>
+    <script src="<%= static_path(@conn, "/alkemist/js/alkemist.js") %>"></script>
+  </body>
+</html>

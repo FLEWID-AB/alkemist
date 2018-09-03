@@ -61,4 +61,4 @@
   </tbody>
 </table>
 </div>
-<%= #pagination_link(@conn, @rummage, struct: @struct) %>
+<%= render("_pagination.html", assigns) %>

@@ -1,0 +1,15 @@
+<header class="app-header navbar">
+  <%= if left_view = left_header_view() do %>
+    <% {mod, template} = left_view %>
+    <%= render mod, template, assigns %>
+  <% end %>
+  <%= if right_view = right_header_view() do %>
+    <% {mod, template} = right_view %>
+    <%= render mod, template, assigns %>
+  <% end %>
+  <%= if assigns[:show_aside] && @show_aside == true do %>
+    <button class="navbar-toggler aside-menu-toggler" type="button" data-toggle="aside-menu-show">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  <% end %>
+</header>

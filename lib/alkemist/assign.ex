@@ -5,7 +5,6 @@ defmodule Alkemist.Assign do
   import Ecto.Query
   alias Alkemist.Utils
 
-  # TODO: move into config
   @default_collection_actions [:new]
   @default_member_actions [
     show: [icon: "fas fa-fw fa-eye"],
@@ -15,7 +14,8 @@ defmodule Alkemist.Assign do
       link_opts: [method: :delete, data: [confirm: "Do you really want to delete this record?"]]
     ]
   ]
-  @default_search_hook Alkemist.DefaultSearchHook
+  @default_search_provider Alkemist.Config.search_provider()
+  @default_pagination_provider Alkemist.Config.pagination_provider()
 
   @doc """
   Creates the default assigns for a controller index action.
@@ -32,17 +32,19 @@ defmodule Alkemist.Assign do
     * member_actions - actions available for a single resource
     * singular_name - Label for a single resource. By default the singular of the db table is used
     * plural_name - Pluralized name for labels. By default this is the db table name
+    * search_provider - Provide a custom module for your search
   """
   def index_assigns(params, resource, opts \\ []) do
     opts = default_index_opts(opts, resource)
     repo = opts[:repo]
+    params = Utils.clean_params(params)
 
     query = opts[:query]
 
     scopes =
       opts[:scopes]
       |> Enum.map(fn scope ->
-        map_scope(scope, query, params, repo: repo, search: opts[:search_hook])
+        map_scope(scope, query, params, opts)
       end)
 
     query = query |> scope(scopes)
@@ -59,9 +61,9 @@ defmodule Alkemist.Assign do
       opts[:columns]
       |> Enum.map(fn col -> map_column(col, resource) end)
 
-    {query, rummage} =
-      query
-      |> Rummage.Ecto.rummage(params["rummage"], repo: repo, search: opts[:search_hook])
+    query = opts[:search_provider].run(query, params)
+    pagination = opts[:pagination_provider].run(query, params, repo: repo)
+    IO.inspect(pagination)
 
     entries =
       query
@@ -70,8 +72,9 @@ defmodule Alkemist.Assign do
 
     [
       struct: Utils.get_struct(resource),
+      resource: resource,
       entries: entries,
-      rummage: rummage,
+      pagination: pagination,
       columns: columns,
       member_actions: member_actions,
       collection_actions: collection_actions,
@@ -97,7 +100,7 @@ defmodule Alkemist.Assign do
     scopes =
       opts[:scopes]
       |> Enum.map(fn scope ->
-        map_scope(scope, query, params, repo: repo, search: opts[:search])
+        map_scope(scope, query, params, opts)
       end)
 
     query = query |> scope(scopes)
@@ -106,14 +109,7 @@ defmodule Alkemist.Assign do
       opts[:columns]
       |> Enum.map(fn col -> map_column(col, resource) end)
 
-    {query, _rummage} =
-      query
-      |> Rummage.Ecto.rummage(
-        params["rummage"],
-        repo: repo,
-        paginate: false,
-        search: opts[:search_hook]
-      )
+    query = opts[:search_provider].run(query, params)
 
     entries =
       query
@@ -195,7 +191,8 @@ defmodule Alkemist.Assign do
     |> Keyword.put_new(:scopes, [])
     |> Keyword.put_new(:filters, [])
     |> Keyword.put_new(:show_aside, show_aside)
-    |> Keyword.put_new(:search_hook, @default_search_hook)
+    |> Keyword.put_new(:search_provider, @default_search_provider)
+    |> Keyword.put_new(:pagination_provider, @default_pagination_provider)
     |> Keyword.put_new(:mod, resource)
   end
 
@@ -205,11 +202,11 @@ defmodule Alkemist.Assign do
     |> Keyword.put_new(:query, resource)
     |> Keyword.put_new(:columns, get_default_columns(resource))
     |> Keyword.put_new(:scopes, [])
-    |> Keyword.put_new(:search_hook, @default_search_hook)
+    |> Keyword.put_new(:search_provider, @default_search_provider)
   end
 
   # Preloads any data
-  defp generate_changeset(resource, opts) do
+  defp generate_changeset(_resource, opts) do
     case opts[:preload] do
       nil ->
         opts[:changeset]
@@ -344,18 +341,20 @@ defmodule Alkemist.Assign do
   end
 
   # normalizes the scopes and retrieves the scope counts
-  defp map_scope({scope, opts, callback}, query, params, rummage_opts) do
-    {query, rummage} =
+  defp map_scope({scope, opts, callback}, query, params, search_opts) do
+    query =
       query
       |> callback.()
-      |> Rummage.Ecto.rummage(params["rummage"], rummage_opts)
+      |> search_opts[:search_provider].run(params)
+
+    pagination = search_opts[:pagination_provider].run(query, params, repo: search_opts[:repo])
 
     current = Map.get(params, "scope")
 
     opts =
       opts
       |> Keyword.put_new(:label, Utils.to_label(scope))
-      |> Keyword.put(:count, rummage["paginate"]["total_count"])
+      |> Keyword.put(:count, Map.get(pagination, :total_count, 0))
 
     opts =
       cond do

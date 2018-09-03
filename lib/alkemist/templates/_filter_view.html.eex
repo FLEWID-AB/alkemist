@@ -5,7 +5,24 @@
         <h5>Filter</h5>
       </div>
       <div class="card-body">
-        <%= filter_form(@conn, @rummage, filters: @filters, struct: @struct) %>
+        <%= #filter_form(@conn, filters: @filters, struct: @struct) %>
+        <%= form_for @conn, resource_action_path(@conn, @resource, :index), [method: :get, class: "form", autocomplete: "off", id: "search-form"], fn f -> %>
+          <%= hidden_input f, :s %>
+          <%= hidden_input f, :scope %>
+          <%= inputs_for f, :q, [as: :q, id: "search"], fn q -> %>
+            <%= for filter <- @filters do %>
+              <%= filter_field q, filter %>
+            <% end %>
+          <% end %>
+          <div class="form-group row">
+            <div class="col">
+              <%= link("Reset", to: resource_action_path(@conn, @resource, :index), class: "btn btn-link") %>
+            </div>
+            <div class="col text-right">
+              <%= submit("Search", class: "btn btn-primary") %>
+            </div>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>
