@@ -131,6 +131,7 @@ defmodule AlkemistView do
     |> raw()
   end
 
+  defp field_string_value(val) when is_map(val), do: "#Object"
   defp field_string_value(val), do: "#{val}"
 
   defp action(struct, params, opts) do

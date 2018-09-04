@@ -70,6 +70,8 @@ defmodule Alkemist.Controller do
            }}
 
   defmacro __using__(_) do
+    Code.ensure_compiled(Alkemist.MenuRegistry)
+
     quote do
       import Alkemist.Assign
       import Alkemist.Controller
@@ -188,30 +190,14 @@ defmodule Alkemist.Controller do
   ```
   """
   defmacro render_index(conn, params, opts \\ []) do
+    opts = get_module_opts(opts, :index, conn)
+
     quote do
       conn = unquote(conn)
 
       if Alkemist.Config.authorization_provider().authorize_action(@resource, conn, :index) ==
            true do
         opts = unquote(opts)
-
-        opts =
-          Enum.reduce(
-            [:repo, :columns, :scopes, :filters, :preload, :search_provider],
-            opts,
-            fn key, opts ->
-              cond do
-                Keyword.has_key?(opts, key) ->
-                  opts
-
-                Keyword.has_key?(__MODULE__.__info__(:functions), key) ->
-                  Keyword.put(opts, key, apply(__MODULE__, key, []))
-
-                true ->
-                  opts
-              end
-            end
-          )
 
         assigns = Assign.index_assigns(unquote(params), @resource, opts)
 
@@ -236,31 +222,17 @@ defmodule Alkemist.Controller do
   TODO: document methods and options
   """
   defmacro render_show(conn, resource, opts \\ []) do
+    opts = get_module_opts(opts, :show, conn, resource)
+
     quote do
       conn = unquote(conn)
       opts = unquote(opts)
-      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
+      resource = opts[:resource]
 
       if resource == nil do
         Alkemist.Controller.not_found(conn)
       else
         if Alkemist.Config.authorization_provider().authorize_action(resource, conn, :show) do
-          opts =
-            Enum.reduce([repo: [], singular_name: [], rows: [], panels: [:show]], opts, fn {key,
-                                                                                            v},
-                                                                                           opts ->
-              cond do
-                Keyword.has_key?(opts, key) ->
-                  opts
-
-                Keyword.has_key?(__MODULE__.__info__(:functions), key) ->
-                  Keyword.put(opts, key, apply(__MODULE__, key, v))
-
-                true ->
-                  opts
-              end
-            end)
-
           assigns = Assign.show_assigns(resource, opts)
 
           conn
@@ -278,22 +250,13 @@ defmodule Alkemist.Controller do
   TODO: document opts
   """
   defmacro render_new(conn, opts \\ []) do
+    opts = get_module_opts(opts, :new, conn)
+
     quote do
       conn = unquote(conn)
+      opts = unquote(opts)
 
       if Alkemist.Config.authorization_provider().authorize_action(@resource, conn, :create) do
-        opts =
-          unquote(opts)
-          |> Keyword.put_new(:changeset, :changeset)
-
-        opts =
-          if is_atom(opts[:changeset]) do
-            changeset = apply(@resource, opts[:changeset], [@resource.__struct__, %{}])
-            Keyword.put(opts, :changeset, changeset)
-          else
-            opts
-          end
-
         render_form(conn, :new, opts)
       else
         Alkemist.Controller.forbidden(conn)
@@ -306,28 +269,17 @@ defmodule Alkemist.Controller do
   TODO: document opts
   """
   defmacro render_edit(conn, resource, opts \\ []) do
+    opts = get_module_opts(opts, :edit, conn, resource)
+
     quote do
       conn = unquote(conn)
-      conn = unquote(conn)
       opts = unquote(opts)
-      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
+      resource = opts[:resource]
 
       if resource == nil do
         Alkemist.Controller.not_found(conn)
       else
         if Alkemist.Config.authorization_provider().authorize_action(resource, conn, :update) do
-          opts =
-            opts
-            |> Keyword.put_new(:changeset, :changeset)
-
-          opts =
-            if is_atom(opts[:changeset]) do
-              changeset = apply(@resource, opts[:changeset], [resource, %{}])
-              Keyword.put(opts, :changeset, changeset)
-            else
-              opts
-            end
-
           render_form(conn, :edit, opts)
         else
           Alkemist.Controller.forbidden(conn)
@@ -344,20 +296,6 @@ defmodule Alkemist.Controller do
     quote do
       opts = unquote(opts)
       action = unquote(action)
-
-      opts =
-        Enum.reduce([:form_partial, :fields], opts, fn key, opts ->
-          cond do
-            Keyword.has_key?(opts, key) ->
-              opts
-
-            Keyword.has_key?(__MODULE__.__info__(:functions), key) ->
-              Keyword.put(opts, key, apply(__MODULE__, key, []))
-
-            true ->
-              opts
-          end
-        end)
 
       assigns = Assign.form_assigns(@resource, opts)
       conn = unquote(conn)
@@ -529,11 +467,14 @@ defmodule Alkemist.Controller do
                 opts[:error_callback].(message)
               else
                 path = String.to_atom("#{Utils.get_struct(@resource)}_path")
-                message = if message == :forbidden do
-                  "You are not authorized to delete this resource"
-                else
-                  "Oops, something went wrong"
-                end
+
+                message =
+                  if message == :forbidden do
+                    "You are not authorized to delete this resource"
+                  else
+                    "Oops, something went wrong"
+                  end
+
                 conn
                 |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
                 |> Phoenix.Controller.put_flash(:error, message)
@@ -553,42 +494,15 @@ defmodule Alkemist.Controller do
   TODO: document opts
   """
   defmacro csv(conn, params, opts \\ []) do
+    opts = get_module_opts(opts, :export, conn)
+
     quote do
       conn = unquote(conn)
       opts = unquote(opts)
       params = unquote(params)
 
-      opts =
-        cond do
-          Keyword.has_key?(opts, :columns) ->
-            opts
-
-          Keyword.has_key?(__MODULE__.__info__(:functions), :csv_columns) ->
-            Keyword.put(opts, :columns, apply(__MODULE__, :csv_columns, []))
-
-          Keyword.has_key?(__MODULE__.__info__(:functions), :columns) ->
-            Keyword.put(opts, :columns, apply(__MODULE__, :columns, []))
-
-          true ->
-            opts
-        end
-
-      opts =
-        Enum.reduce([:repo, :search_provider], opts, fn key, opts ->
-          cond do
-            Keyword.has_key?(opts, key) ->
-              opts
-
-            Keyword.has_key?(__MODULE__.__info__(:functions), key) ->
-              Keyword.put(opts, key, apply(__MODULE__, key, []))
-
-            true ->
-              opts
-          end
-        end)
-
       assigns = Assign.csv_assigns(params, @resource, opts)
-      csv = Alkemist.CSVExport.create_csv(assigns[:columns], assigns[:entries])
+      csv = Alkemist.Export.CSV.create_csv(assigns[:columns], assigns[:entries])
 
       conn
       |> Plug.Conn.put_resp_content_type("text/csv")
@@ -643,6 +557,139 @@ defmodule Alkemist.Controller do
       resource |> repo.preload(opts[:preload])
     else
       resource
+    end
+  end
+
+  def opts_or_function(opts, mod, keys) do
+    Enum.reduce(keys, opts, fn key, opts ->
+      {key, assign, params} =
+        case key do
+          {key, assign, params} -> {key, assign, params}
+          {key, params} -> {key, key, params}
+          key -> {key, key, []}
+        end
+
+      cond do
+        Keyword.has_key?(opts, key) ->
+          opts
+
+        Keyword.has_key?(mod.__info__(:functions), key) ->
+          Keyword.put(opts, assign, apply(mod, key, params))
+
+        true ->
+          opts
+      end
+    end)
+  end
+
+  defp get_module_opts(opts, :global, conn) do
+    quote do
+      opts = unquote(opts)
+      conn = unquote(conn)
+
+      Alkemist.Controller.opts_or_function(opts, __MODULE__, [:repo, :preload])
+    end
+  end
+
+  defp get_module_opts(opts, :index, conn) do
+    opts = get_module_opts(opts, :global, conn)
+
+    quote do
+      opts = unquote(opts)
+      conn = unquote(conn)
+
+      Alkemist.Controller.opts_or_function(
+        opts,
+        __MODULE__,
+        columns: [conn],
+        scopes: [conn],
+        filters: [conn],
+        search_provider: []
+      )
+    end
+  end
+
+  defp get_module_opts(opts, :new, conn) do
+    opts = get_module_opts(opts, :global, conn)
+
+    quote do
+      opts = unquote(opts)
+      conn = unquote(conn)
+
+      opts =
+        Alkemist.Controller.opts_or_function(
+          opts,
+          __MODULE__,
+          form_partial: [conn, nil],
+          fields: [conn, nil]
+        )
+        |> Keyword.put_new(:changeset, :changeset)
+
+      if is_atom(opts[:changeset]) do
+        changeset = apply(@resource, opts[:changeset], [@resource.__struct__, %{}])
+        Keyword.put(opts, :changeset, changeset)
+      else
+        opts
+      end
+    end
+  end
+
+  defp get_module_opts(opts, :export, conn) do
+    opts = get_module_opts(opts, :global, conn)
+
+    quote do
+      opts = unquote(opts)
+      conn = unquote(conn)
+
+      Alkemist.Controller.opts_or_function(opts, __MODULE__, [
+        {:csv_columns, :columns, [conn]},
+        {:columns, [conn]}
+      ])
+    end
+  end
+
+  defp get_module_opts(opts, :show, conn, resource) do
+    opts = get_module_opts(opts, :global, conn)
+
+    quote do
+      opts = unquote(opts)
+      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
+      conn = unquote(conn)
+
+      Alkemist.Controller.opts_or_function(
+        opts,
+        __MODULE__,
+        show_panels: [conn, resource],
+        rows: [conn, resource]
+      )
+      |> Keyword.put(:resource, resource)
+    end
+  end
+
+  defp get_module_opts(opts, :edit, conn, resource) do
+    opts = get_module_opts(opts, :global, conn)
+
+    quote do
+      opts = unquote(opts)
+      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
+      conn = unquote(conn)
+
+      opts =
+        opts
+        |> Alkemist.Controller.opts_or_function(
+          __MODULE__,
+          form_partial: [conn, resource],
+          fields: [conn, resource]
+        )
+        |> Keyword.put_new(:changeset, :changeset)
+        |> Keyword.put(:resource, resource)
+
+      if is_atom(opts[:changeset]) do
+        changeset = apply(@resource, opts[:changeset], [resource, %{}])
+        Keyword.put(opts, :changeset, changeset)
+      else
+        opts
+      end
     end
   end
 end

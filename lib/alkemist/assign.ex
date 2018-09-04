@@ -127,14 +127,14 @@ defmodule Alkemist.Assign do
   def form_assigns(resource, opts \\ []) do
     opts = default_form_opts(opts, resource)
     changeset = generate_changeset(resource, opts)
-    IO.inspect(opts[:fields])
+
     fields =
       if opts[:fields] do
         map_form_fields(opts[:fields], [], resource)
       else
         []
       end
-    IO.inspect(fields)
+
     [
       struct: Utils.get_struct(resource),
       changeset: changeset,
@@ -162,7 +162,7 @@ defmodule Alkemist.Assign do
 
     resource =
       resource
-      |> do_preload(opts[:preload])
+      |> do_preload_resource(opts[:preload])
 
     [
       struct: Utils.get_struct(struct),
@@ -170,7 +170,7 @@ defmodule Alkemist.Assign do
       mod: resource.__struct__,
       rows: rows,
       singular_name: opts[:singular_name],
-      panels: Keyword.get(opts, :panels, [])
+      panels: Keyword.get(opts, :show_panels, [])
     ]
     |> additional_assigns(opts)
   end
@@ -243,8 +243,22 @@ defmodule Alkemist.Assign do
       |> Keyword.put_new(:repo, Alkemist.Config.repo())
       |> Keyword.put_new(:mod, resource.__struct__)
 
-    if Keyword.get(opts, :form_partial) do
-      Keyword.put(opts, :form_partial, opts[:form_partial])
+    if Keyword.has_key?(opts, :form_partial) do
+      {partial, assigns} =
+        case Keyword.get(opts, :form_partial) do
+          {mod, template, assigns} -> {{mod, template}, assigns}
+          {mod, template} -> {{mod, template}, []}
+        end
+
+      if Enum.empty?(assigns) do
+        Keyword.put(opts, :form_partial, partial)
+      else
+        assigns = Keyword.merge(Keyword.get(opts, :assigns, []), assigns)
+
+        opts
+        |> Keyword.put(:form_partial, partial)
+        |> Keyword.put(:assigns, assigns)
+      end
     else
       opts
       |> Keyword.put_new(:fields, get_default_form_fields(resource))
@@ -266,6 +280,14 @@ defmodule Alkemist.Assign do
       query
     else
       from(r in query, preload: ^preloads)
+    end
+  end
+
+  defp do_preload_resource(resource, preloads) do
+    if preloads == nil do
+      resource
+    else
+      resource |> Alkemist.Config.repo().preload(preloads)
     end
   end
 
@@ -315,21 +337,30 @@ defmodule Alkemist.Assign do
     map_column({field, fn row -> Map.get(row, field) end}, resource)
   end
 
-  defp map_form_fields([field|tail], results, resource) when is_map(field) do
-    fields = Map.get(field, :fields, [])
-    |> Enum.map(fn f -> map_form_field(f, resource) end)
+  defp map_form_fields([field | tail], results, resource) when is_map(field) do
+    fields =
+      Map.get(field, :fields, [])
+      |> Enum.map(fn f -> map_form_field(f, resource) end)
+      |> filter_fields()
+
     results = results ++ [Map.put(field, :fields, fields)]
     map_form_fields(tail, results, resource)
   end
 
-  defp map_form_fields([field|tail], results, resource) do
-    group = if Enum.empty?(results) do
-      %{title: "#{Utils.singular_name(resource)} Details", fields: []}
-    else
-      Enum.at(results, 0)
-    end
+  defp map_form_fields([field | tail], results, resource) do
+    group =
+      if Enum.empty?(results) do
+        %{title: "#{Utils.singular_name(resource)} Details", fields: []}
+      else
+        Enum.at(results, 0)
+      end
+
     field = map_form_field(field, resource)
-    fields = Map.get(group, :fields, []) ++ [field]
+
+    fields =
+      (Map.get(group, :fields, []) ++ [field])
+      |> filter_fields()
+
     results = [Map.put(group, :fields, fields)]
 
     map_form_fields(tail, results, resource)
@@ -349,6 +380,12 @@ defmodule Alkemist.Assign do
     map_form_field({field, []}, resource)
   end
 
+  defp filter_fields(fields) do
+    Enum.filter(fields, fn {_f, opts} ->
+      Keyword.get(opts, :type) != :embed
+    end)
+  end
+
   # Returns the type of a given field. Default is :string. This is used for tables
   defp get_field_type(field, resource) when is_map(resource),
     do: get_field_type(field, resource.__struct__)
@@ -356,6 +393,8 @@ defmodule Alkemist.Assign do
   defp get_field_type(field, resource) do
     case resource.__schema__(:type, field) do
       val when val in [:boolean, :integer, :date, :datetime, :float] -> val
+      {:embed, _} -> :embed
+      :id -> :select
       _ -> :string
     end
   end
