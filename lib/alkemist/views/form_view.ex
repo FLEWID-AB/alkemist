@@ -11,7 +11,7 @@ defmodule Alkemist.FormView do
   @doc """
   Renders a boolean input field
   """
-  def render_form_field(form, {key, [type: :boolean] = opts}) do
+  def render_form_field(form, {key, [{:type, :boolean} | opts]}) do
     label = opts[:label] || humanize(key)
 
     field_opts = get_field_opts(opts, class: "form-check-input")
