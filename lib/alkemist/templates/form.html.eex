@@ -1,5 +1,5 @@
 <div class="col-md-8">
-	<%= form_for @changeset, @action, fn f -> %>
+	<%= form_for @changeset, @action, [id: "#{@struct}-form"], fn f -> %>
 		<%= for group <- @form_fields do %>
 		<div class="card">
 			<div class="card-header">

@@ -41,7 +41,8 @@ defmodule Alkemist.MixProject do
         :logger,
         :inflex,
         :atomic_map,
-        :turbo_ecto
+        :turbo_ecto,
+        :phoenix_mtm
       ]
     ]
   end
@@ -61,6 +62,7 @@ defmodule Alkemist.MixProject do
       {:atomic_map, github: "ruby2elixir/atomic_map"},
       {:csv, "~> 2.0"},
       {:turbo_ecto, "~> 0.1.7"},
+      {:phoenix_mtm, "~> 0.5.1"},
       # Test and dev
       {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.0", only: :test},

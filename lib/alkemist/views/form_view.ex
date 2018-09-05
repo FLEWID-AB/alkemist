@@ -8,75 +8,100 @@ defmodule Alkemist.FormView do
   import Phoenix.HTML.Tag
   import Alkemist.ErrorHelpers
 
-  # TODO: add form group method
-  # TODO: add select, date and boolean support
-
   @doc """
   Renders a boolean input field
   """
   def render_form_field(form, {key, [type: :boolean] = opts}) do
     label = opts[:label] || humanize(key)
 
-    field_tag = {
-      :safe,
-      elem(checkbox(form, key, class: "form-check-input"), 1) ++
-        elem(label(form, key, label, class: "form-check-label"), 1)
-    }
+    field_opts = get_field_opts(opts, class: "form-check-input")
 
-    content = {
-      :safe,
-      elem(content_tag(:div, "", class: "col-sm-2"), 1) ++
-        elem(content_tag(:div, field_tag, class: "col-sm-10 form-check"), 1) ++
-        error_message(form, key)
-    }
+    content_tag(:div, class: "form-group row") do
+      [
+        content_tag(:div, "", class: "col-sm-2"),
+        content_tag(:div, class: "col-sm-10") do
+          content_tag(:div, class: "form-check") do
+            [
+              checkbox(form, key, field_opts),
+              label(form, key, label, class: "form-check-label")
+            ]
+          end
+        end
+      ]
+    end
+  end
 
-    content_tag(:div, content, class: "form-group row")
+  @doc """
+  Renders a hidden form field
+  """
+  def render_form_field(form, {key, [{:type, :hidden} | opts]} = field) do
+    field_opts = get_field_opts(opts, [])
+    hidden_input(form, field, field_opts)
   end
 
   @doc """
   Renders a text input type
   """
-  def render_form_field(form, field) do
-    key = elem(field, 0)
-    opts = elem(field, 1)
+  def render_form_field(form, {key, opts} = field) do
+    label = opts[:label] || Phoenix.Naming.humanize(key)
 
-    label =
-      if opts[:label] do
-        label(form, key, opts[:label], class: "control-label col-sm-2 col-form-label")
-      else
-        label(form, key, class: "control-label col-sm-2 col-form-label")
+    content_tag(:div, class: "form-group row") do
+      [
+        label(form, key, label, class: "control-label col-sm-2 col-form-label"),
+        content_tag(:div, class: "col-sm-10") do
+          input_element(form, field)
+        end
+      ]
+    end
+  end
+
+  defp input_element(form, {key, [{:type, :many_to_many}, {:collection, collection} | opts]}) do
+    selected =
+      case Map.get(form.data, key) do
+        a when is_list(a) ->
+          Enum.map(a, & &1.id)
+
+        _ ->
+          []
       end
 
-    content =
-      {:safe,
-       elem(label, 1) ++
-         elem(
-           content_tag(:div, input_element(form, field), class: "col-sm-10"),
-           1
-         )}
+    field_opts = get_field_opts(opts, class: "form-check-input")
 
-    content_tag(:div, content, class: "form-group row")
+    PhoenixMTM.Helpers.collection_checkboxes(
+      form,
+      key,
+      collection,
+      input_opts: field_opts,
+      selected: selected,
+      mapper: &Alkemist.MTM.BootstrapMapper.bootstrap/6
+    )
   end
 
-  defp input_element(form, {key, [type: :select, collection: collection]}) do
-    {
-      :safe,
-      elem(select(form, key, collection, class: "form-control select2", prompt: "Choose..."), 1) ++ error_message(form, key)
-    }
+  defp input_element(form, {key, [{:type, :select}, {:collection, collection} | opts]}) do
+    field_opts = get_field_opts(opts, class: "form-control", prompt: "Choose...")
+
+    [
+      select(form, key, collection, field_opts),
+      error_message(form, key)
+    ]
   end
 
-  defp input_element(form, {key, [type: :password]}) do
-    {
-      :safe,
-      elem(password_input(form, key, class: "form-control"), 1) ++ error_message(form, key)
-    }
+  defp input_element(form, {key, [{:type, :password} | opts]}) do
+    field_opts = get_field_opts(opts, class: "form-control")
+
+    [
+      password_input(form, key, field_opts),
+      error_message(form, key)
+    ]
   end
 
-  defp input_element(form, {key, _opts}) do
-    {
-      :safe,
-      elem(text_input(form, key, class: "form-control"), 1) ++ error_message(form, key)
-    }
+  defp input_element(form, {key, opts}) do
+    field_opts = get_field_opts(opts, class: "form-control")
+
+    [
+      text_input(form, key, field_opts),
+      error_message(form, key)
+    ]
   end
 
   defp error_message(form, key) do
@@ -87,5 +112,13 @@ defmodule Alkemist.FormView do
     else
       Enum.map(err, fn {_, msg} -> msg end)
     end
+  end
+
+  defp get_field_opts(opts, defaults) do
+    defaults
+    |> Keyword.merge(opts)
+    |> Keyword.delete(:type)
+    |> Keyword.delete(:collection)
+    |> Keyword.delete(:label)
   end
 end

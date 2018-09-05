@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Alkemist</title>
-    <link rel="stylesheet" href="<%= static_path(@conn, "/alkemist/css/alkemist.css") %>">
+    <% {mod, template} = styles_view() %>
+    <%= render mod, template, conn: @conn %>
 </head>
 <body class="app header-fixed sidebar-fixed sidebar-md-show <%= if assigns[:show_aside] do "aside-menu-show" end %>">
       <%= render "_header.html", assigns %>
@@ -26,6 +27,7 @@
         <% {mod, template} = aside_view() %>
         <%= render mod, template, assigns %>
       </div>
-    <script src="<%= static_path(@conn, "/alkemist/js/alkemist.js") %>"></script>
+    <% {mod, template} = scripts_view() %>
+    <%= render mod, template, conn: @conn %>
   </body>
 </html>

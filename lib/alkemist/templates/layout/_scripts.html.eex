@@ -1,0 +1,1 @@
+<script src="<%= static_path(@conn, "/alkemist/js/alkemist.js") %>"></script>

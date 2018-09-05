@@ -41,6 +41,12 @@ defmodule Alkemist.Config do
 
         # custom view partial for the right sidebar. By default it renders the filters
         aside: {MyAppWeb.SharedView, "aside.html"}
+
+        # use a custom css
+        styles: {MyApp.SharedView, "styles.html"}
+
+        # use a custom js
+        scripts: {MyApp.SharedView, "scripts.html"}
       ]
   """
 
@@ -58,7 +64,9 @@ defmodule Alkemist.Config do
       right_header: {Alkemist.LayoutView, "_right_header.html"},
       left_header: {Alkemist.LayoutView, "_left_header.html"},
       sidebar: {Alkemist.LayoutView, "_sidebar_navigation.html"},
-      aside: {Alkemist.LayoutView, "_aside.html"}
+      aside: {Alkemist.LayoutView, "_aside.html"},
+      styles: {Alkemist.LayoutView, "_styles.html"},
+      scripts: {Alkemist.LayoutView, "_scripts.html"}
     ]
   ]
 

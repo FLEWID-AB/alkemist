@@ -68,6 +68,7 @@ defmodule Alkemist.Controller do
              optional(:type) => atom(),
              optional(:collection) => []
            }}
+  @type field :: {atom(), keyword()}
 
   defmacro __using__(_) do
     Code.ensure_compiled(Alkemist.MenuRegistry)
@@ -218,8 +219,72 @@ defmodule Alkemist.Controller do
   end
 
   @doc """
-  Renders the default show page
-  TODO: document methods and options
+  Renders the default show page.
+
+  ## Options:
+
+  * `preload` - Resources to preload. See `Ecto.Query`
+  * `repo` - Define a custom repo to execute the query
+  * `rows` - The values to display. Same syntax as `t:column/0`
+  * `show_panels` - define custom panels that are shown underneath the resource table. Each panel consists of a tuple in the form
+  `{"Panel Heading", content: my_html_content}
+
+  Each of the above options can also be specified as controller functions, whereas rows and show_panels take to arguments `conn` and `resource`.
+  The `resource` is the current resource (e. g. a specific user)
+
+  ## Example with options:
+
+  ```elixir
+  def show(conn, %{"id" => id}) do
+    post = Repo.get(Post, id) |> Repo.preload(:author)
+    opts = [
+      rows: [
+        :id,
+        :title,
+        :body,
+        {"Author", fn p ->
+          unless p.author != nil do
+            p.author.name
+          end
+        end}
+      ],
+      show_panels: [
+        {"Author", content: Phoenix.View.render(
+               MyApp.PostView,
+               "author.html",
+               author: post.author
+             )}}
+      ]
+    ]
+    render_show(conn, post, opts)
+  ```
+
+  ## Example with custom functions:
+
+  ```elixir
+  def show(conn, %{"id" => id}) do
+    render_show(conn, id, preload: [:author])
+  end
+
+  def show_panels(_conn, post) do
+    if post.author do
+      [{
+        "Author",
+        content: Phoenix.View.render(
+               MyApp.PostView,
+               "author.html",
+               author: post.author
+             )
+      }]
+    else
+      []
+    end
+  end
+
+  def rows(_conn, post) do
+    [:id, :title, :body]
+  end
+  ```
   """
   defmacro render_show(conn, resource, opts \\ []) do
     opts = get_module_opts(opts, :show, conn, resource)

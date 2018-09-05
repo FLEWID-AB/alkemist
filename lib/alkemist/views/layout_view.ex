@@ -37,6 +37,20 @@ defmodule Alkemist.LayoutView do
   end
 
   @doc """
+  Returns the scripts view
+  """
+  def scripts_view do
+    Keyword.get(Alkemist.Config.get(:views), :scripts)
+  end
+
+  @doc """
+  Returns the styles view
+  """
+  def styles_view do
+    Keyword.get(Alkemist.Config.get(:views), :styles)
+  end
+
+  @doc """
   Returns the site title to display in the title and in the header
   """
   def site_title do
