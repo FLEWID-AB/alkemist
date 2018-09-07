@@ -68,7 +68,8 @@ defmodule Alkemist.MixProject do
       {:excoveralls, "~> 0.10.0", only: :test},
       {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
       {:inch_ex, "~> 1.0", only: [:dev, :test, :doc]},
-      {:postgrex, ">=0.0.0", only: :test}
+      {:postgrex, ">=0.0.0", only: :test},
+      {:gettext, ">= 0.0.0"}
     ]
   end
 

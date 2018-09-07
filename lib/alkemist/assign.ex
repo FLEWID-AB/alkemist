@@ -314,22 +314,22 @@ defmodule Alkemist.Assign do
 
   # Creates an Enum of field and callback
   defp map_column({field, callback, opts}, resource) when is_atom(field) do
-    opts = Keyword.put(opts, :type, get_field_type(field, resource))
+    opts = Map.put(opts, :type, get_field_type(field, resource))
     {field, callback, opts}
   end
 
   defp map_column({field, callback}, resource) when is_bitstring(field) do
-    map_column({nil, callback, [label: field]}, resource)
+    map_column({nil, callback, %{label: field}}, resource)
   end
 
   defp map_column({field, callback}, resource) when is_atom(field) and is_function(callback) do
     label = Utils.to_label(field)
 
-    map_column({field, callback, [label: label]}, resource)
+    map_column({field, callback, %{label: label}}, resource)
   end
 
   defp map_column({field, opts}, resource) when is_atom(field) and is_list(opts) do
-    opts = Keyword.put_new(opts, :label, Utils.to_label(field))
+    opts = Map.put_new(opts, :label, Utils.to_label(field))
     map_column({field, fn row -> Map.get(row, field) end, opts}, resource)
   end
 
@@ -342,7 +342,7 @@ defmodule Alkemist.Assign do
       Map.get(field, :fields, [])
       |> Enum.map(fn f -> map_form_field(f, resource) end)
       |> filter_fields()
-
+      
     results = results ++ [Map.put(field, :fields, fields)]
     map_form_fields(tail, results, resource)
   end
@@ -371,18 +371,18 @@ defmodule Alkemist.Assign do
   defp map_form_field({field, opts}, resource) do
     opts =
       opts
-      |> Keyword.put_new(:type, get_field_type(field, resource))
+      |> Map.put_new(:type, get_field_type(field, resource))
 
     {field, opts}
   end
 
   defp map_form_field(field, resource) do
-    map_form_field({field, []}, resource)
+    map_form_field({field, %{}}, resource)
   end
 
   defp filter_fields(fields) do
     Enum.filter(fields, fn {_f, opts} ->
-      Keyword.get(opts, :type) != :embed
+      Map.get(opts, :type) != :embed
     end)
   end
 

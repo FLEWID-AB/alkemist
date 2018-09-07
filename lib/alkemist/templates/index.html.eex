@@ -37,7 +37,7 @@
     <tr>
       <%= for {field, _cb, opts} = column <- @columns do %>
       <th class="<%= opts[:type] %>">
-        <%= Keyword.get(opts, :label) %>
+        <%= Map.get(opts, :label) %>
       </th>
       <% end %>
       <th class="member-actions">Actions</th>

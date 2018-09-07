@@ -68,7 +68,7 @@ defmodule Alkemist.Controller do
              optional(:type) => atom(),
              optional(:collection) => []
            }}
-  @type field :: {atom(), keyword()}
+  @type field :: {atom(), map()}
 
   defmacro __using__(_) do
     Code.ensure_compiled(Alkemist.MenuRegistry)

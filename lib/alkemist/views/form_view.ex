@@ -11,10 +11,10 @@ defmodule Alkemist.FormView do
   @doc """
   Renders a boolean input field
   """
-  def render_form_field(form, {key, [{:type, :boolean} | opts]}) do
-    label = opts[:label] || humanize(key)
+  def render_form_field(form, {key, %{type: :boolean} = opts}) do
+    label = Map.get(opts, :label, Phoenix.Naming.humanize(key))
 
-    field_opts = get_field_opts(opts, class: "form-check-input")
+    field_opts = get_field_opts(opts, %{class: "form-check-input"})
 
     content_tag(:div, class: "form-group row") do
       [
@@ -34,8 +34,8 @@ defmodule Alkemist.FormView do
   @doc """
   Renders a hidden form field
   """
-  def render_form_field(form, {key, [{:type, :hidden} | opts]} = field) do
-    field_opts = get_field_opts(opts, [])
+  def render_form_field(form, {key, %{type: :hidden} = opts} = field) do
+    field_opts = get_field_opts(opts, %{})
     hidden_input(form, field, field_opts)
   end
 
@@ -43,7 +43,7 @@ defmodule Alkemist.FormView do
   Renders a text input type
   """
   def render_form_field(form, {key, opts} = field) do
-    label = opts[:label] || Phoenix.Naming.humanize(key)
+    label = Map.get(opts, :label, Phoenix.Naming.humanize(key))
 
     content_tag(:div, class: "form-group row") do
       [
@@ -55,7 +55,7 @@ defmodule Alkemist.FormView do
     end
   end
 
-  defp input_element(form, {key, [{:type, :many_to_many}, {:collection, collection} | opts]}) do
+  defp input_element(form, {key, %{type: :many_to_many, collection: collection} = opts}) do
     selected =
       case Map.get(form.data, key) do
         a when is_list(a) ->
@@ -65,7 +65,7 @@ defmodule Alkemist.FormView do
           []
       end
 
-    field_opts = get_field_opts(opts, class: "form-check-input")
+    field_opts = get_field_opts(opts, %{class: "form-check-input"})
 
     PhoenixMTM.Helpers.collection_checkboxes(
       form,
@@ -77,8 +77,8 @@ defmodule Alkemist.FormView do
     )
   end
 
-  defp input_element(form, {key, [{:type, :select}, {:collection, collection} | opts]}) do
-    field_opts = get_field_opts(opts, class: "form-control", prompt: "Choose...")
+  defp input_element(form, {key, %{type: :select, collection: collection} = opts}) do
+    field_opts = get_field_opts(opts, %{class: "form-control", prompt: "Choose..."})
 
     [
       select(form, key, collection, field_opts),
@@ -86,8 +86,8 @@ defmodule Alkemist.FormView do
     ]
   end
 
-  defp input_element(form, {key, [{:type, :password} | opts]}) do
-    field_opts = get_field_opts(opts, class: "form-control")
+  defp input_element(form, {key, %{type: :password} = opts}) do
+    field_opts = get_field_opts(opts, %{class: "form-control"})
 
     [
       password_input(form, key, field_opts),
@@ -96,7 +96,7 @@ defmodule Alkemist.FormView do
   end
 
   defp input_element(form, {key, opts}) do
-    field_opts = get_field_opts(opts, class: "form-control")
+    field_opts = get_field_opts(opts, %{class: "form-control"})
 
     [
       text_input(form, key, field_opts),
@@ -116,9 +116,11 @@ defmodule Alkemist.FormView do
 
   defp get_field_opts(opts, defaults) do
     defaults
-    |> Keyword.merge(opts)
-    |> Keyword.delete(:type)
-    |> Keyword.delete(:collection)
-    |> Keyword.delete(:label)
+    |> Map.merge(opts)
+    |> Map.delete(:type)
+    |> Map.delete(:collection)
+    |> Map.delete(:label)
+    |> Enum.map(fn({k,v}) -> {k,v} end) # back to keyword
+
   end
 end
