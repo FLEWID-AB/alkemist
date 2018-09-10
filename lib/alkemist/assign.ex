@@ -312,29 +312,89 @@ defmodule Alkemist.Assign do
     end)
   end
 
+  defp check_for_assoc(opts, resource) do
+    struct = if is_map(resource) do
+      resource.__struct__
+    else
+      resource
+    end
+    unless Map.has_key?(opts, :field), do: opts = Map.put(opts, :field, :id)
+    # check for assoc & field opts
+    assoc = cond do
+      Map.has_key?(opts, :assoc) and opts.assoc in struct.__schema__(:associations) ->
+        struct.__schema__(:association, opts.assoc)
+      Map.has_key?(opts, :col) and opts.col in struct.__schema__(:associations) ->
+        struct.__schema__(:association, opts.col)
+      true -> nil
+    end
+
+    if is_nil(assoc) do
+      opts
+    else
+      opts |> Map.put(:resource, assoc.queryable) |> Map.put(:assoc, assoc.field)
+    end
+  end
+
   # Creates an Enum of field and callback
   defp map_column({field, callback, opts}, resource) when is_atom(field) do
     opts = Map.put(opts, :type, get_field_type(field, resource))
+    |> check_for_assoc(resource)
+
     {field, callback, opts}
   end
 
-  defp map_column({field, callback}, resource) when is_bitstring(field) do
+  defp map_column({field, callback}, resource) when is_bitstring(field) and is_function(callback) do
     map_column({nil, callback, %{label: field}}, resource)
+  end
+
+  defp map_column({field, opts}, resource) when is_bitstring(field) and is_map(opts) do
+    opts = opts
+      |> Map.put(:label, field)
+      |> check_for_assoc(resource)
+
+    map_column({nil, fn row ->
+      default_callback(opts, row, field)
+    end, opts}, resource)
+  end
+
+  defp map_column({field, callback, opts}, resource) when is_bitstring(field) and is_map(opts) do
+    opts = opts
+      |> Map.put(:label, field)
+      |> check_for_assoc(resource)
+
+    map_column({nil, callback, opts}, resource)
   end
 
   defp map_column({field, callback}, resource) when is_atom(field) and is_function(callback) do
     label = Utils.to_label(field)
-
-    map_column({field, callback, %{label: label}}, resource)
+    opts = %{label: label, col: field}
+    |> check_for_assoc(resource)
+    
+    map_column({field, callback, opts}, resource)
   end
 
-  defp map_column({field, opts}, resource) when is_atom(field) and is_list(opts) do
-    opts = Map.put_new(opts, :label, Utils.to_label(field))
-    map_column({field, fn row -> Map.get(row, field) end, opts}, resource)
+  defp map_column({field, opts}, resource) when is_atom(field) and is_map(opts) do
+    opts = Map.put_new(opts, :label, Utils.to_label(field)) |> Map.put_new(:col, field)
+    |> check_for_assoc(resource)
+
+    map_column({field, fn row -> default_callback(opts, row, field) end, opts}, resource)
   end
 
   defp map_column(field, resource) do
-    map_column({field, fn row -> Map.get(row, field) end}, resource)
+    opts = %{field: field} |> check_for_assoc(resource)
+    map_column({field, fn row -> default_callback(opts, row, field) end}, resource)
+  end
+
+  defp default_callback(opts, row, field) do
+    if is_association?(opts) do
+      Map.get(row, opts.assoc) |> Map.get(opts.field)
+    else
+      Map.get(row, field)
+    end
+  end
+
+  defp is_association?(opts) do
+    Map.has_key?(opts, :resource)
   end
 
   defp map_form_fields([field | tail], results, resource) when is_map(field) do
@@ -342,7 +402,7 @@ defmodule Alkemist.Assign do
       Map.get(field, :fields, [])
       |> Enum.map(fn f -> map_form_field(f, resource) end)
       |> filter_fields()
-      
+
     results = results ++ [Map.put(field, :fields, fields)]
     map_form_fields(tail, results, resource)
   end

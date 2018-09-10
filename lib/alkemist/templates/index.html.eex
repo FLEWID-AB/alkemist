@@ -47,8 +47,14 @@
     <%= for row <- @entries do %>
       <tr>
         <%= for {_, cb, opts} <- @columns do %>
-          <td class="<%= opts[:type] %>">
-            <%= string_value(cb, row) %>
+          <td class="<%= opts.type %>">
+            <%= if Map.has_key?(opts, :action) and not is_nil(opts.action) and not is_nil(Map.get(row, opts.assoc)) do %>
+              <a href="<%= resource_action_path(@conn, Map.fetch!(row, opts.assoc), opts.action) %>"><%= string_value(cb, row) %></a>
+            <% else %>
+              <%= unless Map.has_key?(opts, :assoc) and is_nil(Map.get(row, opts.assoc)) do %>
+                <%= string_value(cb, row) %>
+              <% end %>
+          <% end %>
           </td>
         <% end %>
         <td class="member-actions">

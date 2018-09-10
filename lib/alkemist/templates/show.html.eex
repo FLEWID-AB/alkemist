@@ -23,16 +23,21 @@
         <table class="table table-sm">
           <%= for {_, cb, opts} <- @rows do %>
           <tr>
-            <th scope="row"><%= opts[:label] %></th>
+            <th scope="row"><%= opts.label %></th>
             <td>
-              <%= string_value(cb, @resource) %>
+              <%= if Map.has_key?(opts, :action) and not is_nil(Map.get(@resource, opts.assoc)) do %>
+                <a href="<%= resource_action_path(@conn, Map.fetch!(@resource, opts.assoc), opts.action) %>"><%= string_value(cb, @resource) %></a>
+              <% else %>
+                <%= unless Map.has_key?(opts, :assoc) and is_nil(Map.get(@resource, opts.assoc)) do %>
+                  <%= string_value(cb, @resource) %>
+                <% end %>
+              <% end %>
             </td>
           </tr>
           <% end %>
         </table>
       </div>
     </div>
-
     <%= for {label, opts} <- @panels do %>
       <div class="card">
         <div class="card-header">
