@@ -54,6 +54,18 @@ defmodule Alkemist.Controller do
   alias Alkemist.Assign
   alias Alkemist.Utils
 
+  @callback columns(Plug.Conn.t()) :: [column()]
+  @callback csv_columns(Plug.Conn.t()) :: [column()]
+  @callback fields(Plug.Conn.t(), struct() | nil) :: [field()]
+  @callback scopes(Plug.Conn.t()) :: [scope()]
+  @callback filters(Plug.Conn.t()) :: [filter()]
+  @callback repo() :: module()
+  @callback preload() :: keyword()
+  @callback rows(Plug.Conn.t(), struct() | nil) :: list()
+  @callback form_partial(Plug.Conn.t(), struct() | nil) :: tuple()
+
+  @optional_callbacks [columns: 1, csv_columns: 1, fields: 2, scopes: 1, filters: 1, repo: 0, preload: 0, rows: 2, form_partial: 2]
+
   # Type definitions
   @type scope :: {atom(), keyword(), (%{} -> Ecto.Query.t())}
   @type column :: atom() | {String.t(), (%{} -> any())}
@@ -76,6 +88,7 @@ defmodule Alkemist.Controller do
     quote do
       import Alkemist.Assign
       import Alkemist.Controller
+      @behaviour Alkemist.Controller
       import Ecto.Query
 
       if @resource !== nil do
