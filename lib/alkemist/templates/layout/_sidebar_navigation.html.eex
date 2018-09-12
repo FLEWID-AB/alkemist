@@ -1,5 +1,5 @@
 <div class="sidebar">
-  
+
   <nav class="sidebar-nav">
     <ul class="nav">
       <%= for menu <- menu_items() do %>
@@ -8,12 +8,24 @@
             <a class="nav-link nav-dropdown-toggle" href="#"><%= Phoenix.HTML.raw menu.label %></a>
             <ul class="nav-dropdown-items">
               <%= for child <- menu.children do %>
-                <%= action_link(child.label, @conn, :index, child.resource, [class: "nav-link", wrap: {:li, [class: "nav-item"]}]) %>
+                  <% path = if Map.has_key?(child, :path) do
+                        child.path
+                      else
+                        nil
+                      end
+                  %>
+                  <%= action_link(child.label, @conn, :index, child.resource, [class: "nav-link", wrap: {:li, [class: "nav-item"]}, path: path]) %>
               <% end %>
             </ul>
           </li>
         <% else %>
-          <%= action_link(menu.label, @conn, :index, menu.resource, [class: "nav-link", wrap: {:li, [class: "nav-item"]}]) %>
+          <% path = if Map.has_key?(menu, :path) do
+                menu.path
+              else
+                nil
+              end
+          %>
+          <%= action_link(menu.label, @conn, :index, menu.resource, [class: "nav-link", wrap: {:li, [class: "nav-item"]}, path: path]) %>
         <% end %>
       <% end %>
     </ul>

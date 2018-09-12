@@ -120,7 +120,12 @@ defmodule Alkemist.Controller do
   defmacro menu(label, opts \\ []) do
     quote do
       label = unquote(label)
-      opts = unquote(opts) |> Keyword.put(:resource, @resource)
+      opts = unquote(opts)
+      opts = if is_nil(@resource) or is_bitstring(@resource) do
+        opts |> Keyword.put(:resource, label)
+      else
+        opts |> Keyword.put(:resource, @resource)
+      end
       Alkemist.MenuRegistry.register_menu_item(__MODULE__, label, opts)
     end
   end

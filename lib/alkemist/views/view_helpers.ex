@@ -37,9 +37,14 @@ defmodule Alkemist.ViewHelpers do
   """
   def action_link(label, conn, action, resource, opts \\ []) do
     if Alkemist.Config.authorization_provider().authorize_action(resource, conn, action) do
-      opts =
+      opts = if is_bitstring(resource) do
+        opts
+        |> Keyword.put_new(:to, opts[:path])
+      else
         opts
         |> Keyword.put_new(:to, resource_action_path(conn, resource, action))
+      end
+
 
       wrap = opts[:wrap]
       opts = Keyword.delete(opts, :wrap)
