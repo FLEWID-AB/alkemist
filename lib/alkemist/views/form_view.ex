@@ -34,9 +34,9 @@ defmodule Alkemist.FormView do
   @doc """
   Renders a hidden form field
   """
-  def render_form_field(form, {key, %{type: :hidden} = opts} = field) do
+  def render_form_field(form, {key, %{type: :hidden} = opts}) do
     field_opts = get_field_opts(opts, %{})
-    hidden_input(form, field, field_opts)
+    hidden_input(form, key, field_opts)
   end
 
   @doc """
