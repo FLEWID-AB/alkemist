@@ -131,7 +131,9 @@ defmodule AlkemistView do
     """
     |> raw()
   end
-
+  defp field_string_value(%NaiveDateTime{} = nd) do
+    "#{nd.day}.#{nd.month}.#{nd.year} - #{nd.hour}:#{nd.minute}:#{nd.second}"
+  end
   defp field_string_value(val) when is_map(val), do: "#Object"
   defp field_string_value(val), do: "#{val}"
 

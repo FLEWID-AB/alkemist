@@ -719,7 +719,7 @@ defmodule Alkemist.Controller do
       opts = unquote(opts)
       conn = unquote(conn)
 
-      Alkemist.Controller.opts_or_function(opts, __MODULE__, [:repo, :preload])
+      Alkemist.Controller.opts_or_function(opts, __MODULE__, [:repo, :preload, :collection_actions, :member_actions])
     end
   end
 
@@ -823,5 +823,13 @@ defmodule Alkemist.Controller do
         opts
       end
     end
+  end
+
+  @doc """
+  Simple helper method to use link in callbacks
+  """
+  def link(label, path, opts \\ []) do
+    opts = Keyword.put(opts, :to, path)
+    Phoenix.HTML.Link.link(label, opts)
   end
 end

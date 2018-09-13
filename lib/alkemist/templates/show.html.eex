@@ -7,9 +7,11 @@
       <li class="nav-item">
         <%= action_link("Back to List", @conn, :index, @mod, [class: "nav-link"]) %>
       </li>
+      <%= if Keyword.has_key?(@member_actions, :edit) do %>
       <li class="nav-item">
         <%= action_link("Edit", @conn, :edit, @resource, [class: "nav-link"]) %>
       </li>
+      <% end %>
     </ul>
   </div>
 </div>

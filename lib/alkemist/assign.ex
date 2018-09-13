@@ -7,6 +7,11 @@ defmodule Alkemist.Assign do
 
   @default_collection_actions [:new]
   @default_member_actions [
+    :show,
+    :edit,
+    :delete
+  ]
+  @default_action_opts [
     show: [icon: "fas fa-fw fa-eye"],
     edit: [icon: "fas fa-fw fa-edit"],
     delete: [
@@ -49,14 +54,6 @@ defmodule Alkemist.Assign do
 
     query = query |> scope(scopes)
 
-    collection_actions =
-      opts[:collection_actions]
-      |> Enum.map(&__MODULE__.format_action/1)
-
-    member_actions =
-      opts[:member_actions]
-      |> Enum.map(&__MODULE__.format_action/1)
-
     columns =
       opts[:columns]
       |> Enum.map(fn col -> map_column(col, resource) end)
@@ -75,8 +72,8 @@ defmodule Alkemist.Assign do
       entries: entries,
       pagination: pagination,
       columns: columns,
-      member_actions: member_actions,
-      collection_actions: collection_actions,
+      member_actions: member_actions(opts),
+      collection_actions: collection_actions(opts),
       singular_name: opts[:singular_name],
       plural_name: opts[:plural_name],
       scopes: scopes,
@@ -85,6 +82,16 @@ defmodule Alkemist.Assign do
       mod: opts[:mod]
     ]
     |> additional_assigns(opts)
+  end
+
+  defp member_actions(opts) do
+    opts[:member_actions]
+    |> Enum.map(&__MODULE__.format_action/1)
+  end
+
+  defp collection_actions(opts) do
+    opts[:collection_actions]
+    |> Enum.map(&__MODULE__.format_action/1)
   end
 
   @doc """
@@ -140,6 +147,8 @@ defmodule Alkemist.Assign do
       changeset: changeset,
       resource: changeset.data,
       mod: opts[:mod],
+      member_actions: member_actions(opts),
+      collection_actions: collection_actions(opts),
       form_partial: opts[:form_partial],
       form_fields: fields,
       singular_name: opts[:singular_name]
@@ -169,6 +178,8 @@ defmodule Alkemist.Assign do
       resource: resource,
       mod: resource.__struct__,
       rows: rows,
+      member_actions: member_actions(opts),
+      collection_actions: collection_actions(opts),
       singular_name: opts[:singular_name],
       panels: Keyword.get(opts, :show_panels, [])
     ]
@@ -242,6 +253,8 @@ defmodule Alkemist.Assign do
       |> Keyword.put_new(:singular_name, Utils.singular_name(resource))
       |> Keyword.put_new(:repo, Alkemist.Config.repo())
       |> Keyword.put_new(:mod, resource.__struct__)
+      |> Keyword.put_new(:collection_actions, @default_collection_actions)
+      |> Keyword.put_new(:member_actions, @default_member_actions)
 
     if Keyword.has_key?(opts, :form_partial) do
       {partial, assigns} =
@@ -272,6 +285,8 @@ defmodule Alkemist.Assign do
     |> Keyword.put_new(:singular_name, Utils.singular_name(resource))
     |> Keyword.put_new(:rows, get_default_columns(resource))
     |> Keyword.put_new(:resource, resource)
+    |> Keyword.put_new(:collection_actions, @default_collection_actions)
+    |> Keyword.put_new(:member_actions, @default_member_actions)
   end
 
   # Add preloads to the query if any are given
@@ -512,5 +527,11 @@ defmodule Alkemist.Assign do
     end
   end
 
-  def format_action(action), do: format_action({action, []})
+  def format_action(action) do
+    opts = case Keyword.get(@default_action_opts, action) do
+      nil -> []
+      opts -> opts
+    end
+    format_action({action, opts})
+  end
 end
