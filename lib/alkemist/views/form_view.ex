@@ -15,8 +15,13 @@ defmodule Alkemist.FormView do
     label = Map.get(opts, :label, Phoenix.Naming.humanize(key))
 
     field_opts = get_field_opts(opts, %{class: "form-check-input"})
+    group_class = "form-group row"
+    group_class = case Keyword.get(field_opts, :required) do
+      true -> group_class <> " required"
+      _ -> group_class
+    end
 
-    content_tag(:div, class: "form-group row") do
+    content_tag(:div, class: group_class) do
       [
         content_tag(:div, "", class: "col-sm-2"),
         content_tag(:div, class: "col-sm-10") do
@@ -46,8 +51,10 @@ defmodule Alkemist.FormView do
   def render_form_field(form, {key, %{type: :has_many, fields: _fields} = opts} = field) do
     template = build_empty_form_template(form, field)
     content_tag(:div, class: "alkemist_hm--container", "data-template": template) do
-      [render_has_many_inputs(form, field),
-
+      [
+        content_tag(:div, class: "alkemist_hm--groups") do
+          render_has_many_inputs(form, field)
+        end,
         content_tag(:div, class: "row justify-content-end button-row") do
           content_tag(:a, "Add new", href: "#", class: "btn btn-secondary alkemist_hm--add")
         end
@@ -55,11 +62,15 @@ defmodule Alkemist.FormView do
     end
   end
 
-  defp render_has_many_inputs(form, {key, %{fields: fields} = opts}) do
+  defp render_has_many_inputs(form, {key, %{fields: fields} = opts}, new_record \\ false) do
     field_opts = get_field_opts(opts, %{})
-    inputs_for(form, key, field_opts, fn f ->
+    inputs_for(form, key, field_opts, fn f ->      
       content_tag(:div, class: "alkemist_hm--group", "data-field": "#{key}") do
-        Enum.map(fields, fn field -> render_form_field(f, field) end)
+        if new_record == true do
+          [content_tag(:a, Phoenix.HTML.raw("&times;"), href: "#", class: "close") | Enum.map(Keyword.delete(fields, :_destroy), fn field -> render_form_field(f, field) end)]
+        else
+          Enum.map(fields, fn field -> render_form_field(f, field) end)
+        end
       end
     end)
   end
@@ -69,8 +80,12 @@ defmodule Alkemist.FormView do
   """
   def render_form_field(form, {key, opts} = field) do
     label = Map.get(opts, :label, Phoenix.Naming.humanize(key))
-
-    content_tag(:div, class: "form-group row") do
+    group_class = "form-group row"
+    group_class = case Map.get(opts, :required) do
+      true -> group_class <> " required"
+      _ -> group_class
+    end
+    content_tag(:div, class: group_class) do
       [
         label(form, key, label, class: "control-label col-sm-2 col-form-label"),
         content_tag(:div, class: "col-sm-10") do
@@ -107,7 +122,7 @@ defmodule Alkemist.FormView do
 
     [
       select(form, key, collection, field_opts),
-      error_message(form, key)
+      error_tag(form, key)
     ]
   end
 
@@ -116,16 +131,24 @@ defmodule Alkemist.FormView do
 
     [
       password_input(form, key, field_opts),
-      error_message(form, key)
+      error_tag(form, key)
     ]
   end
 
   defp input_element(form, {key, %{type: :text} = opts}) do
-    field_opts = get_field_opts(opts, %{class: "form_control"})
+    field_opts = get_field_opts(opts, %{class: "form-control"})
 
     [
       textarea(form, key, field_opts),
-      error_message(form, key)
+      error_tag(form, key)
+    ]
+  end
+
+  defp input_element(form, {key, %{type: :number} = opts}) do
+    field_opts = get_field_opts(opts, %{class: "form-control"})
+    [
+      number_input(form, key, field_opts),
+      error_tag(form, key)
     ]
   end
 
@@ -134,18 +157,8 @@ defmodule Alkemist.FormView do
 
     [
       text_input(form, key, field_opts),
-      error_message(form, key)
+      error_tag(form, key)
     ]
-  end
-
-  defp error_message(form, key) do
-    err = error_tag(form, key)
-
-    if Enum.empty?(err) do
-      []
-    else
-      Enum.map(err, fn {_, msg} -> msg end)
-    end
   end
 
   defp get_field_opts(opts, defaults) do
@@ -169,7 +182,7 @@ defmodule Alkemist.FormView do
         
         source = Map.put(source, :data, data)
         form = Map.put(form, :source, source)
-        Phoenix.HTML.safe_to_string(render_has_many_inputs(form, field))
+        Phoenix.HTML.safe_to_string(render_has_many_inputs(form, field, true))
         |> String.replace("#{key}_0", "#{key}_$index")
         |> String.replace("[#{key}][0]", "[#{key}][$index]")
 

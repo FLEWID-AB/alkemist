@@ -10,10 +10,13 @@ export default {
     this.$containers.on('click', '.alkemist_hm--add', function(e) {
       e.preventDefault()
       let $container = $(e.target).parents('.alkemist_hm--container')
-      let $groups = $container.children('.alkemist_hm--group')
-      let index = $groups.length
+      let index = $container.children('.alkemist_hm--group').length
       let template = $container.attr('data-template').replace(/\$index/g, index)
-      $groups.after(template.replace('$index', index))
+      $container.find('.alkemist_hm--groups').append(template.replace('$index', index))
+    }).on('click', '.alkemist_hm--group .close', function(e) {
+      e.preventDefault()
+      let $container = $(e.target).parents('.alkemist_hm--group')
+      $container.remove()
     })
   }
 }
