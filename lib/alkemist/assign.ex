@@ -328,20 +328,26 @@ defmodule Alkemist.Assign do
   end
 
   defp check_for_assoc(opts, resource) do
-    struct = if is_map(resource) do
-      resource.__struct__
-    else
-      resource
-    end
+    struct =
+      if is_map(resource) do
+        resource.__struct__
+      else
+        resource
+      end
+
     unless Map.has_key?(opts, :field), do: opts = Map.put(opts, :field, :id)
     # check for assoc & field opts
-    assoc = cond do
-      Map.has_key?(opts, :assoc) and opts.assoc in struct.__schema__(:associations) ->
-        struct.__schema__(:association, opts.assoc)
-      Map.has_key?(opts, :col) and opts.col in struct.__schema__(:associations) ->
-        struct.__schema__(:association, opts.col)
-      true -> nil
-    end
+    assoc =
+      cond do
+        Map.has_key?(opts, :assoc) and opts.assoc in struct.__schema__(:associations) ->
+          struct.__schema__(:association, opts.assoc)
+
+        Map.has_key?(opts, :col) and opts.col in struct.__schema__(:associations) ->
+          struct.__schema__(:association, opts.col)
+
+        true ->
+          nil
+      end
 
     if is_nil(assoc) do
       opts
@@ -352,28 +358,36 @@ defmodule Alkemist.Assign do
 
   # Creates an Enum of field and callback
   defp map_column({field, callback, opts}, resource) when is_atom(field) do
-    opts = Map.put(opts, :type, get_field_type(field, resource))
-    |> check_for_assoc(resource)
+    opts =
+      Map.put(opts, :type, get_field_type(field, resource))
+      |> check_for_assoc(resource)
 
     {field, callback, opts}
   end
 
-  defp map_column({field, callback}, resource) when is_bitstring(field) and is_function(callback) do
+  defp map_column({field, callback}, resource)
+       when is_bitstring(field) and is_function(callback) do
     map_column({nil, callback, %{label: field}}, resource)
   end
 
   defp map_column({field, opts}, resource) when is_bitstring(field) and is_map(opts) do
-    opts = opts
+    opts =
+      opts
       |> Map.put(:label, field)
       |> check_for_assoc(resource)
 
-    map_column({nil, fn row ->
-      default_callback(opts, row, field)
-    end, opts}, resource)
+    map_column(
+      {nil,
+       fn row ->
+         default_callback(opts, row, field)
+       end, opts},
+      resource
+    )
   end
 
   defp map_column({field, callback, opts}, resource) when is_bitstring(field) and is_map(opts) do
-    opts = opts
+    opts =
+      opts
       |> Map.put(:label, field)
       |> check_for_assoc(resource)
 
@@ -382,15 +396,19 @@ defmodule Alkemist.Assign do
 
   defp map_column({field, callback}, resource) when is_atom(field) and is_function(callback) do
     label = Utils.to_label(field)
-    opts = %{label: label, col: field}
-    |> check_for_assoc(resource)
-    
+
+    opts =
+      %{label: label, col: field}
+      |> check_for_assoc(resource)
+
     map_column({field, callback, opts}, resource)
   end
 
   defp map_column({field, opts}, resource) when is_atom(field) and is_map(opts) do
-    opts = Map.put_new(opts, :label, Utils.to_label(field)) |> Map.put_new(:col, field)
-    |> check_for_assoc(resource)
+    opts =
+      Map.put_new(opts, :label, Utils.to_label(field))
+      |> Map.put_new(:col, field)
+      |> check_for_assoc(resource)
 
     map_column({field, fn row -> default_callback(opts, row, field) end, opts}, resource)
   end
@@ -528,10 +546,12 @@ defmodule Alkemist.Assign do
   end
 
   def format_action(action) do
-    opts = case Keyword.get(@default_action_opts, action) do
-      nil -> []
-      opts -> opts
-    end
+    opts =
+      case Keyword.get(@default_action_opts, action) do
+        nil -> []
+        opts -> opts
+      end
+
     format_action({action, opts})
   end
 end
