@@ -115,6 +115,7 @@ defmodule AlkemistView do
     field_string_value(val)
   end
 
+  defp field_string_value({:safe, _} = val), do: val
   defp field_string_value(val) when is_bitstring(val), do: raw(val)
 
   defp field_string_value(val) when is_boolean(val) do

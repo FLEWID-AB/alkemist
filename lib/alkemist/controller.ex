@@ -54,6 +54,18 @@ defmodule Alkemist.Controller do
   alias Alkemist.Assign
   alias Alkemist.Utils
 
+  @callback columns(Plug.Conn.t()) :: [column()]
+  @callback csv_columns(Plug.Conn.t()) :: [column()]
+  @callback fields(Plug.Conn.t(), struct() | nil) :: [field() | map()]
+  @callback scopes(Plug.Conn.t()) :: [scope()]
+  @callback filters(Plug.Conn.t()) :: [filter()]
+  @callback repo() :: module()
+  @callback preload() :: keyword()
+  @callback rows(Plug.Conn.t(), struct() | nil) :: list()
+  @callback form_partial(Plug.Conn.t(), struct() | nil) :: tuple()
+
+  @optional_callbacks [columns: 1, csv_columns: 1, fields: 2, scopes: 1, filters: 1, repo: 0, preload: 0, rows: 2, form_partial: 2]
+
   # Type definitions
   @type scope :: {atom(), keyword(), (%{} -> Ecto.Query.t())}
   @type column :: atom() | {String.t(), (%{} -> any())}
@@ -68,7 +80,7 @@ defmodule Alkemist.Controller do
              optional(:type) => atom(),
              optional(:collection) => []
            }}
-  @type field :: {atom(), map()}
+  @type field :: atom() | {atom(), map()} | %{title: string(), fields: [{atom(), map()}]}
 
   defmacro __using__(_) do
     Code.ensure_compiled(Alkemist.MenuRegistry)
@@ -76,6 +88,7 @@ defmodule Alkemist.Controller do
     quote do
       import Alkemist.Assign
       import Alkemist.Controller
+      @behaviour Alkemist.Controller
       import Ecto.Query
 
       if @resource !== nil do
@@ -317,7 +330,7 @@ defmodule Alkemist.Controller do
 
   @doc """
   Renders the "new" action
-  TODO: document opts
+  see `Alkemist.Controller.render_form/3`
   """
   defmacro render_new(conn, opts \\ []) do
     opts = get_module_opts(opts, :new, conn)
@@ -336,7 +349,7 @@ defmodule Alkemist.Controller do
 
   @doc """
   Renders the "edit action"
-  TODO: document opts
+  See `Alkemist.Controller.render_form/3`
   """
   defmacro render_edit(conn, resource, opts \\ []) do
     opts = get_module_opts(opts, :edit, conn, resource)
@@ -359,8 +372,57 @@ defmodule Alkemist.Controller do
   end
 
   @doc """
-  Renders the form
-  TODO: document opts
+  Renders the form for edit and create actions.
+
+  ## Options
+
+  * `preload` - Resources to preload. See `Ecto.Query`
+  * `repo` - Define a custom repo to execute the query
+  * `form_partial` - a tuple in the format `{MyViewModule, "template.html"}` or `{MyViewModule, "template.html", assigns}`
+  * `fields` - a list of either atoms representing the resource fields, maps with field groups or a keyword list in the format `[field_name: %{type: :type, other opts...}]`
+  * `changeset` - use a custom changeset
+  * `success_callback` - use a custom callback function that takes the newly updated/created resource as an argument
+  * `error_callback` - use a custom callback function on error, takes changeset as argument
+
+  ## Examples:
+
+  ```elixir
+  def edit(conn, %{"id" => id}) do
+    opts = [
+      preload: [:my_relationship]
+      form_partial: {MyView, "edit.html"},
+      changeset: :my_changeset,
+      error_callback: fn(changeset) -> ... end
+    ]
+    render_edit(conn, id, opts)
+  end
+  ```
+  `fields` and `form_partial` also can be defined as custom methods in the controller.
+
+  ## Example with methods:
+
+  ```elixir
+  def edit(conn, %{"id" => id}) do
+    render_edit(conn, id)
+  end
+
+  # resource will be nil on create
+  def fields(_conn, _resource) do
+    [
+      :title,
+      :body
+    ]
+
+    # or with custom types:
+    # [title: %{type: :string, placeholder: "Enter title"}, body: %{type: :text}]
+
+    # or use some custom form groups
+    # [
+    #   %{title: "My Model details", fields: [:title, :body]},
+    #   %{title: "Next panel header", fields: [:category]}
+    # ]
+  end
+  ```
   """
   defmacro render_form(conn, action, opts \\ []) do
     quote do
