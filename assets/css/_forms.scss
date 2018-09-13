@@ -1,0 +1,13 @@
+.alkemist_hm--group {
+  padding: 2rem 0;
+  border-bottom: 1px solid $gray-200;
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.alkemist_hm--container {
+  .button-row {
+    margin: 2rem 0 0;
+  }
+}

@@ -117,4 +117,54 @@ defmodule Alkemist.Utils do
     end)
     |> Enum.into(%{})
   end
+
+  @doc """
+  Returns association information for a field in a resource or struct
+
+  ## Examples:
+
+    iex> Utils.get_association(Alkemist.Category, :posts)
+    %Ecto.Association.Has{
+             cardinality: :many,
+             defaults: [],
+             field: :posts,
+             on_cast: nil,
+             on_delete: :nothing,
+             on_replace: :raise,
+             owner: Alkemist.Category,
+             owner_key: :id,
+             queryable: Alkemist.Post,
+             related: Alkemist.Post,
+             related_key: :category_id,
+             relationship: :child,
+             unique: true
+           }
+
+    iex> Utils.get_association(%Alkemist.Category{}, :posts)
+    %Ecto.Association.Has{
+             cardinality: :many,
+             defaults: [],
+             field: :posts,
+             on_cast: nil,
+             on_delete: :nothing,
+             on_replace: :raise,
+             owner: Alkemist.Category,
+             owner_key: :id,
+             queryable: Alkemist.Post,
+             related: Alkemist.Post,
+             related_key: :category_id,
+             relationship: :child,
+             unique: true
+           }
+  """
+  @spec get_association(map() | struct(), atom()) :: struct()
+  def get_association(resource, field) when is_map(resource), do: get_association(resource.__struct__, field)
+
+  def get_association(resource, field) do
+    if field in resource.__schema__(:associations) do
+      resource.__schema__(:association, field)
+    else
+      {:error, :invalid_field}
+    end
+  end
 end

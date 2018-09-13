@@ -40,6 +40,31 @@ defmodule Alkemist.FormView do
   end
 
   @doc """
+  Renders a has_many relationship.
+  Please ensure you add the resources to preload
+  """
+  def render_form_field(form, {key, %{type: :has_many, fields: _fields} = opts} = field) do
+    template = build_empty_form_template(form, field)
+    content_tag(:div, class: "alkemist_hm--container", "data-template": template) do
+      [render_has_many_inputs(form, field),
+
+        content_tag(:div, class: "row justify-content-end button-row") do
+          content_tag(:a, "Add new", href: "#", class: "btn btn-secondary alkemist_hm--add")
+        end
+      ]
+    end
+  end
+
+  defp render_has_many_inputs(form, {key, %{fields: fields} = opts}) do
+    field_opts = get_field_opts(opts, %{})
+    inputs_for(form, key, field_opts, fn f ->
+      content_tag(:div, class: "alkemist_hm--group", "data-field": "#{key}") do
+        Enum.map(fields, fn field -> render_form_field(f, field) end)
+      end
+    end)
+  end
+
+  @doc """
   Renders a text input type
   """
   def render_form_field(form, {key, opts} = field) do
@@ -120,7 +145,27 @@ defmodule Alkemist.FormView do
     |> Map.delete(:type)
     |> Map.delete(:collection)
     |> Map.delete(:label)
+    |> Map.delete(:fields)
     |> Enum.map(fn({k,v}) -> {k,v} end) # back to keyword
 
+  end
+
+  # Used to build the new forms for the has_many associations
+  defp build_empty_form_template(form, {key, opts} = field) do
+    case Alkemist.Utils.get_association(form.data, key) do
+      %{cardinality: :many, queryable: queryable} ->
+        source = form.source
+        data = source.data.__struct__.__struct__
+        |> Map.put(key, [queryable.__struct__])
+        
+        source = Map.put(source, :data, data)
+        form = Map.put(form, :source, source)
+        Phoenix.HTML.safe_to_string(render_has_many_inputs(form, field))
+        |> String.replace("#{key}_0", "#{key}_$index")
+        |> String.replace("[#{key}][0]", "[#{key}][$index]")
+
+      _ -> 
+        ""
+    end
   end
 end

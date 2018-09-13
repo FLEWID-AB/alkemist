@@ -56,7 +56,7 @@ defmodule Alkemist.Controller do
 
   @callback columns(Plug.Conn.t()) :: [column()]
   @callback csv_columns(Plug.Conn.t()) :: [column()]
-  @callback fields(Plug.Conn.t(), struct() | nil) :: [field()]
+  @callback fields(Plug.Conn.t(), struct() | nil) :: [field() | map()]
   @callback scopes(Plug.Conn.t()) :: [scope()]
   @callback filters(Plug.Conn.t()) :: [filter()]
   @callback repo() :: module()
