@@ -13,7 +13,6 @@ export default {
       let $groups = $container.children('.alkemist_hm--group')
       let index = $groups.length
       let template = $container.attr('data-template').replace(/\$index/g, index)
-      console.log(template)
       $groups.after(template.replace('$index', index))
     })
   }
