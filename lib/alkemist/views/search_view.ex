@@ -36,10 +36,16 @@ defmodule Alkemist.SearchView do
   defp input_field(form, field, :date, opts) do
     to_field = String.replace(Atom.to_string(field), "gteq", "lteq") |> String.to_atom()
 
-    [
-      text_input(form, field, class: "form-control form-control-sm datepicker"),
-      text_input(form, to_field, class: "form-control form-control-sm datepicker")
-    ]
+    content_tag(:div, class: "row") do
+      [
+        content_tag(:div, class: "col") do
+          text_input(form, field, class: "form-control form-control-sm datepicker")
+        end,
+        content_tag(:div, class: "col") do
+          text_input(form, to_field, class: "form-control form-control-sm datepicker")
+        end
+      ]
+    end
   end
 
   defp input_field(form, field, _type, _opts) do
