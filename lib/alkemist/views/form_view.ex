@@ -120,6 +120,15 @@ defmodule Alkemist.FormView do
     ]
   end
 
+  defp input_element(form, {key, %{type: :text} = opts}) do
+    field_opts = get_field_opts(opts, %{class: "form_control"})
+
+    [
+      textarea(form, key, field_opts),
+      error_message(form, key)
+    ]
+  end
+
   defp input_element(form, {key, opts}) do
     field_opts = get_field_opts(opts, %{class: "form-control"})
 
