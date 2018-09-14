@@ -64,7 +64,17 @@ defmodule Alkemist.Controller do
   @callback rows(Plug.Conn.t(), struct() | nil) :: list()
   @callback form_partial(Plug.Conn.t(), struct() | nil) :: tuple()
 
-  @optional_callbacks [columns: 1, csv_columns: 1, fields: 2, scopes: 1, filters: 1, repo: 0, preload: 0, rows: 2, form_partial: 2]
+  @optional_callbacks [
+    columns: 1,
+    csv_columns: 1,
+    fields: 2,
+    scopes: 1,
+    filters: 1,
+    repo: 0,
+    preload: 0,
+    rows: 2,
+    form_partial: 2
+  ]
 
   # Type definitions
   @type scope :: {atom(), keyword(), (%{} -> Ecto.Query.t())}
@@ -73,13 +83,7 @@ defmodule Alkemist.Controller do
   Used to create custom filters in the filter form. Type can be in `[:string, :boolean, :select, :date]`,
   default is `:string`. If the type is `:select`, a collection to build the select must be passed (see `Phoenix.HTMl.Form.select/4`)
   """
-  @type filter ::
-          {atom(),
-           %{
-             optional(:label) => String.t(),
-             optional(:type) => atom(),
-             optional(:collection) => []
-           }}
+  @type filter :: atom() | keyword()
   @type field :: atom() | {atom(), map()} | %{title: string(), fields: [{atom(), map()}]}
 
   defmacro __using__(_) do
@@ -134,11 +138,14 @@ defmodule Alkemist.Controller do
     quote do
       label = unquote(label)
       opts = unquote(opts)
-      opts = if is_nil(@resource) or is_bitstring(@resource) do
-        opts |> Keyword.put(:resource, label)
-      else
-        opts |> Keyword.put(:resource, @resource)
-      end
+
+      opts =
+        if is_nil(@resource) or is_bitstring(@resource) do
+          opts |> Keyword.put(:resource, label)
+        else
+          opts |> Keyword.put(:resource, @resource)
+        end
+
       Alkemist.MenuRegistry.register_menu_item(__MODULE__, label, opts)
     end
   end
@@ -719,7 +726,12 @@ defmodule Alkemist.Controller do
       opts = unquote(opts)
       conn = unquote(conn)
 
-      Alkemist.Controller.opts_or_function(opts, __MODULE__, [:repo, :preload, :collection_actions, :member_actions])
+      Alkemist.Controller.opts_or_function(opts, __MODULE__, [
+        :repo,
+        :preload,
+        :collection_actions,
+        :member_actions
+      ])
     end
   end
 

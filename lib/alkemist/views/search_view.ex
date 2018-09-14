@@ -30,7 +30,7 @@ defmodule Alkemist.SearchView do
 
   defp input_field(form, field, :select, opts) do
     collection = Keyword.get(opts, :collection, [])
-    select(form, field, collection, class: "form-control", prompt: "Choose...")
+    select(form, field, collection, class: "form-control form-control-sm", prompt: "Choose...")
   end
 
   defp input_field(form, field, :date, opts) do
