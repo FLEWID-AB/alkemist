@@ -43,9 +43,21 @@ defmodule Alkemist.Utils do
   def get_struct(resource) do
     source =
       resource.__schema__(:source)
-      |> Inflex.singularize()
+      |> singularize()
 
     String.to_atom(source)
+  end
+
+  # This is a special case because inflex has some issues
+  defp singularize(val) when is_bitstring(val) do
+    val
+    |> Inflex.singularize()
+    |> handle_irregular()
+  end
+
+  defp handle_irregular(val) do
+    regex = ~r/(reser)f/i
+    Regex.replace(regex, val, "\\1ve")
   end
 
   @doc ~S"""
@@ -63,7 +75,7 @@ defmodule Alkemist.Utils do
 
   def singular_name(resource) do
     resource.__schema__(:source)
-    |> Inflex.singularize()
+    |> singularize()
     |> to_label()
   end
 
@@ -158,7 +170,8 @@ defmodule Alkemist.Utils do
            }
   """
   @spec get_association(map() | struct(), atom()) :: struct()
-  def get_association(resource, field) when is_map(resource), do: get_association(resource.__struct__, field)
+  def get_association(resource, field) when is_map(resource),
+    do: get_association(resource.__struct__, field)
 
   def get_association(resource, field) do
     if field in resource.__schema__(:associations) do

@@ -101,6 +101,8 @@ defmodule Alkemist.Controller do
   @callback rows(Plug.Conn.t(), struct() | nil) :: list()
   @callback form_partial(Plug.Conn.t(), struct() | nil) :: tuple()
   @callback batch_actions() :: keyword()
+  @callback singular_name() :: String.t()
+  @callback plural_name() :: String.t()
 
   @optional_callbacks [
     columns: 1,
@@ -112,7 +114,9 @@ defmodule Alkemist.Controller do
     preload: 0,
     rows: 2,
     form_partial: 2,
-    batch_actions: 0
+    batch_actions: 0,
+    singular_name: 0,
+    plural_name: 0
   ]
 
   # Type definitions
@@ -847,7 +851,9 @@ defmodule Alkemist.Controller do
         :preload,
         :collection_actions,
         :member_actions,
-        :batch_actions
+        :batch_actions,
+        :singular_name,
+        :plural_name
       ])
     end
   end
