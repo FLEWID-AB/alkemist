@@ -3,7 +3,7 @@
     "build": "brunch build --production"
   },
   "dependencies": {
-    "alkemist-default-theme": "FLEWID-AB/alkemist-default-theme"
+    "alkemist-default-theme": "github:FLEWID-AB/alkemist-default-theme"
   },
   "devDependencies": {
     "babel-brunch": "^6.1.1",

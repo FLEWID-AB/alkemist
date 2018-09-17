@@ -73,17 +73,26 @@ defmodule Alkemist.Assign do
       entries: entries,
       pagination: pagination,
       columns: columns,
-      member_actions: member_actions(opts),
-      collection_actions: collection_actions(opts),
-      singular_name: opts[:singular_name],
-      plural_name: opts[:plural_name],
       scopes: scopes,
       filters: opts[:filters],
+      sidebars: opts[:sidebars],
       batch_actions: opts[:batch_actions],
       show_aside: opts[:show_aside],
       mod: opts[:mod]
     ]
+    |> global_assigns(opts)
     |> additional_assigns(opts)
+  end
+
+  defp global_assigns(assigns, opts) do
+    global_opts = [
+      member_actions: member_actions(opts),
+      collection_actions: collection_actions(opts),
+      singular_name: opts[:singular_name],
+      plural_name: opts[:plural_name]
+    ]
+
+    Keyword.merge(assigns, global_opts)
   end
 
   defp member_actions(opts) do
@@ -151,7 +160,7 @@ defmodule Alkemist.Assign do
 
     fields =
       if opts[:fields] do
-        map_form_fields(opts[:fields], [], resource)
+        map_form_fields(opts[:fields], [], resource, opts)
       else
         []
       end
@@ -161,12 +170,10 @@ defmodule Alkemist.Assign do
       changeset: changeset,
       resource: changeset.data,
       mod: opts[:mod],
-      member_actions: member_actions(opts),
-      collection_actions: collection_actions(opts),
       form_partial: opts[:form_partial],
-      form_fields: fields,
-      singular_name: opts[:singular_name]
+      form_fields: fields
     ]
+    |> global_assigns(opts)
     |> additional_assigns(opts)
   end
 
@@ -192,25 +199,28 @@ defmodule Alkemist.Assign do
       resource: resource,
       mod: resource.__struct__,
       rows: rows,
-      member_actions: member_actions(opts),
-      collection_actions: collection_actions(opts),
-      singular_name: opts[:singular_name],
       panels: Keyword.get(opts, :show_panels, [])
     ]
+    |> global_assigns(opts)
     |> additional_assigns(opts)
   end
 
-  defp default_index_opts(opts, resource) do
-    show_aside = Keyword.has_key?(opts, :filters)
-
+  defp global_opts(opts, resource) do
     opts
     |> Keyword.put_new(:repo, Alkemist.Config.repo())
-    |> Keyword.put_new(:query, resource)
     |> Keyword.put_new(:collection_actions, @default_collection_actions)
     |> Keyword.put_new(:member_actions, @default_member_actions)
-    |> Keyword.put_new(:columns, get_default_columns(resource))
     |> Keyword.put_new(:singular_name, Utils.singular_name(resource))
     |> Keyword.put_new(:plural_name, Utils.plural_name(resource))
+  end
+
+  defp default_index_opts(opts, resource) do
+    opts = global_opts(opts, resource)
+    show_aside = Keyword.has_key?(opts, :filters) || Keyword.has_key?(opts, :sidebars)
+
+    opts
+    |> Keyword.put_new(:query, resource)
+    |> Keyword.put_new(:columns, get_default_columns(resource))
     |> Keyword.put_new(:scopes, [])
     |> Keyword.put_new(:filters, [])
     |> Keyword.put_new(:show_aside, show_aside)
@@ -218,11 +228,13 @@ defmodule Alkemist.Assign do
     |> Keyword.put_new(:pagination_provider, @default_pagination_provider)
     |> Keyword.put_new(:mod, resource)
     |> Keyword.put_new(:batch_actions, [])
+    |> Keyword.put_new(:sidebars, [])
   end
 
   defp default_csv_opts(opts, resource) do
+    opts = global_opts(opts, resource)
+
     opts
-    |> Keyword.put_new(:repo, Alkemist.Config.repo())
     |> Keyword.put_new(:query, resource)
     |> Keyword.put_new(:columns, get_default_columns(resource))
     |> Keyword.put_new(:scopes, [])
@@ -261,15 +273,13 @@ defmodule Alkemist.Assign do
   end
 
   defp default_form_opts(opts, resource) do
+    opts = global_opts(opts, resource)
+
     opts =
       opts
       |> Keyword.put_new(:changeset, resource.changeset(resource.__struct__, %{}))
       |> Keyword.put_new(:resource, resource)
-      |> Keyword.put_new(:singular_name, Utils.singular_name(resource))
-      |> Keyword.put_new(:repo, Alkemist.Config.repo())
       |> Keyword.put_new(:mod, resource.__struct__)
-      |> Keyword.put_new(:collection_actions, @default_collection_actions)
-      |> Keyword.put_new(:member_actions, @default_member_actions)
 
     if Keyword.has_key?(opts, :form_partial) do
       {partial, assigns} =
@@ -295,13 +305,11 @@ defmodule Alkemist.Assign do
   end
 
   defp default_show_opts(opts, resource) do
+    opts = global_opts(opts, resource)
+
     opts
-    |> Keyword.put_new(:repo, Alkemist.Config.repo())
-    |> Keyword.put_new(:singular_name, Utils.singular_name(resource))
     |> Keyword.put_new(:rows, get_default_columns(resource))
     |> Keyword.put_new(:resource, resource)
-    |> Keyword.put_new(:collection_actions, @default_collection_actions)
-    |> Keyword.put_new(:member_actions, @default_member_actions)
   end
 
   # Add preloads to the query if any are given
@@ -445,20 +453,20 @@ defmodule Alkemist.Assign do
     Map.has_key?(opts, :resource)
   end
 
-  defp map_form_fields([field | tail], results, resource) when is_map(field) do
+  defp map_form_fields([field | tail], results, resource, opts) when is_map(field) do
     fields =
       Map.get(field, :fields, [])
       |> Enum.map(fn f -> map_form_field(f, resource) end)
       |> filter_fields()
 
     results = results ++ [Map.put(field, :fields, fields)]
-    map_form_fields(tail, results, resource)
+    map_form_fields(tail, results, resource, opts)
   end
 
-  defp map_form_fields([field | tail], results, resource) do
+  defp map_form_fields([field | tail], results, resource, opts) do
     group =
       if Enum.empty?(results) do
-        %{title: "#{Utils.singular_name(resource)} Details", fields: []}
+        %{title: "#{opts[:singular_name]} Details", fields: []}
       else
         Enum.at(results, 0)
       end
@@ -471,10 +479,10 @@ defmodule Alkemist.Assign do
 
     results = [Map.put(group, :fields, fields)]
 
-    map_form_fields(tail, results, resource)
+    map_form_fields(tail, results, resource, opts)
   end
 
-  defp map_form_fields([], results, _resource), do: results
+  defp map_form_fields([], results, _resource, _opts), do: results
 
   defp map_form_field({field, opts}, resource) do
     opts =
