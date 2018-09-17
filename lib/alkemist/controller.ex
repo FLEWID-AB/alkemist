@@ -49,6 +49,43 @@ defmodule Alkemist.Controller do
     end
   end
   ```
+
+  ## The following methods can be implemented to set configuration on a global level:
+
+  * `repo` - needs to return a valid `Ecto.Repo`
+  * `preload` - return a keyword list of resources to preload in all controller actions
+  * `collection_actions` - a list of actions to list in the collection action menu.
+    They need to be implemented in your controller and a custom route to that function needs to be
+    added to your router.
+  * `member_actions` - a list of actions that is available for each individual resource.
+    They need to be implemented in your controller and a custom router needs to be added to your router
+
+  ## Example for a custom member action:
+
+  In your router.ex:
+
+  ```
+  scope "/admin", MyApp, do
+    ...
+    get "/my_resource/:id/my_func", MyController, :my_func
+    alkemist_resources("/my_resource", MyController)
+  end
+  ```
+
+  In your controller:
+
+  ```elixir
+  def member_actions do
+    [:show, :edit, :delete, :my_func]
+  end
+
+  def my_func(conn, %{"id" => id}) do
+    # do something with the resource
+    conn
+    |> put_layout({Alkemist.LayoutView, "app.html"})
+    |> render("my_template.html", resource: my_resource)
+  end
+  ```
   """
 
   alias Alkemist.Assign
@@ -58,11 +95,12 @@ defmodule Alkemist.Controller do
   @callback csv_columns(Plug.Conn.t()) :: [column()]
   @callback fields(Plug.Conn.t(), struct() | nil) :: [field() | map()]
   @callback scopes(Plug.Conn.t()) :: [scope()]
-  @callback filters(Plug.Conn.t()) :: [filter()]
+  @callback filters(Plug.Conn.t()) :: keyword()
   @callback repo() :: module()
   @callback preload() :: keyword()
   @callback rows(Plug.Conn.t(), struct() | nil) :: list()
   @callback form_partial(Plug.Conn.t(), struct() | nil) :: tuple()
+  @callback batch_actions() :: keyword()
 
   @optional_callbacks [
     columns: 1,
@@ -73,7 +111,8 @@ defmodule Alkemist.Controller do
     repo: 0,
     preload: 0,
     rows: 2,
-    form_partial: 2
+    form_partial: 2,
+    batch_actions: 0
   ]
 
   # Type definitions
@@ -162,6 +201,10 @@ defmodule Alkemist.Controller do
   ## Options:
 
   * repo - use a custom `Ecto.Repo`
+  * member_actions - customize the actions that will display for each resource
+  * collection_actions - customize the global actions that are available for a collection of resources (e. g. `new`)
+  * batch_actions - add custom batch actions to be performed on a number of selected resources.
+    When set, a `selectable_column` will be added to the index table and a batch menu will display above the table.
   * columns - List of `t:column/0` customize the columns that will display in the index table
   * scopes - List of `t:scope/0` to define custom filter scopes
   * filters - List of `t:filter/0` to define filters for the search form
@@ -181,6 +224,8 @@ defmodule Alkemist.Controller do
         :body,
         {"Author", fn i -> i.author.name end}
         ],
+      batch_actions: [:delete_batch],
+      member_actions: [:show, :edit, :my_custom_action],
       scopes: [
         {:published, [], fn(q) -> where(q, [p], p.published == true) end}
       ],
@@ -195,6 +240,14 @@ defmodule Alkemist.Controller do
   ```elixir
   def index(conn, params) do
     render_index(conn, params)
+  end
+
+  def my_custom_action(conn, %{"id" => id}) do
+    ...
+  end
+
+  def delete_all(conn, %{"batch_ids" => ids}) do
+    # implement custom batch action
   end
 
   def columns do
@@ -212,6 +265,14 @@ defmodule Alkemist.Controller do
 
   def preload do
     [:author]
+  end
+
+  def member_actions do
+    [:show, :edit, :my_custom_action]
+  end
+
+  def batch_actions do
+    [:delete_batch]
   end
   ```
   """
@@ -502,7 +563,37 @@ defmodule Alkemist.Controller do
 
   @doc """
   Performs an update to the resource
-  TODO: document opts
+
+  ## Options:
+
+  * `changeset` - use a custom changeset.
+    Example: `changeset: :my_update_changeset`
+  * `success_callback` - custom function that will be performed on update success. Accepts the new resource as argument
+  * `error_callback` - custom function that will be performed on failure. Takes the changeset as argument.
+
+  ## Examples:
+
+  ```elixir
+  def update(conn, %{"id" => id, "resource" => resource_params}) do
+    do_update(conn, id, resource_params, changeset: :my_update_changeset)
+  end
+  ```
+
+  Or use a custom success or error function:
+
+  ```elixir
+  def update(conn, %{"id" => id, "resource" => resource_params}) do
+    opts = [
+      changeset: :my_udpate_changeset
+      success_callback: fn my_resource ->
+        conn
+        |> put_flash(:info, "Resource was successfully updated")
+        |> redirect(to: my_resource_path(conn, :index))
+      end
+    ]
+    do_update(conn, id, resource_params, opts)
+  end
+  ```
   """
   defmacro do_update(conn, resource, params, opts \\ []) do
     quote do
@@ -564,7 +655,29 @@ defmodule Alkemist.Controller do
   end
 
   @doc """
-  TODO: document opts
+  Performs a delete of the current resource. When successful, it will redirect to index.
+
+  ## Options:
+
+  * `delete_func` - use a custom method for deletion. Takes the resource as argument.
+  * `success_callback` - custom function on success. Takes the deleted resource as argument
+  * `error_callback` - custom function on error. Takes the resource as argument
+
+  ## Examples:
+
+  ```elixir
+  def delete(conn, %{"id" => id}) do
+    opts = [
+      delete_func: fn r ->
+        MyApp.MyService.deactivate(r)
+      end,
+      error_callback: fn r ->
+        my_custom_error_function(conn, r)
+      end
+    ]
+    do_delete(conn, id, opts)
+  end
+  ```
   """
   defmacro do_delete(conn, resource, opts \\ []) do
     quote do
@@ -630,7 +743,10 @@ defmodule Alkemist.Controller do
   end
 
   @doc """
-  TODO: document opts
+  Creates a csv export of all entries that match the current scope and filter.
+  An export does not paginate.
+
+  For available_options see `Alkemist.Controller.render_index/2`
   """
   defmacro csv(conn, params, opts \\ []) do
     opts = get_module_opts(opts, :export, conn)
@@ -730,7 +846,8 @@ defmodule Alkemist.Controller do
         :repo,
         :preload,
         :collection_actions,
-        :member_actions
+        :member_actions,
+        :batch_actions
       ])
     end
   end

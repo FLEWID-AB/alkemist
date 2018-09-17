@@ -83,6 +83,29 @@ defmodule AlkemistView do
   end
 
   @doc """
+  Renders a batch action item
+  """
+  def batch_action_item(conn, struct, batch_action) do
+    {action, opts} =
+      if is_atom(batch_action) do
+        {batch_action, []}
+      else
+        batch_action
+      end
+
+    label = Keyword.get(opts, :label, Phoenix.Naming.humanize(action))
+
+    opts =
+      opts
+      |> Keyword.put(:to, "#")
+      |> Keyword.put(:class, "dropdown-item batch-action-item")
+      |> Keyword.delete(:label)
+      |> Keyword.put(:"data-action", action_path(struct, [conn, action]))
+
+    link(label, opts)
+  end
+
+  @doc """
   Creates a scope link
   """
   def scope_link(conn, scope, struct) do
@@ -131,9 +154,11 @@ defmodule AlkemistView do
     """
     |> raw()
   end
+
   defp field_string_value(%NaiveDateTime{} = nd) do
     "#{nd.day}.#{nd.month}.#{nd.year} - #{nd.hour}:#{nd.minute}:#{nd.second}"
   end
+
   defp field_string_value(val) when is_map(val), do: "#Object"
   defp field_string_value(val), do: "#{val}"
 

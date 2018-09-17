@@ -56,6 +56,7 @@ defmodule Alkemist.Assign do
 
     columns =
       opts[:columns]
+      |> maybe_add_selectable(opts[:batch_actions])
       |> Enum.map(fn col -> map_column(col, resource) end)
 
     query = opts[:search_provider].run(query, params)
@@ -78,6 +79,7 @@ defmodule Alkemist.Assign do
       plural_name: opts[:plural_name],
       scopes: scopes,
       filters: opts[:filters],
+      batch_actions: opts[:batch_actions],
       show_aside: opts[:show_aside],
       mod: opts[:mod]
     ]
@@ -92,6 +94,18 @@ defmodule Alkemist.Assign do
   defp collection_actions(opts) do
     opts[:collection_actions]
     |> Enum.map(&__MODULE__.format_action/1)
+  end
+
+  defp maybe_add_selectable(columns, batch_actions) do
+    if Enum.empty?(batch_actions) do
+      columns
+    else
+      if Keyword.has_key?(columns, :selectable_column) || :selectable_column in columns do
+        columns
+      else
+        [:selectable_column | columns]
+      end
+    end
   end
 
   @doc """
@@ -203,6 +217,7 @@ defmodule Alkemist.Assign do
     |> Keyword.put_new(:search_provider, @default_search_provider)
     |> Keyword.put_new(:pagination_provider, @default_pagination_provider)
     |> Keyword.put_new(:mod, resource)
+    |> Keyword.put_new(:batch_actions, [])
   end
 
   defp default_csv_opts(opts, resource) do

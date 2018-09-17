@@ -28,6 +28,6 @@
         <%= render mod, template, assigns %>
       </div>
     <% {mod, template} = scripts_view() %>
-    <%= render mod, template, conn: @conn %>
+    <%= render mod, template, assigns %>
   </body>
 </html>
