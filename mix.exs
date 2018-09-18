@@ -42,7 +42,8 @@ defmodule Alkemist.MixProject do
         :inflex,
         :atomic_map,
         :turbo_ecto,
-        :phoenix_mtm
+        :phoenix_mtm,
+        :phoenix_html_sanitizer
       ]
     ]
   end
@@ -69,7 +70,8 @@ defmodule Alkemist.MixProject do
       {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
       {:inch_ex, "~> 1.0", only: [:dev, :test, :doc]},
       {:postgrex, ">=0.0.0", only: :test},
-      {:gettext, ">= 0.0.0"}
+      {:gettext, ">= 0.0.0"},
+      {:phoenix_html_sanitizer, "~> 1.0.0"}
     ]
   end
 

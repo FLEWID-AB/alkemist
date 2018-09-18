@@ -4,12 +4,14 @@ defmodule Alkemist.Query.Search do
   """
   alias Turbo.Ecto.Services.BuildSearchQuery
 
+  @empty_values [nil, [], {}, [""], "", %{}]
+
   def run(query, params) do
     params =
       params
       |> prepare_params(query)
 
-    Turbo.Ecto.turboq(query, params)
+    Turbo.Ecto.Hooks.Search.run(query, params)
   end
 
   @doc """
@@ -22,6 +24,7 @@ defmodule Alkemist.Query.Search do
     search_params =
       params
       |> Map.get("q", %{})
+      |> Enum.filter(fn {_key, value} -> value not in @empty_values end)
       |> Enum.map(&handle_special_fields(&1, queryable))
       |> Enum.into(%{})
 
@@ -29,7 +32,7 @@ defmodule Alkemist.Query.Search do
   end
 
   def handle_special_fields({key, value}, queryable) do
-    regex = ~r/([a-z1-9_]+)_(#{BuildSearchQuery.search_types() |> Enum.join("|")})$/
+    regex = ~r/([a-z0-9_]+)_(#{BuildSearchQuery.search_types() |> Enum.join("|")})$/
 
     {key, value} =
       if Regex.match?(regex, key) do

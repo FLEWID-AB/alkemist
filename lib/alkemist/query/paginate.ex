@@ -15,6 +15,13 @@ defmodule Alkemist.Query.Paginate do
   """
 
   def run(query, params, opts \\ []) do
-    Turbo.Ecto.get_paginate(query, params, opts)
+    params =
+      params
+      |> Map.to_list()
+      |> Enum.filter(fn p ->
+        p in ["page", "per_page"]
+      end)
+      |> Enum.into(%{})
+    Turbo.Ecto.Hooks.Paginate.get_paginate(query, params, opts)
   end
 end
