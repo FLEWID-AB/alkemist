@@ -1,7 +1,4 @@
 <aside class="aside-menu">
-  <%= if assigns[:filters] && any?(@filters) do %>
-   <%= render(AlkemistView, "_filter_view.html", assigns) %>
-  <% end %>
   <%= if assigns[:sidebars] && any?(@sidebars) do %>
     <%= for {label, opts} <- @sidebars do %>
       <div class="row">

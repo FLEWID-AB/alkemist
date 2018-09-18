@@ -28,4 +28,4 @@ assets/node_modules/
 
 .elixir_ls/
 
-/priv/static
+priv/static
