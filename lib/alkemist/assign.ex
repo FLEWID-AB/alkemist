@@ -216,7 +216,7 @@ defmodule Alkemist.Assign do
 
   defp default_index_opts(opts, resource) do
     opts = global_opts(opts, resource)
-    show_aside = Keyword.has_key?(opts, :filters) || Keyword.has_key?(opts, :sidebars)
+    show_aside = Keyword.has_key?(opts, :sidebars)
 
     opts
     |> Keyword.put_new(:query, resource)
