@@ -12,6 +12,7 @@ defmodule Alkemist.Assign do
     :delete
   ]
   @default_action_opts [
+    new:  [link_opts: [class: "btn btn-primary"]],
     show: [icon: "fas fa-fw fa-eye"],
     edit: [icon: "fas fa-fw fa-edit"],
     delete: [

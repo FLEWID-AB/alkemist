@@ -20,9 +20,6 @@
             <%= render "_flash.html", assigns %>
             <div class="card main-content">
               <div class="card-body">
-                <%= if assigns[:filters] && any?(@filters) do %>
-                  <%= render(AlkemistView, "_filter_view.html", assigns) %>
-                <% end %>
                 <%= render @view_module, @view_template, assigns %>
               </div>
             </div>

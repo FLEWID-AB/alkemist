@@ -282,7 +282,6 @@ defmodule Alkemist.Controller do
   """
   defmacro render_index(conn, params, opts \\ []) do
     opts = get_module_opts(opts, :index, conn)
-
     quote do
       conn = unquote(conn)
 
