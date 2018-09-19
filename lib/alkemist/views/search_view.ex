@@ -23,7 +23,7 @@ defmodule Alkemist.SearchView do
     opts        = Keyword.put_new(opts, :label, Phoenix.Naming.humanize(field))
     field_name  = field |> field_key(opts[:type]) |> String.to_atom()
     type        = Keyword.get(opts, :type, :string)
-    primary     = opts[:primary] || true
+    primary     = opts[:primary] || false
 
 
     content_tag :div, class: "form-group col-md-4 col-lg-4 #{hide_class(primary)}" do
@@ -34,7 +34,6 @@ defmodule Alkemist.SearchView do
               opts[:label]
             end
           end,
-          # label(form, field_name, opts[:label], class: "control-label"),
           input_field(form, field_name, type, opts, true)
         ]
       end
