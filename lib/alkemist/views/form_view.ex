@@ -64,7 +64,7 @@ defmodule Alkemist.FormView do
 
   defp render_has_many_inputs(form, {key, %{fields: fields} = opts}, new_record \\ false) do
     field_opts = get_field_opts(opts, %{})
-    inputs_for(form, key, field_opts, fn f ->      
+    inputs_for(form, key, field_opts, fn f ->
       content_tag(:div, class: "alkemist_hm--group", "data-field": "#{key}") do
         if new_record == true do
           [content_tag(:a, Phoenix.HTML.raw("&times;"), href: "#", class: "close") | Enum.map(Keyword.delete(fields, :_destroy), fn field -> render_form_field(f, field) end)]
@@ -126,6 +126,14 @@ defmodule Alkemist.FormView do
     ]
   end
 
+  defp input_element(form, {key, %{type: :select_multi, collection: collection} = opts}) do
+    field_opts = get_field_opts(opts, %{class: "form-control", prompt: "Choose..."})
+    [
+      multiple_select(form, key, collection, field_opts),
+      error_tag(form, key)
+    ]
+  end
+
   defp input_element(form, {key, %{type: :password} = opts}) do
     field_opts = get_field_opts(opts, %{class: "form-control"})
 
@@ -148,6 +156,14 @@ defmodule Alkemist.FormView do
     field_opts = get_field_opts(opts, %{class: "form-control"})
     [
       number_input(form, key, field_opts),
+      error_tag(form, key)
+    ]
+  end
+
+  defp input_element(form, {key, %{type: :date} = opts}) do
+    field_opts = get_field_opts(opts, %{class: "form-control datepicker"})
+    [
+      text_input(form, key, field_opts),
       error_tag(form, key)
     ]
   end
@@ -179,14 +195,14 @@ defmodule Alkemist.FormView do
         source = form.source
         data = source.data.__struct__.__struct__
         |> Map.put(key, [queryable.__struct__])
-        
+
         source = Map.put(source, :data, data)
         form = Map.put(form, :source, source)
         Phoenix.HTML.safe_to_string(render_has_many_inputs(form, field, true))
         |> String.replace("#{key}_0", "#{key}_$index")
         |> String.replace("[#{key}][0]", "[#{key}][$index]")
 
-      _ -> 
+      _ ->
         ""
     end
   end

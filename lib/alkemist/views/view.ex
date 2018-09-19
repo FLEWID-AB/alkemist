@@ -159,6 +159,11 @@ defmodule AlkemistView do
     "#{nd.day}.#{nd.month}.#{nd.year} - #{nd.hour}:#{nd.minute}:#{nd.second}"
   end
 
+  defp field_string_value(%Date{} = d) do
+    String.pad_leading("#{d.day}", 2, "0") <> "." <>
+    String.pad_leading("#{d.month}", 2, "0") <> ".#{d.year}"
+  end
+
   defp field_string_value(val) when is_map(val), do: "#Object"
   defp field_string_value(val), do: "#{val}"
 
