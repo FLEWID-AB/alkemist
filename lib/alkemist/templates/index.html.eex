@@ -1,23 +1,22 @@
-<div class="row" id="<%= @struct %>-index">
+<div class="row margin-bottom" id="<%= @struct %>-index">
   <div class="col-md-8">
     <h1>List of <%= @plural_name %></h1>
   </div>
-  <div class="col-md-4 page-actions">
-    <ul class="nav justify-content-end">
+  <div class="col-md-4 text-right page-actions">
+    <div class="btn-group-sm" role="group">
       <%= for action <- @collection_actions do %>
-      <li class="nav-item">
         <%= collection_action(@conn, action, @mod) %>
-      </li>
       <% end %>
       <%= if assigns[:has_export] do %>
-        <li class="nav-item">
-          <%= export_action(@conn, @struct) %>
-        </li>
+        <%= export_action(@conn, @struct) %>
       <% end %>
-    </ul>
+    </div>
   </div>
 </div>
 
+<%= if assigns[:filters] && any?(@filters) do %>
+  <%= render(AlkemistView, "_filter_view.html", assigns) %>
+<% end %>
 
 <%= if any?(@scopes) do %>
   <div class="row">
@@ -35,7 +34,7 @@
 <%= if any?(@batch_actions) do %>
 <div class="row mt-1">
   <%= form_for @conn, "", [id: "batch-action-form"], fn f -> %>
-    
+
   <% end %>
   <div class="col-2 dropdown">
     <button class="btn btn-default btn-sm dropdown-toggle" id="batch-menu-toggler" type="button" data-toggle="dropdown">Batch Actions</button>
