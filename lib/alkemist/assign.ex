@@ -60,8 +60,8 @@ defmodule Alkemist.Assign do
       |> Enum.map(fn col -> map_column(col, resource) end)
 
     query = opts[:search_provider].run(query, params)
-    pagination = opts[:pagination_provider].run(query, params, repo: repo)
-
+    {query, pagination} = opts[:pagination_provider].run(query, params, repo: repo)
+    IO.inspect(query)
     entries =
       query
       |> do_preload(opts[:preload])
@@ -522,7 +522,7 @@ defmodule Alkemist.Assign do
       |> callback.()
       |> search_opts[:search_provider].run(params)
 
-    pagination = search_opts[:pagination_provider].run(query, params, repo: search_opts[:repo])
+    {query, pagination} = search_opts[:pagination_provider].run(query, params, repo: search_opts[:repo])
 
     current = Map.get(params, "scope")
 

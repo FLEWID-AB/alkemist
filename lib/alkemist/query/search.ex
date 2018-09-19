@@ -11,7 +11,7 @@ defmodule Alkemist.Query.Search do
       params
       |> prepare_params(query)
 
-    Turbo.Ecto.Hooks.Search.run(query, params)
+    Turbo.Ecto.searchq(query, params)
   end
 
   @doc """

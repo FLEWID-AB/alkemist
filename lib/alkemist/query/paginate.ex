@@ -1,6 +1,6 @@
 defmodule Alkemist.Query.Paginate do
   @moduledoc """
-  Handles pagination. Expects to return a map with the following structure:
+  Handles pagination. Expects to return a tuple with the new query and a map with the following structure:
 
   ```elixir
   %{
@@ -15,13 +15,9 @@ defmodule Alkemist.Query.Paginate do
   """
 
   def run(query, params, opts \\ []) do
-    params =
-      params
-      |> Map.to_list()
-      |> Enum.filter(fn p ->
-        p in ["page", "per_page"]
-      end)
-      |> Enum.into(%{})
-    Turbo.Ecto.Hooks.Paginate.get_paginate(query, params, opts)
+    query = Turbo.Ecto.paginateq(query, params)
+    pagination = Turbo.Ecto.Hooks.Paginate.get_paginate(query, params, opts)
+
+    {query, pagination}
   end
 end
