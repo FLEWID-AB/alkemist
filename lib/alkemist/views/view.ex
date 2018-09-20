@@ -115,7 +115,7 @@ defmodule AlkemistView do
 
     label =
       """
-      #{opts[:label]} <span class="badge badge-secondary">#{opts[:count]}</span>
+      <span class="label">#{opts[:label]}</span> <span class="count">#{opts[:count]}</span>
       """
       |> raw()
 

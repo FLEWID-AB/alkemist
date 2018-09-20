@@ -18,11 +18,7 @@
         <main role="main" class="main">
           <div class="container-fluid">
             <%= render "_flash.html", assigns %>
-            <div class="card main-content">
-              <div class="card-body">
-                <%= render @view_module, @view_template, assigns %>
-              </div>
-            </div>
+            <%= render @view_module, @view_template, assigns %>
           </div>
         </main>
         <% {mod, template} = aside_view() %>
