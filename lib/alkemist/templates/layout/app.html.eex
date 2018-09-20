@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="<%= Plug.CSRFProtection.get_csrf_token() %>">
-    <title>Alkemist</title>
+    <title><%= site_title() %></title>
     <% {mod, template} = styles_view() %>
     <%= render mod, template, conn: @conn %>
 </head>
