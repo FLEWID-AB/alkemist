@@ -14457,8 +14457,7 @@ body {
         border-left-color: #000;
         border-top-right-radius: 32px;
         border-bottom-right-radius: 32px;
-        background-image: linear-gradient(#fff, #f6fafe);
-        box-shadow: 0 0 5px rgba(6, 7, 8, 0.2);
+        background: #fff;
         border-left: 3px solid #000; }
         @media screen and (prefers-reduced-motion: reduce) {
           .sidebar nav .nav-item .nav-dropdown-items li.nav-item:before {
@@ -14466,7 +14465,6 @@ body {
       .sidebar nav .nav-item .nav-dropdown-items li.nav-item:hover:before {
         opacity: 1; }
       .sidebar nav .nav-item .nav-dropdown-items li.nav-item:active:before {
-        box-shadow: inset 0 0 2px rgba(6, 7, 8, 0.4);
         opacity: 1; }
       .sidebar nav .nav-item .nav-dropdown-items li.nav-item a.nav-link {
         z-index: 99;
@@ -14487,11 +14485,14 @@ body {
           text-align: center; }
     .sidebar nav .nav-item.open .nav-dropdown-items .open:before {
       opacity: 1;
-      border-left-color: #000;
-      box-shadow: inset 0 0 2px rgba(6, 7, 8, 0.4);
-      background-image: linear-gradient(#fff, #f6fafe); }
+      border-left-color: #FB497C;
+      color: #FB497C; }
     .sidebar nav .nav-item.open .nav-dropdown-items a.nav-link.active {
-      background: none; }
+      background: none;
+      color: #FB497C;
+      font-weight: 700; }
+      .sidebar nav .nav-item.open .nav-dropdown-items a.nav-link.active:before {
+        color: #FB497C; }
 
 .datepicker-container {
   z-index: 1020 !important; }
