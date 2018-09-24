@@ -3,10 +3,10 @@
     "build": "brunch build --production"
   },
   "dependencies": {
-    "alkemist-default-theme": "file:../../alkemist-default-theme"
+    "alkemist-default-theme": "file:../../alkemist-default-theme",
+    "@chenfengyuan/datepicker": "^1.0.0"
   },
   "devDependencies": {
-    "@chenfengyuan/datepicker": "^1.0.0-beta",
     "@coreui/coreui": "2.0.6",
     "bootstrap": "^4.1.1",
     "jquery": "^3.3.1",

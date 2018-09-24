@@ -4,10 +4,10 @@
 // to also remove its path from "config.paths.watched".
 import "@coreui/coreui"
 import "@chenfengyuan/datepicker"
-import select2 from "select2"
-import HasMany from './has_many'
-import Batch from './batch'
-import Filter from './filter'
+import select2  from "select2"
+import HasMany  from './has_many'
+import Batch    from './batch'
+import Filter   from './filter'
 
 select2($)
 
@@ -20,4 +20,12 @@ $(document).ready(function () {
   Filter.init()
   HasMany.init()
   document.getElementById('selection-toggle-all') && Batch.init()
+  makeRowClickable();
 });
+
+function makeRowClickable() {
+  let $clickableRows = $('.clickable-row');
+  $clickableRows.children('td').not('.member-actions').on('click', function() {
+    window.location = $(this).parent().attr('data-href');
+  })
+}

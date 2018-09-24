@@ -7,12 +7,10 @@ defmodule Alkemist.Assign do
 
   @default_collection_actions [:new]
   @default_member_actions [
-    :show,
     :edit,
     :delete
   ]
   @default_action_opts [
-    new:  [link_opts: [class: "btn btn-primary"]],
     show: [icon: "fas fa-fw fa-eye"],
     edit: [icon: "fas fa-fw fa-edit"],
     delete: [
@@ -62,7 +60,6 @@ defmodule Alkemist.Assign do
 
     query = opts[:search_provider].run(query, params)
     {query, pagination} = opts[:pagination_provider].run(query, params, repo: repo)
-    IO.inspect(query)
     entries =
       query
       |> do_preload(opts[:preload])
@@ -79,6 +76,7 @@ defmodule Alkemist.Assign do
       sidebars: opts[:sidebars],
       batch_actions: opts[:batch_actions],
       show_aside: opts[:show_aside],
+      search: Map.has_key?(params, "q"),
       mod: opts[:mod]
     ]
     |> global_assigns(opts)
@@ -98,12 +96,12 @@ defmodule Alkemist.Assign do
 
   defp member_actions(opts) do
     opts[:member_actions]
-    |> Enum.map(&__MODULE__.format_action/1)
+    |> Enum.map(&__MODULE__.format_action(&1, opts[:singular_name]))
   end
 
   defp collection_actions(opts) do
     opts[:collection_actions]
-    |> Enum.map(&__MODULE__.format_action/1)
+    |> Enum.map(&__MODULE__.format_action(&1, opts[:singular_name]))
   end
 
   defp maybe_add_selectable(columns, batch_actions) do
@@ -564,17 +562,20 @@ defmodule Alkemist.Assign do
     if Keyword.get(opts, :label) do
       params
     else
-      label = Utils.to_label(action)
+      label = Utils.to_label("#{action} #{opts[:singular_name]}")
       {action, Keyword.put(opts, :label, label)}
     end
   end
 
-  def format_action(action) do
+  def format_action(action, singular) do
     opts =
       case Keyword.get(@default_action_opts, action) do
         nil -> []
         opts -> opts
       end
+    if singular do
+      opts = opts ++ [singular_name: singular]
+    end
 
     format_action({action, opts})
   end

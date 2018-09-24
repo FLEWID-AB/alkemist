@@ -1,20 +1,18 @@
-<div class="row margin-bottom" id="<%= @struct %>-index">
+<div class="row mb-4 mt-4" id="<%= @struct %>-index">
   <div class="col-md-8">
     <h1>List of <%= @plural_name %></h1>
   </div>
   <div class="col-md-4 text-right page-actions">
-    <div class="btn-group-sm" role="group">
-      <%= for action <- @collection_actions do %>
-        <%= collection_action(@conn, action, @mod) %>
-      <% end %>
-      <%= if assigns[:has_export] do %>
-        <%= export_action(@conn, @struct) %>
-      <% end %>
-    </div>
+    <%= for action <- @collection_actions do %>
+      <%= collection_action(@conn, action, @mod) %>
+    <% end %>
+    <%= if assigns[:has_export] do %>
+      <%= export_action(@conn, @struct) %>
+    <% end %>
   </div>
 </div>
 
-<%= if assigns[:filterss] && any?(@filters) do %>
+<%= if assigns[:filters] && any?(@filters) do %>
   <%= render(AlkemistView, "_filter_view.html", assigns) %>
 <% end %>
 
@@ -62,7 +60,7 @@
       </thead>
       <tbody>
         <%= for row <- @entries do %>
-          <tr>
+          <tr class="clickable-row" data-href="<%= resource_action_path(@conn, row, :show) %>">
             <%= for {field, cb, opts} <- @columns do %>
               <%= if field == :selectable_column do %>
                 <td class="selectable">

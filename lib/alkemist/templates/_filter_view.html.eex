@@ -1,5 +1,3 @@
-
-
 <%= form_for @conn, resource_action_path(@conn, @resource, :index), [method: :get, class: "form", autocomplete: "off", id: "search-form"], fn f -> %>
   <%= hidden_input f, :s %>
   <%= hidden_input f, :scope %>
@@ -10,7 +8,9 @@
       <% end %>
     <% end %>
     <div class="col-md-4">
-      <%= link("Reset", to: resource_action_path(@conn, @resource, :index), class: "btn btn-link") %>
+      <%= if assigns[:search] do %>
+        <%= link("Reset", to: resource_action_path(@conn, @resource, :index), class: "btn btn-link btn-sm") %>
+      <% end %>
       <%= submit("Search", class: "btn btn-primary btn-sm") %>
       <span class="divider"></span>
       <%= link("More filters +", to: "#more-filters", id: "more-filters", class: "btn btn-sm btn-link margin-left") %>

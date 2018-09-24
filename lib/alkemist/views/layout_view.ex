@@ -51,9 +51,17 @@ defmodule Alkemist.LayoutView do
   end
 
   @doc """
-  Returns the site title to display in the title and in the header
+  Returns the site title to display in the title
   """
   def site_title do
     Alkemist.Config.get(:title)
   end
+
+  @doc """
+  Returns the site logo or title to display in the header
+  """
+  def site_logo do
+    Alkemist.Config.get(:logo) || Alkemist.Config.get(:title)
+  end
+
 end

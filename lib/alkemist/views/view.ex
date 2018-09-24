@@ -73,7 +73,7 @@ defmodule AlkemistView do
     query_params = get_default_link_params(conn)
 
     params = [conn, :export, query_params]
-    action(struct, params, label: "Export", link_opts: [class: "btn btn-secondary"])
+    action(struct, params, label: "Export", link_opts: [class: "nav-link"])
   end
 
   @doc """

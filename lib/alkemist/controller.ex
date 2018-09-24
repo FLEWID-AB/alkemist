@@ -288,7 +288,6 @@ defmodule Alkemist.Controller do
       if Alkemist.Config.authorization_provider().authorize_action(@resource, conn, :index) ==
            true do
         opts = unquote(opts)
-
         assigns = Assign.index_assigns(unquote(params), @resource, opts)
 
         assigns =
