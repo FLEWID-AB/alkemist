@@ -1,4 +1,4 @@
-<h1>Edit <%= @singular_name %></h1>
-
-<% {view, partial} = @form_partial %>
-<%= render(view, partial, Map.put(assigns, :action, action_path(@struct, [@conn, :update, @resource]))) %>
+<div class="mt-3">
+  <% {view, partial} = @form_partial %>
+  <%= render(view, partial, Map.put(assigns, :action, action_path(@struct, [@conn, :update, @resource]))) %>
+</div>

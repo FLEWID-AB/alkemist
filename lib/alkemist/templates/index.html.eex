@@ -1,28 +1,30 @@
 <div class="row mb-4 mt-4" id="<%= @struct %>-index">
-  <div class="col-md-8">
-    <h1>List of <%= @plural_name %></h1>
+  <div class="col-md-9">
+    <%= if assigns[:filters] && any?(@filters) do %>
+      <%= render(AlkemistView, "_filter_view.html", assigns) %>
+    <% end %>
   </div>
-  <div class="col-md-4 text-right page-actions">
+  <div class="col-md-3 text-right page-actions">
     <%= for action <- @collection_actions do %>
       <%= collection_action(@conn, action, @mod) %>
     <% end %>
     <%= if assigns[:has_export] do %>
-      <%= export_action(@conn, @struct) %>
+      <%= export_action(@conn, @struct, assigns) %>
     <% end %>
   </div>
 </div>
 
-<%= if assigns[:filters] && any?(@filters) do %>
-  <%= render(AlkemistView, "_filter_view.html", assigns) %>
-<% end %>
 
-<%= if any?(@scopes) do %>
-  <ul class="nav scopes">
-    <%= for scope <- @scopes do %>
-      <%= scope_link(@conn, scope, @struct) %>
-    <% end %>
-  </ul>
-<% end %>
+<div class="title-and-scopes">
+  <h1><%= @plural_name %></h1>
+  <%= if any?(@scopes) do %>
+    <ul class="nav scopes">
+      <%= for scope <- @scopes do %>
+        <%= scope_link(@conn, scope, @struct) %>
+      <% end %>
+    </ul>
+  <% end %>
+</div>
 <%= if any?(@batch_actions) do %>
 <div class="row mt-1">
   <%= form_for @conn, "", [id: "batch-action-form"], fn f -> %>

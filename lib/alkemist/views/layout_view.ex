@@ -61,7 +61,7 @@ defmodule Alkemist.LayoutView do
   Returns the site logo or title to display in the header
   """
   def site_logo do
-    Alkemist.Config.get(:logo) || Alkemist.Config.get(:title)
+    Alkemist.Config.get(:logo)
   end
 
 end

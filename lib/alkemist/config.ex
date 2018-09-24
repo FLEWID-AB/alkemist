@@ -13,8 +13,8 @@ defmodule Alkemist.Config do
       # required when using the auto generated code
       router_helpers: MyAppWeb.Router.Helpers,
 
-      # Set a custom logo (optional)
-      logo: "<img src=\"test.jpg\">",
+      # Set a custom logo (optional), must be placed in the asset folder.
+      logo: "logo.svg",
 
       # Set a custom title or brand name (optional)
       title: "MyApp",

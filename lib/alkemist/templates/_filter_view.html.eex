@@ -1,7 +1,7 @@
 <%= form_for @conn, resource_action_path(@conn, @resource, :index), [method: :get, class: "form", autocomplete: "off", id: "search-form"], fn f -> %>
   <%= hidden_input f, :s %>
   <%= hidden_input f, :scope %>
-  <div class="margin-bottom row">
+  <div class="row">
     <%= inputs_for f, :q, [as: :q, id: "search"], fn q -> %>
       <%= for filter <- @filters do %>
         <%= round_filter_field q, filter %>

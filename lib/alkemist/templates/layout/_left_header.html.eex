@@ -1,3 +1,7 @@
 <a class="navbar-brand" href="/">
-  <%= raw(site_logo()) %>
+  <%= if site_logo() do %>
+    <img src='<%= static_path(@conn, "/images/#{site_logo()}") %>'>
+  <% else %>
+    <%= site_title() %>
+  <% end %>
 </a>

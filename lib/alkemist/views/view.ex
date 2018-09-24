@@ -69,11 +69,12 @@ defmodule AlkemistView do
   @doc """
   Create a link to the export action
   """
-  def export_action(conn, struct) do
+  def export_action(conn, struct, assigns) do
     query_params = get_default_link_params(conn)
 
+
     params = [conn, :export, query_params]
-    action(struct, params, label: "Export", link_opts: [class: "nav-link"])
+    action(struct, params, label: "Export #{assigns[:plural_name]}", link_opts: [class: "nav-link"])
   end
 
   @doc """
