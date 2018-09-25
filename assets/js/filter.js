@@ -1,3 +1,5 @@
+import EqualWidth from "./equalWidth";
+
 export default {
   init () {
     if (document.getElementById("more-filters")) {
@@ -22,19 +24,21 @@ export default {
   openFilters() {
     this.$filters.removeClass('hide')
     this.$toggle.addClass('open').text('Less filters -')
+    EqualWidth.resizeElements(true)
   },
 
   closeFilters() {
     this.$filters.addClass('hide')
     this.$toggle.removeClass('open').text('More filters +')
+    EqualWidth.resizeElements(true)
   },
 
-  checkFormState() {    
+  checkFormState() {
     let elements = this.$filters.find(':input')
     let shouldShow = elements.filter(function(index, elem) {
       return $(elem).val()
     }).length > 0
-    
+
     if (shouldShow) {
       this.openFilters()
     }

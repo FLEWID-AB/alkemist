@@ -26725,13 +26725,17 @@ var _filter = require("./filter");
 
 var _filter2 = _interopRequireDefault(_filter);
 
+var _equalWidth = require("./equalWidth");
+
+var _equalWidth2 = _interopRequireDefault(_equalWidth);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// Import dependencies
+(0, _select2.default)($); // Import dependencies
 //
 // If you no longer want to use a dependency, remember
 // to also remove its path from "config.paths.watched".
-(0, _select2.default)($);
+
 
 $(document).ready(function () {
   $.fn.datepicker.setDefaults({
@@ -26743,6 +26747,7 @@ $(document).ready(function () {
   _has_many2.default.init();
   document.getElementById('selection-toggle-all') && _batch2.default.init();
   makeRowClickable();
+  _equalWidth2.default.init();
 });
 
 function makeRowClickable() {
@@ -26811,12 +26816,63 @@ exports.default = {
 };
 });
 
-;require.register("js/filter.js", function(exports, require, module) {
-'use strict';
+;require.register("js/equalWidth.js", function(exports, require, module) {
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = {
+  init: function init(resize) {
+    this.resizeElements(true);
+    // window.onresize = function(){
+    //   equalWidth.resizeElements(true);
+    // }
+  },
+  resizeElements: function resizeElements(resize) {
+    console.log("RESIZE?!?!!");
+    var elements = document.getElementsByClassName("equalWidth"),
+        allWidths = [],
+        i = 0;
+    if (resize === true) {
+      for (i = 0; i < elements.length; i++) {
+        elements[i].style.width = 'auto';
+      }
+    }
+    for (i = 0; i < elements.length; i++) {
+      var elementWidth = elements[i].clientWidth;
+      allWidths.push(elementWidth);
+    }
+
+    console.log(allWidths);
+    console.log(Math.max.apply(Math, allWidths));
+
+    for (i = 0; i < elements.length; i++) {
+      elements[i].style.width = Math.max.apply(Math, allWidths) + 'px';
+      // Optional: Add show class to prevent FOUC
+      // if (resize === false) {
+      //   elements[i].className = elements[i].className + " show";
+      // } else {
+
+      // }
+    }
+  }
+};
+});
+
+;require.register("js/filter.js", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _equalWidth = require("./equalWidth");
+
+var _equalWidth2 = _interopRequireDefault(_equalWidth);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 exports.default = {
   init: function init() {
     if (document.getElementById("more-filters")) {
@@ -26841,10 +26897,12 @@ exports.default = {
   openFilters: function openFilters() {
     this.$filters.removeClass('hide');
     this.$toggle.addClass('open').text('Less filters -');
+    _equalWidth2.default.resizeElements(true);
   },
   closeFilters: function closeFilters() {
     this.$filters.addClass('hide');
     this.$toggle.removeClass('open').text('More filters +');
+    _equalWidth2.default.resizeElements(true);
   },
   checkFormState: function checkFormState() {
     var elements = this.$filters.find(':input');

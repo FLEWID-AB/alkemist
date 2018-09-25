@@ -14,7 +14,7 @@ defmodule Alkemist.FormView do
   def render_form_field(form, {key, %{type: :boolean} = opts}) do
     label = Map.get(opts, :label, Phoenix.Naming.humanize(key))
 
-    field_opts = get_field_opts(opts, %{class: "form-check-input"})
+    field_opts = get_field_opts(opts, %{class: "custom-control custom-checkbox"})
     group_class = "form-group row"
     group_class = case Keyword.get(field_opts, :required) do
       true -> group_class <> " required"
@@ -80,18 +80,22 @@ defmodule Alkemist.FormView do
   """
   def render_form_field(form, {key, opts} = field) do
     label = Map.get(opts, :label, Phoenix.Naming.humanize(key))
-    group_class = "form-group row"
+    group_class = "form-group"
     group_class = case Map.get(opts, :required) do
       true -> group_class <> " required"
       _ -> group_class
     end
     content_tag(:div, class: group_class) do
-      [
-        label(form, key, label, class: "control-label col-sm-2 col-form-label"),
-        content_tag(:div, class: "col-sm-10") do
+      content_tag(:div, class: "input-group") do
+        [
+          content_tag(:div, class: "input-group-prepend") do
+            content_tag(:span, class: "input-group-text equalWidth") do
+              label
+            end
+          end,
           input_element(form, field)
-        end
-      ]
+        ]
+      end
     end
   end
 
@@ -105,16 +109,17 @@ defmodule Alkemist.FormView do
           []
       end
 
-    field_opts = get_field_opts(opts, %{class: "form-check-input"})
-
-    PhoenixMTM.Helpers.collection_checkboxes(
-      form,
-      key,
-      collection,
-      input_opts: field_opts,
-      selected: selected,
-      mapper: &Alkemist.MTM.BootstrapMapper.bootstrap/6
-    )
+    field_opts = get_field_opts(opts, %{class: "custom-control custom-checkbox"})
+    content_tag(:div, class: "form-control checkboxes") do
+      PhoenixMTM.Helpers.collection_checkboxes(
+        form,
+        key,
+        collection,
+        input_opts: field_opts,
+        selected: selected,
+        mapper: &Alkemist.MTM.BootstrapMapper.bootstrap/6
+      )
+    end
   end
 
   defp input_element(form, {key, %{type: :select, collection: collection} = opts}) do

@@ -16,14 +16,14 @@
 
 
 <div class="title-and-scopes">
-  <h1><%= @plural_name %></h1>
-  <%= if any?(@scopes) do %>
-    <ul class="nav scopes">
+  <ul class="nav scopes">
+    <li class="title-wrapper"><h1><%= @plural_name %></h1></li>
+    <%= if any?(@scopes) do %>
       <%= for scope <- @scopes do %>
         <%= scope_link(@conn, scope, @struct) %>
       <% end %>
-    </ul>
-  <% end %>
+    <% end %>
+  </ul>
 </div>
 <%= if any?(@batch_actions) do %>
 <div class="row mt-1">
