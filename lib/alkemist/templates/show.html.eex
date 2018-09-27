@@ -1,15 +1,14 @@
-<div class="row">
-  <div class="col-md-6">
-    <h1><%= @singular_name %></h1>
-  </div>
-  <div class="col-md-2 page-actions">
+<div class="row mt-5">
+  <div class="col-md-8 page-actions">
     <ul class="nav justify-content-end">
       <li class="nav-item">
         <%= action_link("Back to List", @conn, :index, @mod, [class: "nav-link"]) %>
       </li>
+      <%= if Keyword.has_key?(@member_actions, :edit) do %>
       <li class="nav-item">
-        <%= action_link("Edit", @conn, :edit, @resource, [class: "nav-link"]) %>
+        <%= action_link("Edit #{assigns[:singular_name]}", @conn, :edit, @resource, [class: "nav-link"]) %>
       </li>
+      <% end %>
     </ul>
   </div>
 </div>

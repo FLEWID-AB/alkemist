@@ -25,6 +25,8 @@ defmodule AlkemistView do
   def member_action(conn, action, resource) do
     {action, opts} = action
 
+
+
     label =
       case Keyword.get(opts, :icon) do
         nil ->
@@ -67,11 +69,12 @@ defmodule AlkemistView do
   @doc """
   Create a link to the export action
   """
-  def export_action(conn, struct) do
+  def export_action(conn, struct, assigns) do
     query_params = get_default_link_params(conn)
 
+
     params = [conn, :export, query_params]
-    action(struct, params, label: "Export", link_opts: [class: "nav-link"])
+    action(struct, params, label: "Export #{assigns[:plural_name]}", link_opts: [class: "nav-link"])
   end
 
   @doc """
@@ -83,6 +86,29 @@ defmodule AlkemistView do
   end
 
   @doc """
+  Renders a batch action item
+  """
+  def batch_action_item(conn, struct, batch_action) do
+    {action, opts} =
+      if is_atom(batch_action) do
+        {batch_action, []}
+      else
+        batch_action
+      end
+
+    label = Keyword.get(opts, :label, Phoenix.Naming.humanize(action))
+
+    opts =
+      opts
+      |> Keyword.put(:to, "#")
+      |> Keyword.put(:class, "dropdown-item batch-action-item")
+      |> Keyword.delete(:label)
+      |> Keyword.put(:"data-action", action_path(struct, [conn, action]))
+
+    link(label, opts)
+  end
+
+  @doc """
   Creates a scope link
   """
   def scope_link(conn, scope, struct) do
@@ -90,7 +116,7 @@ defmodule AlkemistView do
 
     label =
       """
-      #{opts[:label]} <span class="badge badge-secondary">#{opts[:count]}</span>
+      <span class="label">#{opts[:label]}</span> <span class="count">#{opts[:count]}</span>
       """
       |> raw()
 
@@ -115,6 +141,7 @@ defmodule AlkemistView do
     field_string_value(val)
   end
 
+  defp field_string_value({:safe, _} = val), do: val
   defp field_string_value(val) when is_bitstring(val), do: raw(val)
 
   defp field_string_value(val) when is_boolean(val) do
@@ -129,6 +156,15 @@ defmodule AlkemistView do
     <i class="fas fa-fw #{icon}"></i>
     """
     |> raw()
+  end
+
+  defp field_string_value(%NaiveDateTime{} = nd) do
+    "#{nd.day}.#{nd.month}.#{nd.year} - #{nd.hour}:#{nd.minute}:#{nd.second}"
+  end
+
+  defp field_string_value(%Date{} = d) do
+    String.pad_leading("#{d.day}", 2, "0") <> "." <>
+    String.pad_leading("#{d.month}", 2, "0") <> ".#{d.year}"
   end
 
   defp field_string_value(val) when is_map(val), do: "#Object"

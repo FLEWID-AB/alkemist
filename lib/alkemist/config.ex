@@ -13,6 +13,9 @@ defmodule Alkemist.Config do
       # required when using the auto generated code
       router_helpers: MyAppWeb.Router.Helpers,
 
+      # Set a custom logo (optional), must be placed in the asset folder.
+      logo: "logo.svg",
+
       # Set a custom title or brand name (optional)
       title: "MyApp",
 
@@ -53,6 +56,7 @@ defmodule Alkemist.Config do
   @defaults [
     repo: nil,
     title: "Alkemist",
+    logo: false,
     router_helpers: Alkemist.Router.Helpers,
     authorization_provider: Alkemist.Authorization,
     query: [

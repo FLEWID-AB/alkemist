@@ -1,70 +1,100 @@
-<div class="row">
-  <div class="col-md-8">
-    <h1>List of <%= @plural_name %></h1>
+<div class="row mb-4 mt-4" id="<%= @struct %>-index">
+  <div class="col-md-9">
+    <%= if assigns[:filters] && any?(@filters) do %>
+      <%= render(AlkemistView, "_filter_view.html", assigns) %>
+    <% end %>
   </div>
-  <div class="col-md-4 page-actions">
-    <ul class="nav justify-content-end">
-      <%= for action <- @collection_actions do %>
-      <li class="nav-item">
-        <%= collection_action(@conn, action, @mod) %>
-      </li>
-      <% end %>
-      <%= if assigns[:has_export] do %>
-        <li class="nav-item">
-          <%= export_action(@conn, @struct) %>
-        </li>
-      <% end %>
-    </ul>
+  <div class="col-md-3 text-right page-actions">
+    <%= for action <- @collection_actions do %>
+      <%= collection_action(@conn, action, @mod) %>
+    <% end %>
+    <%= if assigns[:has_export] do %>
+      <%= export_action(@conn, @struct, assigns) %>
+    <% end %>
   </div>
 </div>
 
-<%= if any?(@scopes) do %>
-  <div class="row">
-    <div class="col">
-      <nav>
-        <ul class="nav nav-tabs">
-          <%= for scope <- @scopes do %>
-            <%= scope_link(@conn, scope, @struct) %>
-          <% end %>
-        </ul>
-      </nav>
+
+<div class="title-and-scopes">
+  <ul class="nav scopes">
+    <li class="title-wrapper"><h1><%= @plural_name %></h1></li>
+    <%= if any?(@scopes) do %>
+      <%= for scope <- @scopes do %>
+        <%= scope_link(@conn, scope, @struct) %>
+      <% end %>
+    <% end %>
+  </ul>
+</div>
+<%= if any?(@batch_actions) do %>
+<div class="row mt-1">
+  <%= form_for @conn, "", [id: "batch-action-form"], fn f -> %>
+
+  <% end %>
+  <div class="col-2 dropdown">
+    <button class="btn btn-default btn-sm dropdown-toggle" id="batch-menu-toggler" type="button" data-toggle="dropdown">Batch Actions</button>
+    <div class="dropdown-menu">
+      <%= for batch_action <- @batch_actions do %>
+        <%= batch_action_item(@conn, @struct, batch_action) %>
+      <% end %>
     </div>
   </div>
-<% end %>
-<div class="table-responsive">
-<table class="table index-table table-hover">
-  <thead>
-    <tr>
-      <%= for {field, _cb, opts} = column <- @columns do %>
-      <th class="<%= opts[:type] %>">
-        <%= Map.get(opts, :label) %>
-      </th>
-      <% end %>
-      <th class="member-actions">Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <%= for row <- @entries do %>
-      <tr>
-        <%= for {_, cb, opts} <- @columns do %>
-          <td class="<%= opts.type %>">
-            <%= if Map.has_key?(opts, :action) and not is_nil(opts.action) and not is_nil(Map.get(row, opts.assoc)) do %>
-              <a href="<%= resource_action_path(@conn, Map.fetch!(row, opts.assoc), opts.action) %>"><%= string_value(cb, row) %></a>
-            <% else %>
-              <%= unless Map.has_key?(opts, :assoc) and is_nil(Map.get(row, opts.assoc)) do %>
-                <%= string_value(cb, row) %>
-              <% end %>
-          <% end %>
-          </td>
-        <% end %>
-        <td class="member-actions">
-          <%= for action <- @member_actions do %>
-            <%= member_action(@conn, action, row) %>
-          <% end %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
 </div>
+<% end %>
+
+<div class="card main-content">
+  <div class="table-responsive">
+    <table class="table index-table table-hover">
+      <thead>
+        <tr>
+          <%= for {field, _cb, opts} = column <- @columns do %>
+            <%= if field == :selectable_column do %>
+              <th class="selectable">
+                <input class="toggle-all" id="selection-toggle-all" type="checkbox" />
+              </th>
+            <% else %>
+              <th class="<%= opts[:type] %>">
+                <%= Map.get(opts, :label) %>
+              </th>
+            <% end %>
+          <% end %>
+          <th class="member-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= for row <- @entries do %>
+          <tr class="clickable-row" data-href="<%= resource_action_path(@conn, row, :show) %>">
+            <%= for {field, cb, opts} <- @columns do %>
+              <%= if field == :selectable_column do %>
+                <td class="selectable">
+                  <input type="checkbox" class="collection-selection" value="<%= row.id %>" >
+                </td>
+              <%= else %>
+                <td class="<%= opts.type %>">
+                  <%= if Map.has_key?(opts, :action) and not is_nil(opts.action) and not is_nil(Map.get(row, opts.assoc)) do %>
+                    <a href="<%= resource_action_path(@conn, Map.fetch!(row, opts.assoc), opts.action) %>"><%= string_value(cb, row) %></a>
+                  <% else %>
+                    <%= unless Map.has_key?(opts, :assoc) and is_nil(Map.get(row, opts.assoc)) do %>
+                      <%= string_value(cb, row) %>
+                    <% end %>
+                <% end %>
+                </td>
+              <% end %>
+            <% end %>
+            <td class="member-actions">
+              <%= for action <- @member_actions do %>
+                <%= member_action(@conn, action, row) %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+
+
+
 <%= render("_pagination.html", assigns) %>

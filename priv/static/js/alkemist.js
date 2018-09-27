@@ -1689,7 +1689,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
   require = __makeRelativeRequire(require, {}, "@coreui/coreui");
   (function() {
     /*!
-  * CoreUI v2.0.4 (https://coreui.io)
+  * CoreUI v2.0.6 (https://coreui.io)
   * Copyright 2018 Łukasz Holeczek
   * Licensed under MIT (https://coreui.io)
   */
@@ -1720,7 +1720,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
 
   /**
    * --------------------------------------------------------------------------
-   * CoreUI (v2.0.4): ajax-load.js
+   * CoreUI (v2.0.6): ajax-load.js
    * Licensed under MIT (https://coreui.io/license)
    * --------------------------------------------------------------------------
    */
@@ -1732,7 +1732,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
      * ------------------------------------------------------------------------
      */
     var NAME = 'ajaxLoad';
-    var VERSION = '2.0.4';
+    var VERSION = '2.0.6';
     var DATA_KEY = 'coreui.ajaxLoad';
     var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
     var ClassName = {
@@ -1925,7 +1925,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
 
   /**
    * --------------------------------------------------------------------------
-   * CoreUI (v2.0.4): toggle-classes.js
+   * CoreUI (v2.0.6): toggle-classes.js
    * Licensed under MIT (https://coreui.io/license)
    * --------------------------------------------------------------------------
    */
@@ -1950,7 +1950,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
 
   /**
    * --------------------------------------------------------------------------
-   * CoreUI (v2.0.4): aside-menu.js
+   * CoreUI (v2.0.6): aside-menu.js
    * Licensed under MIT (https://coreui.io/license)
    * --------------------------------------------------------------------------
    */
@@ -1962,7 +1962,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
      * ------------------------------------------------------------------------
      */
     var NAME = 'aside-menu';
-    var VERSION = '2.0.4';
+    var VERSION = '2.0.6';
     var DATA_KEY = 'coreui.aside-menu';
     var EVENT_KEY = "." + DATA_KEY;
     var DATA_API_KEY = '.data-api';
@@ -2059,7 +2059,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
 
   /**
    * --------------------------------------------------------------------------
-   * CoreUI (v2.0.4): sidebar.js
+   * CoreUI (v2.0.6): sidebar.js
    * Licensed under MIT (https://coreui.io/license)
    * --------------------------------------------------------------------------
    */
@@ -2071,7 +2071,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
      * ------------------------------------------------------------------------
      */
     var NAME = 'sidebar';
-    var VERSION = '2.0.4';
+    var VERSION = '2.0.6';
     var DATA_KEY = 'coreui.sidebar';
     var EVENT_KEY = "." + DATA_KEY;
     var DATA_API_KEY = '.data-api';
@@ -2097,6 +2097,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
       BRAND_MINIMIZER: '.brand-minimizer',
       NAV_DROPDOWN_TOGGLE: '.nav-dropdown-toggle',
       NAV_DROPDOWN_ITEMS: '.nav-dropdown-items',
+      NAV_ITEM: '.nav-item',
       NAV_LINK: '.nav-link',
       NAVIGATION_CONTAINER: '.sidebar-nav',
       NAVIGATION: '.sidebar-nav > .nav',
@@ -2206,6 +2207,9 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
           var toggle = event.currentTarget.dataset.toggle;
           toggleClasses(toggle, ShowClassNames);
         });
+        $$$1(Selector.NAVIGATION + " > " + Selector.NAV_ITEM + " " + Selector.NAV_LINK + ":not(" + Selector.NAV_DROPDOWN_TOGGLE + ")").on(Event.CLICK, function () {
+          document.body.classList.remove('sidebar-show');
+        });
       }; // Static
 
 
@@ -2261,7 +2265,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
 
   /**
    * --------------------------------------------------------------------------
-   * CoreUI Utilities (v2.0.4): get-style.js
+   * CoreUI Utilities (v2.0.6): get-style.js
    * Licensed under MIT (https://coreui.io/license)
    * --------------------------------------------------------------------------
    */
@@ -2328,7 +2332,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
 
   /**
    * --------------------------------------------------------------------------
-   * CoreUI Utilities (v2.0.4): hex-to-rgb.js
+   * CoreUI Utilities (v2.0.6): hex-to-rgb.js
    * Licensed under MIT (https://coreui.io/license)
    * --------------------------------------------------------------------------
    */
@@ -2364,7 +2368,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
 
   /**
    * --------------------------------------------------------------------------
-   * CoreUI Utilities (v2.0.4): hex-to-rgba.js
+   * CoreUI Utilities (v2.0.6): hex-to-rgba.js
    * Licensed under MIT (https://coreui.io/license)
    * --------------------------------------------------------------------------
    */
@@ -2404,7 +2408,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
 
   /**
    * --------------------------------------------------------------------------
-   * CoreUI (v2.0.4): rgb-to-hex.js
+   * CoreUI (v2.0.6): rgb-to-hex.js
    * Licensed under MIT (https://coreui.io/license)
    * --------------------------------------------------------------------------
    */
@@ -2429,7 +2433,7 @@ require.register("@coreui/coreui/dist/js/coreui.js", function(exports, require, 
 
   /**
    * --------------------------------------------------------------------------
-   * CoreUI (v2.0.4): index.js
+   * CoreUI (v2.0.6): index.js
    * Licensed under MIT (https://coreui.io/license)
    * --------------------------------------------------------------------------
    */
@@ -26709,9 +26713,23 @@ var _select = require("select2");
 
 var _select2 = _interopRequireDefault(_select);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _has_many = require("./has_many");
 
-//import contentHandler from './contentHandler'
+var _has_many2 = _interopRequireDefault(_has_many);
+
+var _batch = require("./batch");
+
+var _batch2 = _interopRequireDefault(_batch);
+
+var _filter = require("./filter");
+
+var _filter2 = _interopRequireDefault(_filter);
+
+var _equalWidth = require("./equalWidth");
+
+var _equalWidth2 = _interopRequireDefault(_equalWidth);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 (0, _select2.default)($); // Import dependencies
 //
@@ -26725,10 +26743,210 @@ $(document).ready(function () {
   });
   $('select.select2').select2();
   $('input.datepicker').datepicker();
-});
+  _filter2.default.init();
+  _has_many2.default.init();
+  document.getElementById('selection-toggle-all') && _batch2.default.init();
+  makeRowClickable();
+  _equalWidth2.default.init();
 });
 
-require.alias("@chenfengyuan/datepicker/dist/datepicker.common.js", "@chenfengyuan/datepicker");
+function makeRowClickable() {
+  var $clickableRows = $('.clickable-row');
+  $clickableRows.children('td').not('.member-actions').on('click', function () {
+    window.location = $(this).parent().attr('data-href');
+  });
+}
+});
+
+;require.register("js/batch.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  init: function init() {
+    this.$toggler = $('#selection-toggle-all');
+    this.$batchToggler = $('#batch-menu-toggler');
+    this.$inputs = $('input.collection-selection');
+    this.$actions = $('.batch-action-item');
+    this.$batchForm = $('#batch-action-form');
+    this.toggleBatchAvailability();
+    this.bindListeners();
+  },
+  bindListeners: function bindListeners() {
+    var _this = this;
+
+    this.$toggler.on('change', function () {
+      _this.$inputs.prop('checked', _this.$toggler.is(':checked'));
+    });
+    this.$inputs.on('change', function () {
+      _this.toggleBatchAvailability();
+    });
+    this.$actions.on('click', function (e) {
+      e.preventDefault();
+      var $link = $(e.target);
+      var conf = $link.attr('data-confirm');
+      var values = [];
+      _this.$inputs.each(function (index, input) {
+        var $input = $(input);
+        if ($input.is(':checked')) {
+          values.push($input.val());
+        }
+      });
+
+      if (!conf || confirm(conf)) {
+        _this.$batchForm.attr('action', $link.attr('data-action'));
+        _this.$batchForm.find('.batch-id').remove();
+        for (var i = 0, value; value = values[i]; i++) {
+          _this.$batchForm.append('<input type="hidden" name="batch_ids[]" value="' + value + '" class="batch-id">');
+        }
+        _this.$batchForm.submit();
+      }
+    });
+  },
+  toggleBatchAvailability: function toggleBatchAvailability() {
+    var any = this.$inputs.is(':checked');
+    if (any == true) {
+      this.$batchToggler.removeClass('disabled');
+    } else {
+      this.$batchToggler.addClass('disabled');
+    }
+  }
+};
+});
+
+;require.register("js/equalWidth.js", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  init: function init(resize) {
+    this.resizeElements(true);
+    // window.onresize = function(){
+    //   equalWidth.resizeElements(true);
+    // }
+  },
+  resizeElements: function resizeElements(resize) {
+    console.log("RESIZE?!?!!");
+    var elements = document.getElementsByClassName("equalWidth"),
+        allWidths = [],
+        i = 0;
+    if (resize === true) {
+      for (i = 0; i < elements.length; i++) {
+        elements[i].style.width = 'auto';
+      }
+    }
+    for (i = 0; i < elements.length; i++) {
+      var elementWidth = elements[i].clientWidth;
+      allWidths.push(elementWidth);
+    }
+
+    console.log(allWidths);
+    console.log(Math.max.apply(Math, allWidths));
+
+    for (i = 0; i < elements.length; i++) {
+      elements[i].style.width = Math.max.apply(Math, allWidths) + 'px';
+      // Optional: Add show class to prevent FOUC
+      // if (resize === false) {
+      //   elements[i].className = elements[i].className + " show";
+      // } else {
+
+      // }
+    }
+  }
+};
+});
+
+;require.register("js/filter.js", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _equalWidth = require("./equalWidth");
+
+var _equalWidth2 = _interopRequireDefault(_equalWidth);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  init: function init() {
+    if (document.getElementById("more-filters")) {
+      this.$filters = $('.hidden-filter');
+      this.$toggle = $('#more-filters');
+      this.bindListeners();
+      this.checkFormState();
+    }
+  },
+  bindListeners: function bindListeners() {
+    var _this = this;
+
+    this.$toggle.on('click', function (e) {
+      e.preventDefault();
+      if (_this.$toggle.hasClass('open')) {
+        _this.closeFilters();
+      } else {
+        _this.openFilters();
+      }
+    });
+  },
+  openFilters: function openFilters() {
+    this.$filters.removeClass('hide');
+    this.$toggle.addClass('open').text('Less filters -');
+    _equalWidth2.default.resizeElements(true);
+  },
+  closeFilters: function closeFilters() {
+    this.$filters.addClass('hide');
+    this.$toggle.removeClass('open').text('More filters +');
+    _equalWidth2.default.resizeElements(true);
+  },
+  checkFormState: function checkFormState() {
+    var elements = this.$filters.find(':input');
+    var shouldShow = elements.filter(function (index, elem) {
+      return $(elem).val();
+    }).length > 0;
+
+    if (shouldShow) {
+      this.openFilters();
+    }
+  }
+};
+});
+
+;require.register("js/has_many.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  init: function init() {
+    this.$containers = $('.alkemist_hm--container');
+    if (this.$containers.length > 0) {
+      this.bindListeners();
+    }
+  },
+  bindListeners: function bindListeners() {
+    this.$containers.on('click', '.alkemist_hm--add', function (e) {
+      e.preventDefault();
+      var $container = $(e.target).parents('.alkemist_hm--container');
+      var index = $container.children('.alkemist_hm--group').length;
+      var template = $container.attr('data-template').replace(/\$index/g, index);
+      $container.find('.alkemist_hm--groups').append(template.replace('$index', index));
+    }).on('click', '.alkemist_hm--group .close', function (e) {
+      e.preventDefault();
+      var $container = $(e.target).parents('.alkemist_hm--group');
+      $container.remove();
+    });
+  }
+};
+});
+
+;require.alias("@chenfengyuan/datepicker/dist/datepicker.common.js", "@chenfengyuan/datepicker");
 require.alias("@coreui/coreui/dist/js/coreui.js", "@coreui/coreui");
 require.alias("bootstrap/dist/js/bootstrap.js", "bootstrap");
 require.alias("jquery/dist/jquery.js", "jquery");

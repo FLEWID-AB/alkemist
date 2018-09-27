@@ -1,0 +1,25 @@
+.alkemist_hm--group {
+  padding: 2.5rem 0 2rem;
+  border-bottom: 1px solid $gray-200;
+  &:last-child {
+    border-bottom: none;
+  }
+  .close {
+    position: absolute;
+    right: 1rem;
+    margin-top: -2rem;
+  }
+}
+
+.alkemist_hm--container {
+  .button-row {
+    margin: 2rem 0 0;
+  }
+}
+
+.form-group.required {
+  label:after {
+    content: "*";
+    color: red;
+  }
+}

@@ -1,5 +1,24 @@
 <aside class="aside-menu">
-  <%= if assigns[:filters] && any?(@filters) do %>
-   <%= render(AlkemistView, "_filter_view.html", assigns) %>
+  <%= if assigns[:sidebars] && any?(@sidebars) do %>
+    <%= for {label, opts} <- @sidebars do %>
+      <div class="row">
+        <div class="col">
+          <div class="card mx-1">
+            <div class="card-header">
+              <h5><%= label %></h5>
+            </div>
+            <div class="card-body">
+              <%= if opts[:partial] do %>
+                <% {view, partial} = opts[:partial] %>
+                <%= render(view, partial, assigns) %>
+              <% end %>
+              <%= if opts[:content] do %>
+                <%= opts[:content] %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
   <% end %>
 </aside>

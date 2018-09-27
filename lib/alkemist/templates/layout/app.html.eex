@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Alkemist</title>
+    <meta name="csrf-token" content="<%= Plug.CSRFProtection.get_csrf_token() %>">
+    <title><%= site_title() %></title>
     <% {mod, template} = styles_view() %>
     <%= render mod, template, conn: @conn %>
 </head>
@@ -17,17 +18,13 @@
         <main role="main" class="main">
           <div class="container-fluid">
             <%= render "_flash.html", assigns %>
-            <div class="card main-content">
-              <div class="card-body">
-                <%= render @view_module, @view_template, assigns %>
-              </div>
-            </div>
+            <%= render @view_module, @view_template, assigns %>
           </div>
         </main>
         <% {mod, template} = aside_view() %>
         <%= render mod, template, assigns %>
       </div>
     <% {mod, template} = scripts_view() %>
-    <%= render mod, template, conn: @conn %>
+    <%= render mod, template, assigns %>
   </body>
 </html>
