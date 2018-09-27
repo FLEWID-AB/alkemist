@@ -567,16 +567,21 @@ defmodule Alkemist.Assign do
     end
   end
 
-  def format_action(action, singular) do
-    opts =
-      case Keyword.get(@default_action_opts, action) do
-        nil -> []
-        opts -> opts
-      end
-    if singular do
-      opts = opts ++ [singular_name: singular]
+  def format_action({action, opts}, singular) do
+    opts = case Keyword.get(@default_action_opts, action) do
+      nil -> opts
+      default -> Keyword.merge(default, opts)
     end
-
+    opts = if singular do
+      Keyword.put(opts, :singular_name, singular)
+    else
+      opts
+    end
     format_action({action, opts})
+  end
+
+  def format_action(action, singular) when is_atom(action) do
+
+    format_action({action, []}, singular)
   end
 end
