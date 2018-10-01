@@ -136,6 +136,38 @@ defmodule AlkemistView do
     end
   end
 
+  @doc """
+  Creates the header cell for the index table
+  Accepts the conn, struct and actual column created by `Alkemist.Assign.map_column`
+  """
+  def header_cell(conn, struct, {field, _cb, %{sortable: true} = opts}) do
+    query_params = get_default_link_params(conn)
+    direction = if Map.get(query_params, "s") == "#{field}+asc" do
+          "desc"
+        else
+          "asc"
+        end
+    icon = cond do
+      Map.get(query_params, "s") == "#{field}+asc" -> "fas fa-sort-up"
+      Map.get(query_params, "s") == "#{field}+desc" -> "fas fa-sort-down"
+      true -> "fas fa-sort"
+    end
+    query_params = Map.put(query_params, "s", "#{field}+#{direction}")
+    class = ["index-header", Map.get(opts, :type)]
+
+    label = Map.get(opts, :label) <> " <i class=\"#{icon}\"></i>"
+    content_tag(:th, class: Enum.join(class, " ")) do
+      link(raw(label), to: action_path(struct, [conn, :index, query_params]))
+    end
+  end
+  def header_cell(_conn, _struct, {_field, _callback, opts}) do
+    label = Map.get(opts, :label)
+    class = ["index-header", Map.get(opts, :type)]
+    content_tag(:th, class: Enum.join(class, " ")) do
+      label
+    end
+  end
+
   def string_value(callback, row) do
     val = callback.(row)
     field_string_value(val)

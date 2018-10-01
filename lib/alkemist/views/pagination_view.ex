@@ -3,6 +3,7 @@ defmodule Alkemist.PaginationView do
   import Alkemist.ViewHelpers
 
   @max_page_links 5
+  @per_page_values [10, 25, 50, 100]
 
   @doc """
   Creates Bootstrap 4 pagination links
@@ -10,9 +11,29 @@ defmodule Alkemist.PaginationView do
   def pagination_links(conn, pagination, resource) do
     if pagination.total_pages > 1 do
       content_tag(:ul, class: "pagination") do
-        [previous_link(conn, pagination, resource)] ++
-          middle_page_links(conn, pagination, resource) ++ [next_link(conn, pagination, resource)]
+        [first_link(conn, pagination, resource),
+          previous_link(conn, pagination, resource)] ++
+          middle_page_links(conn, pagination, resource) ++
+          [next_link(conn, pagination, resource), last_link(conn, pagination, resource)]
       end
+    end
+  end
+
+  defp first_link(conn, %{current_page: current_page}, resource) do
+    if current_page == 1 do
+      page_link("First", "#", "disabled")
+    else
+      params = get_link_params(conn, 1)
+      page_link("First", resource_action_path(conn, resource, :index, params))
+    end
+  end
+
+  defp last_link(conn, %{current_page: current_page, total_pages: total_pages}, resource) do
+    if current_page == total_pages do
+      page_link("Last", "#", "disabled")
+    else
+      params = get_link_params(conn, total_pages)
+      page_link("Last", resource_action_path(conn, resource, :index, params))
     end
   end
 
@@ -65,6 +86,21 @@ defmodule Alkemist.PaginationView do
     end)
   end
 
+  def per_page_links(conn, %{per_page: per_page}, resource) do
+    content_tag(:ul, class: "per-page-nav") do
+      Enum.map(@per_page_values, fn val ->
+        content_tag(:li, []) do
+          if val == per_page do
+            "#{val}"
+          else
+            params = get_per_page_params(conn, val)
+            link("#{val}", to: resource_action_path(conn, resource, :index, params))
+          end
+        end
+      end)
+    end
+  end
+
   defp page_link(page, path, additional_class \\ "") do
     class = "page-item #{additional_class}"
 
@@ -77,5 +113,11 @@ defmodule Alkemist.PaginationView do
     conn
     |> get_default_link_params()
     |> Map.put(:page, page)
+  end
+
+  defp get_per_page_params(conn, per_page) do
+    conn
+    |> get_default_link_params()
+    |> Map.put(:per_page, per_page)
   end
 end

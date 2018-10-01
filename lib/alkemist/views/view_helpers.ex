@@ -71,7 +71,7 @@ defmodule Alkemist.ViewHelpers do
     |> Map.to_list()
     |> Enum.reduce([], fn {k, v}, acc ->
       case k do
-        a when a in ["scope", "q", "s"] ->
+        a when a in ["scope", "q", "s", "per_page"] ->
           if v in [nil, %{}, [], ""] do
             acc
           else
