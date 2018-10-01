@@ -52,9 +52,7 @@
                 <input class="toggle-all" id="selection-toggle-all" type="checkbox" />
               </th>
             <% else %>
-              <th class="<%= opts[:type] %>">
-                <%= Map.get(opts, :label) %>
-              </th>
+              <%= header_cell(@conn, @struct, column) %>
             <% end %>
           <% end %>
           <th class="member-actions">Actions</th>

@@ -11,7 +11,7 @@ defmodule Alkemist.Query.Search do
       params
       |> prepare_params(query)
 
-    Turbo.Ecto.searchq(query, params)
+    Turbo.Ecto.searchq(query, params) |> Turbo.Ecto.sortq(params)
   end
 
   @doc """
