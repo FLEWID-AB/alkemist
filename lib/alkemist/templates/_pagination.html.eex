@@ -1,1 +1,12 @@
-<%= pagination_links(@conn, @pagination, @resource) %>
+<div class="row pagination-row">
+  <div class="col-4">
+    Showing <%= Enum.count(@entries) %> of <%= @pagination.total_count %>
+  </div>
+  
+  <div class="col-4">
+    <%= pagination_links(@conn, @pagination, @resource) %>
+  </div>
+  <div class="col-4">
+    <%= per_page_links(@conn, @pagination, @resource) %>
+  </div>
+</div>

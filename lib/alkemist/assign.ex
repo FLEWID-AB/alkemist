@@ -20,6 +20,7 @@ defmodule Alkemist.Assign do
   ]
   @default_search_provider Alkemist.Config.search_provider()
   @default_pagination_provider Alkemist.Config.pagination_provider()
+  @sortable_types ~w(string integer float date datetime)a
 
   @doc """
   Creates the default assigns for a controller index action.
@@ -65,6 +66,7 @@ defmodule Alkemist.Assign do
       |> do_preload(opts[:preload])
       |> repo.all()
 
+    IO.inspect(pagination)
     [
       struct: Utils.get_struct(resource),
       resource: resource,
@@ -357,7 +359,7 @@ defmodule Alkemist.Assign do
         resource
       end
 
-    unless Map.has_key?(opts, :field), do: opts = Map.put(opts, :field, :id)
+    opts = unless Map.has_key?(opts, :field), do: Map.put(opts, :field, :id), else: opts
     # check for assoc & field opts
     assoc =
       cond do
@@ -378,10 +380,18 @@ defmodule Alkemist.Assign do
     end
   end
 
+  defp check_sortable(opts) do
+    case Map.get(opts, :type) do
+      a when a in @sortable_types -> Map.put(opts, :sortable, true)
+      _ -> opts
+    end
+  end
+
   # Creates an Enum of field and callback
   defp map_column({field, callback, opts}, resource) when is_atom(field) do
     opts =
       Map.put(opts, :type, get_field_type(field, resource))
+      |> check_sortable()
       |> check_for_assoc(resource)
 
     {field, callback, opts}
