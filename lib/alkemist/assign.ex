@@ -66,7 +66,6 @@ defmodule Alkemist.Assign do
       |> do_preload(opts[:preload])
       |> repo.all()
 
-    IO.inspect(pagination)
     [
       struct: Utils.get_struct(resource),
       resource: resource,
@@ -329,6 +328,7 @@ defmodule Alkemist.Assign do
       resource |> Alkemist.Config.repo().preload(preloads)
     end
   end
+
 
   # Creates a List with the default columns to display
   def get_default_columns(resource) do

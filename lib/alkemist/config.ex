@@ -13,6 +13,9 @@ defmodule Alkemist.Config do
       # required when using the auto generated code
       router_helpers: MyAppWeb.Router.Helpers,
 
+      # set a prefix on the global level - this will be prepended to the auto-generated routes if it is set
+      route_prefix: :admin,
+
       # Set a custom logo (optional), must be placed in the asset folder.
       logo: "logo.svg",
 
@@ -58,6 +61,7 @@ defmodule Alkemist.Config do
     title: "Alkemist",
     logo: false,
     router_helpers: Alkemist.Router.Helpers,
+    route_prefix: nil,
     authorization_provider: Alkemist.Authorization,
     query: [
       search: Alkemist.Query.Search,
@@ -94,6 +98,13 @@ defmodule Alkemist.Config do
   """
   def router_helpers(application \\ :alkemist) do
     get(:router_helpers, application)
+  end
+
+  @doc """
+  Returns the prefix or scope for the routes
+  """
+  def route_prefix(application \\ :alkemist) do
+    get(:route_prefix, application)
   end
 
   @doc """
