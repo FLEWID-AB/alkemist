@@ -69,7 +69,7 @@ defmodule AlkemistView do
   @doc """
   Create a link to the export action
   """
-  def export_action(conn, struct, assigns) do
+  def export_action(conn, struct, assigns \\ []) do
     query_params = get_default_link_params(conn)
 
 
@@ -81,7 +81,7 @@ defmodule AlkemistView do
   Returns the path for a controller action
   """
   def action_path(struct, params) do
-    path_function_name = String.to_atom("#{struct}_path")
+    path_function_name = Alkemist.Utils.default_struct_helper(struct)
     apply(Alkemist.Config.router_helpers(), path_function_name, params)
   end
 

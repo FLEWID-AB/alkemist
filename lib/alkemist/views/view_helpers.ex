@@ -88,9 +88,9 @@ defmodule Alkemist.ViewHelpers do
   def resource_action_path(conn, resource, action, params \\ %{})
 
   def resource_action_path(conn, resource, action, params) when is_map(resource) do
-    struct = Utils.get_struct(resource)
+    helper = Utils.default_resource_helper(resource)
 
-    apply(Alkemist.Config.router_helpers(), String.to_atom("#{struct}_path"), [
+    apply(Alkemist.Config.router_helpers(), helper, [
       conn,
       action,
       resource,
@@ -99,9 +99,9 @@ defmodule Alkemist.ViewHelpers do
   end
 
   def resource_action_path(conn, resource, action, params) do
-    struct = Utils.get_struct(resource)
+    helper = Utils.default_resource_helper(resource)
 
-    apply(Alkemist.Config.router_helpers(), String.to_atom("#{struct}_path"), [
+    apply(Alkemist.Config.router_helpers(), helper, [
       conn,
       action,
       params

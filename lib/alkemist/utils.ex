@@ -180,4 +180,33 @@ defmodule Alkemist.Utils do
       {:error, :invalid_field}
     end
   end
+
+  @doc """
+  Returns the default helper method for a resource to get the helper path. This can be overridden on a controller level
+
+  ## Examples
+
+    iex> Utils.default_resource_helper(Alkemist.Post)
+    :post_path
+  """
+  def default_resource_helper(resource) do
+    struct = get_struct(resource)
+    default_struct_helper(struct)
+  end
+
+  @doc """
+  Returns the default helper method based on teh struct
+
+  ## Examples
+
+    iex> Utils.default_struct_helper(:post)
+    :post_path
+  """
+  def default_struct_helper(struct) do
+    prefix = case Alkemist.Config.route_prefix() do
+      nil -> ""
+      val -> "#{val}_"
+    end
+    String.to_atom("#{prefix}#{struct}_path")
+  end
 end
