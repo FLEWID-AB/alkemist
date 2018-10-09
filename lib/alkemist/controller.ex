@@ -537,7 +537,7 @@ defmodule Alkemist.Controller do
             if opts[:success_callback] do
               opts[:success_callback].(new_resource)
             else
-              path = String.to_atom("#{Utils.get_struct(@resource)}_path")
+              path = String.to_atom("#{Utils.default_resource_helper(@resource)}")
 
               conn
               |> Phoenix.Controller.put_flash(
@@ -629,7 +629,7 @@ defmodule Alkemist.Controller do
               if opts[:success_callback] do
                 opts[:success_callback].(new_resource)
               else
-                path = String.to_atom("#{Utils.get_struct(@resource)}_path")
+                path = String.to_atom("#{Utils.default_resource_helper(@resource)}")
 
                 conn
                 |> Phoenix.Controller.put_flash(
@@ -704,7 +704,7 @@ defmodule Alkemist.Controller do
               if opts[:success_callback] do
                 opts[:success_callback].(deleted)
               else
-                path = String.to_atom("#{Utils.get_struct(@resource)}_path")
+                path = String.to_atom("#{Utils.default_resource_helper(@resource)}")
 
                 conn
                 |> Phoenix.Controller.put_flash(
@@ -720,7 +720,7 @@ defmodule Alkemist.Controller do
               if opts[:error_callback] do
                 opts[:error_callback].(message)
               else
-                path = String.to_atom("#{Utils.get_struct(@resource)}_path")
+                path = String.to_atom("#{Utils.default_resource_helper(@resource)}")
 
                 message =
                   if message == :forbidden do
