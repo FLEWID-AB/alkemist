@@ -129,19 +129,24 @@ defmodule Alkemist.Controller do
   @type filter :: atom() | keyword()
   @type field :: atom() | {atom(), map()} | %{title: string(), fields: [{atom(), map()}]}
 
+
+  Module.register_attribute __MODULE__, :menu_items, accumulate: true, persist: true
+
   defmacro __using__(_) do
     Code.ensure_compiled(Alkemist.MenuRegistry)
-
     quote do
       import Alkemist.Assign
       import Alkemist.Controller
       @behaviour Alkemist.Controller
       import Ecto.Query
-
       if @resource !== nil do
         menu(Alkemist.Utils.plural_name(@resource))
       end
     end
+  end
+
+  def menu_items do
+    @menu_items
   end
 
   @doc """
