@@ -6,23 +6,9 @@ defmodule Alkemist.MenuRegistry do
   You can define custom labels and options in your resource controllers.
   See `Alkemist.Controller`
   """
-  use GenServer
-
-  @me __MODULE__
-
-  def start(args \\ []) do
-    unless File.exists?(cache_path()) do
-      File.mkdir_p(cache_path())
-    end
-    GenServer.start(__MODULE__, args, name: @me)
-  end
-
-  def init(args) do
-    {:ok, args}
-  end
 
   def register_menu_item(module, label, opts) do
-    ensure_started()
+    ensure_setup()
 
     if label == false do
       unregister_menu_item(module)
@@ -34,59 +20,52 @@ defmodule Alkemist.MenuRegistry do
         |> Keyword.put_new(:parent, nil)
         |> Enum.into(%{})
 
-        GenServer.cast(@me, {:set, module, menu})
+      add_menu(module, menu)
     end
   end
 
   def unregister_menu_item(module) do
-    ensure_started()
-    GenServer.cast(@me, {:remove, module})
+    ensure_setup()
+    remove_menu(module)
   end
 
   def cleanup do
-    GenServer.cast(@me, :remove_all)
+    delete_all()
   end
 
   def menu_items do
-    ensure_started()
+    ensure_setup()
 
-    GenServer.call(@me, :get_all)
+    get_cached_menu_items()
     |> Enum.map(fn {_, i} -> i end)
     |> build_tree()
     |> sort()
   end
 
-  def handle_cast({:set, module, menu}, state) do
-    state = state |> Keyword.put(module, menu)
-
+  defp add_menu(module, menu) do
     case Poison.encode(menu) do
       {:ok, json} -> File.write(module_path(module), json)
       _ -> :ok
     end
-    {:noreply, state}
   end
 
-  def handle_cast({:remove, module}, state) do
-    state = state |> Keyword.delete(module)
-
+  defp remove_menu(module) do
     if File.exists?(module_path(module)) do
       File.rm(module_path(module))
     end
-
-    {:noreply, state}
   end
 
-  def handle_cast(:remove_all, _state) do
-    {:noreply, []}
-  end
-
-  def handle_call(:get_all, _from, state) do
-    state = if File.exists?(cache_path()) do
-      get_cached_menu_items()
-    else
-      state
+  defp delete_all() do
+    ensure_setup()
+    case File.ls(cache_path()) do
+      {:ok, files} ->
+        files
+        |> Enum.each(fn f ->
+          path = Path.join([cache_path(), f])
+          File.rm(path)
+        end)
+      _ -> :error
     end
-    {:reply, state, state}
   end
 
   defp get_cached_menu_items do
@@ -99,8 +78,8 @@ defmodule Alkemist.MenuRegistry do
           case Poison.decode(content) do
             {:ok, menu} ->
               menu = AtomicMap.convert(menu, safe: false)
-              menu = case menu.resource do
-                nil -> menu
+              menu = case Map.get(menu, :resource) do
+                nil -> Map.put(menu, :resource, nil)
                 val -> Map.put(menu, :resource, String.to_atom(val))
               end
               acc ++ [{mod, menu}]
@@ -175,10 +154,10 @@ defmodule Alkemist.MenuRegistry do
 
   defp build_tree([], results), do: results
 
-  defp ensure_started do
-    case Process.whereis(@me) do
-      nil -> start()
-      _ -> :ok
+
+  defp ensure_setup do
+    unless File.exists?(cache_path()) do
+      File.mkdir_p(cache_path())
     end
   end
 end
