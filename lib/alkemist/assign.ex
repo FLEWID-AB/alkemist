@@ -380,9 +380,14 @@ defmodule Alkemist.Assign do
     end
   end
 
-  defp check_sortable(opts) do
+  defp check_sortable(opts, field) do
     case Map.get(opts, :type) do
-      a when a in @sortable_types -> Map.put(opts, :sortable, true)
+      a when a in @sortable_types ->
+        unless field == nil do
+          Map.put(opts, :sortable, true)
+        else
+          opts
+        end
       _ -> opts
     end
   end
@@ -391,7 +396,7 @@ defmodule Alkemist.Assign do
   defp map_column({field, callback, opts}, resource) when is_atom(field) do
     opts =
       Map.put(opts, :type, get_field_type(field, resource))
-      |> check_sortable()
+      |> check_sortable(field)
       |> check_for_assoc(resource)
 
     {field, callback, opts}
@@ -519,7 +524,11 @@ defmodule Alkemist.Assign do
     case resource.__schema__(:type, field) do
       val when val in [:boolean, :integer, :date, :datetime, :float] -> val
       {:embed, _} -> :embed
-      :id -> :select
+      :id -> if field == :id do
+        :integer
+      else
+        :select
+      end
       _ -> :string
     end
   end
