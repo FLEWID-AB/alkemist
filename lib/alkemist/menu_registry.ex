@@ -11,6 +11,9 @@ defmodule Alkemist.MenuRegistry do
   @me __MODULE__
 
   def start(args \\ []) do
+    unless File.exists?(cache_path()) do
+      File.mkdir_p(cache_path())
+    end
     GenServer.start(__MODULE__, args, name: @me)
   end
 
@@ -31,13 +34,12 @@ defmodule Alkemist.MenuRegistry do
         |> Keyword.put_new(:parent, nil)
         |> Enum.into(%{})
 
-      GenServer.cast(@me, {:set, module, menu})
+        GenServer.cast(@me, {:set, module, menu})
     end
   end
 
   def unregister_menu_item(module) do
     ensure_started()
-
     GenServer.cast(@me, {:remove, module})
   end
 
@@ -56,11 +58,21 @@ defmodule Alkemist.MenuRegistry do
 
   def handle_cast({:set, module, menu}, state) do
     state = state |> Keyword.put(module, menu)
+
+    case Poison.encode(menu) do
+      {:ok, json} -> File.write(module_path(module), json)
+      _ -> :ok
+    end
     {:noreply, state}
   end
 
   def handle_cast({:remove, module}, state) do
     state = state |> Keyword.delete(module)
+
+    if File.exists?(module_path(module)) do
+      File.rm(module_path(module))
+    end
+
     {:noreply, state}
   end
 
@@ -69,7 +81,43 @@ defmodule Alkemist.MenuRegistry do
   end
 
   def handle_call(:get_all, _from, state) do
+    state = if File.exists?(cache_path()) do
+      get_cached_menu_items()
+    else
+      state
+    end
     {:reply, state, state}
+  end
+
+  defp get_cached_menu_items do
+    case File.ls(cache_path()) do
+      {:ok, files} ->
+        files
+        |> Enum.reduce([], fn f, acc ->
+          mod = String.to_atom(f)
+          content = File.read!(Path.join([cache_path(), f]))
+          case Poison.decode(content) do
+            {:ok, menu} ->
+              menu = AtomicMap.convert(menu, safe: false)
+              menu = case menu.resource do
+                nil -> menu
+                val -> Map.put(menu, :resource, String.to_atom(val))
+              end
+              acc ++ [{mod, menu}]
+            _ -> acc ++ [{mod, %{}}]
+          end
+        end)
+
+      _ -> []
+    end
+  end
+
+  defp cache_path do
+    Path.join([System.tmp_dir!(), "#{Mix.Phoenix.otp_app()}", "alkemist"])
+  end
+
+  defp module_path(module) do
+    Path.join([cache_path(), to_string(module)])
   end
 
   defp sort(menu_items) do
