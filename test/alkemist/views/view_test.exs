@@ -32,6 +32,19 @@ defmodule Alkemist.ViewTest do
     end
   end
 
+  describe "batch_action_item" do
+    test "it creates a batch action from atom", %{conn: conn} do
+      action = :export
+      assert link = View.batch_action_item(conn, :post, action) |> Phoenix.HTML.safe_to_string()
+      assert link =~ "data-action=\"/posts/export\""
+    end
+
+    test "it creates batch action with options", %{conn: conn} do
+      assert link = View.batch_action_item(conn, :post, {:export, [label: "Export this"]}) |> Phoenix.HTML.safe_to_string()
+      assert link =~ "Export this"
+    end
+  end
+
   describe "collection_action" do
     test "it creates a basic link", %{conn: conn} do
       action = {:new, [label: "Test"]}
