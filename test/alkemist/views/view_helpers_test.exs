@@ -53,4 +53,27 @@ defmodule Alkemist.ViewHelpersTest do
     params = %{"scope" => "", "q" => %{}, "s" => nil}
     assert %{} == ViewHelpers.get_default_link_params(%{params: params})
   end
+
+  test "right_header_view returns value from config" do
+    assert ViewHelpers.right_header_view() ==
+             Keyword.get(Alkemist.Config.get(:views), :right_header)
+  end
+
+  test "views return value from config" do
+    assert ViewHelpers.left_header_view() == Keyword.get(Alkemist.Config.get(:views), :left_header)
+
+    assert ViewHelpers.right_header_view() ==
+             Keyword.get(Alkemist.Config.get(:views), :right_header)
+
+    assert ViewHelpers.sidebar_view() == Keyword.get(Alkemist.Config.get(:views), :sidebar)
+    assert ViewHelpers.aside_view() == Keyword.get(Alkemist.Config.get(:views), :aside)
+  end
+
+  test "site_title returns value from config" do
+    assert ViewHelpers.site_title() == Alkemist.Config.get(:title)
+  end
+
+  test "menu_items returns value from MenuRegistry" do
+    assert ViewHelpers.menu_items() == Alkemist.MenuRegistry.menu_items()
+  end
 end

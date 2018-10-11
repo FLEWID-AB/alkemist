@@ -72,9 +72,13 @@ defmodule Alkemist.Config do
       right_header: {Alkemist.LayoutView, "_right_header.html"},
       left_header: {Alkemist.LayoutView, "_left_header.html"},
       sidebar: {Alkemist.LayoutView, "_sidebar_navigation.html"},
+      filter: {AlkemistView, "_filter_view.html"},
       aside: {Alkemist.LayoutView, "_aside.html"},
       styles: {Alkemist.LayoutView, "_styles.html"},
       scripts: {Alkemist.LayoutView, "_scripts.html"}
+    ],
+    decorators: [
+      filter: [Alkemist.SearchView, :filter_field_decorator]
     ]
   ]
 
@@ -105,6 +109,14 @@ defmodule Alkemist.Config do
   """
   def route_prefix(application \\ :alkemist) do
     get(:route_prefix, application)
+  end
+
+  @doc """
+  Returns the decorator for given areaa
+  """
+  def filter_decorator(application \\ :alkemist) do
+    decorators = get(:decorators, application)
+    Keyword.get(decorators, :filter, @defaults[:decorators][:filter])
   end
 
   @doc """

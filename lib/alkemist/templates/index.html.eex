@@ -1,7 +1,8 @@
 <div class="row mb-4 mt-4" id="<%= @struct %>-index">
   <div class="col-md-9">
     <%= if assigns[:filters] && any?(@filters) do %>
-      <%= render(AlkemistView, "_filter_view.html", assigns) %>
+      <% {mod, template} = filter_view() %>
+      <%= render mod, template, assigns %>
     <% end %>
   </div>
   <div class="col-md-3 text-right page-actions">
