@@ -92,7 +92,7 @@ defmodule Alkemist.MenuRegistry do
   end
 
   defp cache_path do
-    Path.join([System.tmp_dir!(), "#{Mix.Phoenix.otp_app()}", "alkemist"])
+    Path.join([System.tmp_dir!(), "#{Alkemist.Config.get(:otp_app)}", "alkemist"])
   end
 
   defp module_path(module) do
