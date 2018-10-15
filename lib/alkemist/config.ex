@@ -10,6 +10,9 @@ defmodule Alkemist.Config do
       # required - set your app's Ecto Repo
       repo: MyApp.Repo,
 
+      # required - set your app's otp_app name
+      otp_app: "my-app",
+
       # required when using the auto generated code
       router_helpers: MyAppWeb.Router.Helpers,
 
@@ -58,6 +61,7 @@ defmodule Alkemist.Config do
 
   @defaults [
     repo: nil,
+    otp_app: nil,
     title: "Alkemist",
     logo: false,
     router_helpers: Alkemist.Router.Helpers,
