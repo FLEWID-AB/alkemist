@@ -91,12 +91,18 @@ defmodule Alkemist.MenuRegistry do
     end
   end
 
-  defp cache_path do
-    Path.join([System.tmp_dir!(), "#{Alkemist.Config.get(:cache_folder)}", "alkemist"])
+  defp cache_path(path \\ nil) do
+    if is_nil(path), do: path = Alkemist.Config.get(:web_interface)
+    Path.join([System.tmp_dir!(), "#{path}", "alkemist"])
+  end
+
+  defp app_from_module(module) do
+    String.split(module, ".") |> Enum.at(1)
   end
 
   defp module_path(module) do
-    Path.join([cache_path(), to_string(module)])
+    app_path = app_from_module(to_string(module))
+    Path.join([cache_path(app_path), to_string(module)])
   end
 
   defp sort(menu_items) do
