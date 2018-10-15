@@ -8,7 +8,7 @@ defmodule Alkemist.MenuRegistry do
   """
 
   def register_menu_item(module, label, opts) do
-    ensure_setup()
+    ensure_setup(module)
 
     if label == false do
       unregister_menu_item(module)
@@ -25,7 +25,7 @@ defmodule Alkemist.MenuRegistry do
   end
 
   def unregister_menu_item(module) do
-    ensure_setup()
+    ensure_setup(module)
     remove_menu(module)
   end
 
@@ -161,9 +161,10 @@ defmodule Alkemist.MenuRegistry do
   defp build_tree([], results), do: results
 
 
-  defp ensure_setup do
-    unless File.exists?(cache_path()) do
-      File.mkdir_p(cache_path())
+  defp ensure_setup(module \\ nil) do
+    unless is_nil(module), do: module = app_from_module(to_string(module))
+    unless File.exists?(cache_path(module)) do
+      File.mkdir_p(cache_path(module))
     end
   end
 end
