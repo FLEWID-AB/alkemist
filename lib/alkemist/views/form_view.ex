@@ -109,7 +109,7 @@ defmodule Alkemist.FormView do
           []
       end
 
-    field_opts = get_field_opts(opts, %{class: "custom-control custom-checkbox"})
+    field_opts = get_field_opts(opts, %{class: "custom-control-input"})
     content_tag(:div, class: "form-control checkboxes") do
       PhoenixMTM.Helpers.collection_checkboxes(
         form,
