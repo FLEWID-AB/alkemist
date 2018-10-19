@@ -10,6 +10,9 @@ defmodule Alkemist.Config do
       # required - set your app's Ecto Repo
       repo: MyApp.Repo,
 
+      # required - set your app's cache_folder, should be named the same as your Web Interface Module
+      web_interface: "MyAppWeb",
+
       # required when using the auto generated code
       router_helpers: MyAppWeb.Router.Helpers,
 
@@ -58,6 +61,7 @@ defmodule Alkemist.Config do
 
   @defaults [
     repo: nil,
+    web_interface: nil,
     title: "Alkemist",
     logo: false,
     router_helpers: Alkemist.Router.Helpers,

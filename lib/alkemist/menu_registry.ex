@@ -8,7 +8,7 @@ defmodule Alkemist.MenuRegistry do
   """
 
   def register_menu_item(module, label, opts) do
-    ensure_setup()
+    ensure_setup(module)
 
     if label == false do
       unregister_menu_item(module)
@@ -25,7 +25,7 @@ defmodule Alkemist.MenuRegistry do
   end
 
   def unregister_menu_item(module) do
-    ensure_setup()
+    ensure_setup(module)
     remove_menu(module)
   end
 
@@ -91,12 +91,18 @@ defmodule Alkemist.MenuRegistry do
     end
   end
 
-  defp cache_path do
-    Path.join([System.tmp_dir!(), "#{Mix.Phoenix.otp_app()}", "alkemist"])
+  defp cache_path(path \\ nil) do
+    if is_nil(path), do: path = Alkemist.Config.get(:web_interface)
+    Path.join([System.tmp_dir!(), "#{path}", "alkemist"])
+  end
+
+  defp app_from_module(module) do
+    String.split(module, ".") |> Enum.at(1)
   end
 
   defp module_path(module) do
-    Path.join([cache_path(), to_string(module)])
+    app_path = app_from_module(to_string(module))
+    Path.join([cache_path(app_path), to_string(module)])
   end
 
   defp sort(menu_items) do
@@ -155,9 +161,10 @@ defmodule Alkemist.MenuRegistry do
   defp build_tree([], results), do: results
 
 
-  defp ensure_setup do
-    unless File.exists?(cache_path()) do
-      File.mkdir_p(cache_path())
+  defp ensure_setup(module \\ nil) do
+    unless is_nil(module), do: module = app_from_module(to_string(module))
+    unless File.exists?(cache_path(module)) do
+      File.mkdir_p(cache_path(module))
     end
   end
 end

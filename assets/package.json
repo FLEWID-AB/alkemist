@@ -3,7 +3,7 @@
     "build": "brunch build --production"
   },
   "dependencies": {
-    "alkemist-default-theme": "file:../../alkemist-default-theme",
+    "alkemist-default-theme": "git+ssh://git@github.com:FLEWID-AB/alkemist-default-theme.git",
     "@chenfengyuan/datepicker": "^1.0.0"
   },
   "devDependencies": {
