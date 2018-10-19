@@ -4,7 +4,7 @@
   <div class="row">
     <%= inputs_for f, :q, [as: :q, id: "search"], fn q -> %>
       <%= for filter <- @filters do %>
-        <%= round_filter_field q, filter %>
+        <%= filter_field q, filter %>
       <% end %>
     <% end %>
     <div class="col-md-4">

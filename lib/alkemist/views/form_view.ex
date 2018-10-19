@@ -48,7 +48,7 @@ defmodule Alkemist.FormView do
   Renders a has_many relationship.
   Please ensure you add the resources to preload
   """
-  def render_form_field(form, {key, %{type: :has_many, fields: _fields} = opts} = field) do
+  def render_form_field(form, {_key, %{type: :has_many, fields: _fields}} = field) do
     template = build_empty_form_template(form, field)
     content_tag(:div, class: "alkemist_hm--container", "data-template": template) do
       [
@@ -194,7 +194,7 @@ defmodule Alkemist.FormView do
   end
 
   # Used to build the new forms for the has_many associations
-  defp build_empty_form_template(form, {key, opts} = field) do
+  defp build_empty_form_template(form, {key, _opts} = field) do
     case Alkemist.Utils.get_association(form.data, key) do
       %{cardinality: :many, queryable: queryable} ->
         source = form.source
