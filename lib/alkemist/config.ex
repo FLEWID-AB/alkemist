@@ -67,7 +67,7 @@ defmodule Alkemist.Config do
 
   @defaults [
     repo: nil,
-    web_interface: nil,
+    web_interface: "Alkemist",
     title: "Alkemist",
     logo: false,
     router_helpers: Alkemist.Router.Helpers,
