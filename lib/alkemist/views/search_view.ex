@@ -23,7 +23,7 @@ defmodule Alkemist.SearchView do
     field_name = field |> field_key(opts[:type]) |> String.to_atom()
     type = Keyword.get(opts, :type, :string)
 
-    [mod, fun] = opts[:decorator]
+    {mod, fun} = opts[:decorator]
     apply(mod, fun, [form, field_name, type, opts])
   end
 
