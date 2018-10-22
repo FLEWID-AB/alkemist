@@ -7,7 +7,7 @@
 			</div>
 			<div class="card-body">
 				<%= for field <- group.fields do %>
-					<%= render_form_field(f, field) %>
+					<%= form_field(f, field) %>
 				<% end %>
 			</div>
 		</div>

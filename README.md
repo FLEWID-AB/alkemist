@@ -37,5 +37,19 @@ config :alkemist, Alkemist,
 
 ## Adding controllers
 
+Alkemist comes with a generator for new controllers. You can use it as follows: 
 
+```
+mix alkemist.gen.controller ControllerName MyApp.ModelName
+```
+
+Or to generate the controller in a certain namespace:
+
+```
+mix alkemist.gen.controller ControllerName MyApp.ModelName MyNamespace
+```
+
+This will generate the file at `controllers/my_namespace/controller_name_controller.ex`
+
+Of course you can also add custom written controllers as well by starting from scratch or using the phoenix generator.
 

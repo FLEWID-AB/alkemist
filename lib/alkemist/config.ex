@@ -56,6 +56,12 @@ defmodule Alkemist.Config do
 
         # use a custom js
         scripts: {MyApp.SharedView, "scripts.html"}
+      ],
+
+      # Render custom form templates for filter and new/edit forms
+      decorators: [
+        filter: {MyApp.SearchView, :filter_decorator},
+        form: {MyApp.FormView, :form_field_decorator}
       ]
   """
 
@@ -82,7 +88,8 @@ defmodule Alkemist.Config do
       scripts: {Alkemist.LayoutView, "_scripts.html"}
     ],
     decorators: [
-      filter: [Alkemist.SearchView, :filter_field_decorator]
+      filter: {Alkemist.SearchView, :filter_field_decorator},
+      form: {Alkemist.FormView, :form_field_decorator}
     ]
   ]
 
@@ -121,6 +128,14 @@ defmodule Alkemist.Config do
   def filter_decorator(application \\ :alkemist) do
     decorators = get(:decorators, application)
     Keyword.get(decorators, :filter, @defaults[:decorators][:filter])
+  end
+
+  @doc """
+  Returns the decorator for form fields
+  """
+  def form_field_decorator(application \\ :alkemist) do
+    decorators = get(:decorators, application)
+    Keyword.get(decorators, :form, @defaults[:decorators][:form])
   end
 
   @doc """
