@@ -27,7 +27,7 @@ defmodule Alkemist.Export.CSV do
   end
 
   defp add_entries(rows, columns, entries) do
-    rows = Enum.reduce(entries, rows, fn(entry, rows) ->
+    Enum.reduce(entries, rows, fn(entry, rows) ->
       row = Enum.reduce(columns, [], fn({_, cb, _}, acc) ->
         value = cb.(entry) |> format()
         acc ++ [value]
@@ -43,8 +43,7 @@ defmodule Alkemist.Export.CSV do
 
   defp format(content) when is_bitstring(content) do
     content
-    |> PhoenixHtmlSanitizer.Helpers.strip_tags()
-    |> Phoenix.HTML.safe_to_string()
+    |> HtmlSanitizeEx.strip_tags()
   end
 
   defp format(content), do: "#{content}"
