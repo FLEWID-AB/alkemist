@@ -73,16 +73,16 @@ defmodule Alkemist.SearchView do
     select(form, field, collection, class: "form-control form-control-sm", prompt: "Choose...")
   end
 
-  def input_field(form, field, :date, _opts) do
+  def input_field(form, field, :date, opts) do
     to_field = String.replace(Atom.to_string(field), "gteq", "lteq") |> String.to_atom()
     [
-      text_input(form, field, class: "form-control form-control-sm datepicker"),
-      text_input(form, to_field, class: "form-control form-control-sm datepicker")
+      text_input(form, field, class: "form-control form-control-sm datepicker", placeholder: "From"),
+      text_input(form, to_field, class: "form-control form-control-sm datepicker", placeholder: "To")
     ]
   end
 
-  def input_field(form, field, _type, _opts) do
-    text_input(form, field, class: "form-control form-control-sm")
+  def input_field(form, field, _type, opts) do
+    text_input(form, field, class: "form-control form-control-sm", placeholder: opts[:label])
   end
 
   defp field_key(field, type) do

@@ -39,7 +39,6 @@ defmodule Alkemist.ViewHelpers do
     if Alkemist.Config.authorization_provider().authorize_action(resource, conn, action) do
       # use exsisting :to option if available
       unless Keyword.has_key?(opts, :to), do: opts = Keyword.put_new(opts, :to, resource_action_path(conn, resource, action))
-
       wrap = opts[:wrap]
       opts = Keyword.delete(opts, :wrap)
       link = link(raw(label), opts)
@@ -100,6 +99,12 @@ defmodule Alkemist.ViewHelpers do
 
   def resource_action_path(conn, resource, action, params) do
     helper = Utils.default_resource_helper(resource)
+
+    IO.inspect helper
+    # IO.inspect conn
+    # IO.inspect resource
+    # IO.inspect action
+    # IO.inspect params
 
     apply(Alkemist.Config.router_helpers(), helper, [
       conn,
