@@ -99,13 +99,6 @@ defmodule Alkemist.ViewHelpers do
 
   def resource_action_path(conn, resource, action, params) do
     helper = Utils.default_resource_helper(resource)
-
-    IO.inspect helper
-    # IO.inspect conn
-    # IO.inspect resource
-    # IO.inspect action
-    # IO.inspect params
-
     apply(Alkemist.Config.router_helpers(), helper, [
       conn,
       action,
