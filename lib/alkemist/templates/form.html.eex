@@ -1,4 +1,4 @@
-<div class="col-md-8">
+<div class="col-md-8 edit-model-form">
 	<%= form_for @changeset, @action, [id: "#{@struct}-form"], fn f -> %>
 		<%= for group <- @form_fields do %>
 		<div class="card">
