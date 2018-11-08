@@ -6,13 +6,13 @@
       </li>
       <%= if Keyword.has_key?(@member_actions, :edit) do %>
       <li class="nav-item">
-        <%= action_link("Edit #{assigns[:singular_name]}", @conn, :edit, @resource, [class: "nav-link"]) %>
+        <%= action_link("Edit", @conn, :edit, @resource, [class: "nav-link"]) %>
       </li>
       <% end %>
     </ul>
   </div>
 </div>
-<div class="row">
+<div class="row model-info">
   <div class="col-md-8">
     <div class="card card-details">
       <div class="card-header">
