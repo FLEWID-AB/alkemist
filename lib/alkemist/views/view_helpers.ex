@@ -38,8 +38,16 @@ defmodule Alkemist.ViewHelpers do
   def action_link(label, conn, action, resource, opts \\ []) do
     if Alkemist.Config.authorization_provider().authorize_action(resource, conn, action) do
       # use exsisting :to option if available
-      unless Keyword.has_key?(opts, :to), do: opts = Keyword.put_new(opts, :to, resource_action_path(conn, resource, action))
-      wrap = opts[:wrap]
+
+
+      opts = if resource != nil do
+        opts
+        |> Keyword.put_new(:to, resource_action_path(conn, resource, action))
+      else
+        opts
+      end
+
+      wrap = Keyword.get(opts, :wrap)
       opts = Keyword.delete(opts, :wrap)
       link = link(raw(label), opts)
 
