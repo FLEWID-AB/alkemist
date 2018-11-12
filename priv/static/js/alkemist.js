@@ -20860,6 +20860,10 @@ var _has_many = require("./has_many");
 
 var _has_many2 = _interopRequireDefault(_has_many);
 
+var _has_one = require("./has_one");
+
+var _has_one2 = _interopRequireDefault(_has_one);
+
 var _batch = require("./batch");
 
 var _batch2 = _interopRequireDefault(_batch);
@@ -20874,10 +20878,6 @@ var _equalWidth2 = _interopRequireDefault(_equalWidth);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// Import dependencies
-//
-// If you no longer want to use a dependency, remember
-// to also remove its path from "config.paths.watched".
 $(document).ready(function () {
   $.fn.datepicker.setDefaults({
     format: 'YYYY-mm-dd'
@@ -20885,10 +20885,15 @@ $(document).ready(function () {
   $('input.datepicker').datepicker();
   _filter2.default.init();
   _has_many2.default.init();
+  _has_one2.default.init();
   document.getElementById('selection-toggle-all') && _batch2.default.init();
   makeRowClickable();
   _equalWidth2.default.init();
-});
+}); // Import dependencies
+//
+// If you no longer want to use a dependency, remember
+// to also remove its path from "config.paths.watched".
+
 
 function makeRowClickable() {
   var $clickableRows = $('.clickable-row');
@@ -21055,23 +21060,61 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = {
   init: function init() {
-    this.$containers = $('.alkemist_hm--container');
-    if (this.$containers.length > 0) {
-      this.bindListeners();
-    }
+    this.bindListeners();
   },
   bindListeners: function bindListeners() {
-    this.$containers.on('click', '.alkemist_hm--add', function (e) {
+    $('body').on('click', '.alkemist_hm--add', function (e) {
       e.preventDefault();
       var $container = $(e.target).parents('.alkemist_hm--container');
-      var index = $container.children('.alkemist_hm--group').length;
+      var $last = $container.find('.alkemist_hm--group').last();
+      var index = $last.length > 0 ? parseInt($last.find(':input').first().attr('name').match(/\[([\d]+)\]/)[1]) + 1 : 0;
       var template = $container.attr('data-template').replace(/\$index/g, index);
-      $container.find('.alkemist_hm--groups').append(template.replace('$index', index));
+      $container.find('.alkemist_hm--groups').append(template);
     }).on('click', '.alkemist_hm--group .close', function (e) {
       e.preventDefault();
       var $container = $(e.target).parents('.alkemist_hm--group');
       $container.remove();
     });
+  }
+};
+});
+
+;require.register("js/has_one.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  init: function init() {
+    this.bindListeners();
+  },
+  bindListeners: function bindListeners() {
+    var _this = this;
+
+    $('body').on('click', '.alkemist_ho--add', function (e) {
+      e.preventDefault();
+      var $container = $(e.target).parents('.alkemist_ho--container');
+      var template = $container.attr('data-template');
+      $container.find('.alkemist_ho--groups').append(template);
+      _this.showOrHideAdd($container);
+    });
+    $('body').on('click', '.alkemist_ho--group .close', function (e) {
+      e.preventDefault();
+      var $container = $(e.target).parents('.alkemist_ho--container');
+      var $group = $(e.target).parents('.alkemist_ho--group');
+      $group.remove();
+      _this.showOrHideAdd($container);
+    });
+  },
+  showOrHideAdd: function showOrHideAdd($container) {
+    var $button = $container.find('.alkemist_ho--add');
+    console.log($button);
+    if ($container.find('.alkemist_ho--group').length > 0) {
+      $button.hide();
+    } else {
+      $button.show();
+    }
   }
 };
 });
