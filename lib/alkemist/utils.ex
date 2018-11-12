@@ -181,6 +181,17 @@ defmodule Alkemist.Utils do
     end
   end
 
+  def get_embed(resource, field) when is_map(resource),
+    do: get_embed(resource.__struct__, field)
+
+  def get_embed(resource, field) do
+    if field in resource.__schema__(:embeds) do
+      resource.__schema__(:embed, field)
+    else
+      {:error, :invalid_field}
+    end
+  end
+
   @doc """
   Returns the default helper method for a resource to get the helper path. This can be overridden on a controller level
 

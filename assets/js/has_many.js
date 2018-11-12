@@ -1,19 +1,17 @@
 export default {
   init () {
-    this.$containers = $('.alkemist_hm--container')
-    if (this.$containers.length > 0) {
-      this.bindListeners()
-    }
+    this.bindListeners()
   },
 
   bindListeners () {
-    this.$containers.on('click', '.alkemist_hm--add', function(e) {
+    $('body').on('click', '.alkemist_hm--add', (e) => {
       e.preventDefault()
       let $container = $(e.target).parents('.alkemist_hm--container')
-      let index = $container.children('.alkemist_hm--group').length
+      let $last = $container.find('.alkemist_hm--group').last()
+      let index = $last.length > 0 ? parseInt($last.find(':input').first().attr('name').match(/\[([\d]+)\]/)[1]) + 1 : 0
       let template = $container.attr('data-template').replace(/\$index/g, index)
-      $container.find('.alkemist_hm--groups').append(template.replace('$index', index))
-    }).on('click', '.alkemist_hm--group .close', function(e) {
+      $container.find('.alkemist_hm--groups').append(template)
+    }).on('click', '.alkemist_hm--group .close', (e) => {
       e.preventDefault()
       let $container = $(e.target).parents('.alkemist_hm--group')
       $container.remove()

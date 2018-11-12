@@ -63,7 +63,7 @@ defmodule Alkemist.FormView do
   Please ensure you add the resources to preload
   """
   def form_field_decorator(form, {_key, %{type: :has_many, fields: _fields}} = field) do
-    template = build_empty_form_template(form, field)
+    template = build_empty_form_template(:association, form, field)
     content_tag(:div, class: "alkemist_hm--container", "data-template": template) do
       [
         content_tag(:div, class: "alkemist_hm--groups") do
@@ -73,6 +73,71 @@ defmodule Alkemist.FormView do
           content_tag(:a, "Add new", href: "#", class: "btn btn-secondary alkemist_hm--add")
         end
       ]
+    end
+  end
+
+   @doc """
+  Renders a has_one relationship
+  Please ensure you add the resource to preload
+  """
+  def form_field_decorator(form, {key, %{type: :has_one}} = field) do
+    template = build_empty_form_template(:association, form, field)
+    fields = if Map.get(form.data, key) do
+      [content_tag(:div, class: "alkemist_ho--groups") do
+        render_has_one_inputs(form, field)
+      end]
+    else
+      [
+        content_tag(:div, "", class: "alkemist_ho--groups"),
+        content_tag(:div, class: "row justify-content-end button-row") do
+          content_tag(:a, "Add", href: "#", class: "btn btn-secondary alkemist_ho--add")
+        end
+      ]
+    end
+
+    content_tag(:div, class: "alkemist_ho--container", "data-template": template) do
+      fields
+    end
+  end
+
+    @doc """
+  Renders an array of embeds
+  """
+  def form_field_decorator(form, {_key, %{type: :map_array}} = field) do
+    template = build_empty_form_template(:embed, form, field)
+    content_tag(:div, class: "alkemist_hm--container", "data-template": template) do
+      [
+        content_tag(:div, class: "alkemist_hm--groups") do
+          render_has_many_inputs(form, field)
+        end,
+        content_tag(:div, class: "row justify-content-end button-row") do
+          content_tag(:a, "Add new", href: "#", class: "btn btn-secondary alkemist_hm--add")
+        end
+      ]
+    end
+  end
+
+  @doc """
+  Renders an embed
+  """
+  def form_field_decorator(form, {key, %{type: :map}} = field) do
+    template = build_empty_form_template(:embed, form, field)
+
+    fields = if Map.get(form.data, key) do
+      [content_tag(:div, class: "alkemist_ho--groups") do
+        render_has_one_inputs(form, field)
+      end]
+    else
+      [
+        content_tag(:div, "", class: "alkemist_ho--groups"),
+        content_tag(:div, class: "row justify-content-end button-row") do
+          content_tag(:a, "Add", href: "#", class: "btn btn-secondary alkemist_ho--add")
+        end
+      ]
+    end
+
+    content_tag(:div, class: "alkemist_ho--container", "data-template": template) do
+      fields
     end
   end
 
@@ -101,6 +166,19 @@ defmodule Alkemist.FormView do
     field_opts = get_field_opts(opts, %{})
     inputs_for(form, key, field_opts, fn f ->
       content_tag(:div, class: "alkemist_hm--group", "data-field": "#{key}") do
+        if new_record == true do
+          [content_tag(:a, Phoenix.HTML.raw("&times;"), href: "#", class: "close") | Enum.map(Keyword.delete(fields, :_destroy), fn field -> form_field_decorator(f, field) end)]
+        else
+          Enum.map(fields, fn field -> form_field_decorator(f, field) end)
+        end
+      end
+    end)
+  end
+
+  def render_has_one_inputs(form, {key, %{fields: fields} = opts}, new_record \\ false) do
+    field_opts = get_field_opts(opts, %{})
+    inputs_for(form, key, field_opts, fn f ->
+      content_tag(:div, class: "alkemist_ho--group", "data-field": "#{key}") do
         if new_record == true do
           [content_tag(:a, Phoenix.HTML.raw("&times;"), href: "#", class: "close") | Enum.map(Keyword.delete(fields, :_destroy), fn field -> form_field_decorator(f, field) end)]
         else
@@ -206,8 +284,15 @@ defmodule Alkemist.FormView do
   end
 
   # Used to build the new forms for the has_many associations
-  defp build_empty_form_template(form, {key, _opts} = field) do
-    case Alkemist.Utils.get_association(form.data, key) do
+  defp build_empty_form_template(type, form, {key, _opts} = field) do
+    assoc = case type do
+      :association -> Alkemist.Utils.get_association(form.data, key)
+      :embed ->
+        assoc = Alkemist.Utils.get_embed(form.data, key)
+        Map.put(assoc, :queryable, Map.get(assoc, :related))
+      _ -> nil
+    end
+    case assoc do
       %{cardinality: :many, queryable: queryable} ->
         source = form.source
         data = source.data.__struct__.__struct__
@@ -218,6 +303,15 @@ defmodule Alkemist.FormView do
         Phoenix.HTML.safe_to_string(render_has_many_inputs(form, field, true))
         |> String.replace("#{key}_0", "#{key}_$index")
         |> String.replace("[#{key}][0]", "[#{key}][$index]")
+
+      %{cardinality: :one, queryable: queryable} ->
+        source = form.source
+        data = source.data.__struct__.__struct__
+        |> Map.put(key, queryable.__struct__)
+
+        source = Map.put(source, :data, data)
+        form = Map.put(form, :source, source)
+        Phoenix.HTML.safe_to_string(render_has_one_inputs(form, field, true))
 
       _ ->
         ""
