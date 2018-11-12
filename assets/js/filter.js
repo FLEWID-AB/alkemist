@@ -24,12 +24,16 @@ export default {
   openFilters() {
     this.$filters.removeClass('hide')
     this.$toggle.addClass('open').text('Less filters -')
+    this.$toggle.closest('form.form').addClass('mb-4');
+    this.$toggle.parent('.col-md-4').removeClass('col-md-4').addClass('col-md-12 text-right mt-2')
     EqualWidth.resizeElements(true)
   },
 
   closeFilters() {
     this.$filters.addClass('hide')
+    this.$toggle.closest('form.form').removeClass('mb-4');
     this.$toggle.removeClass('open').text('More filters +')
+    this.$toggle.parent('.col-md-12').removeClass('col-md-12 text-right mt-2').addClass('col-md-4')
     EqualWidth.resizeElements(true)
   },
 
