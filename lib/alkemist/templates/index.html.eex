@@ -1,11 +1,11 @@
 <div class="row mb-4 mt-4" id="<%= @struct %>-index">
-  <div class="col-md-9">
+  <div class="col-md-10">
     <%= if assigns[:filters] && any?(@filters) do %>
       <% {mod, template} = filter_view() %>
       <%= render mod, template, assigns %>
     <% end %>
   </div>
-  <div class="col-md-3 text-right page-actions">
+  <div class="col-md-2 text-right page-actions">
     <%= for action <- @collection_actions do %>
       <%= collection_action(@conn, action, @mod) %>
     <% end %>
