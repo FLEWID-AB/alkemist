@@ -10,6 +10,43 @@ defmodule Alkemist.FormView do
 
 
   @doc """
+  iterates through a changeset and collects all errors
+  """
+  def error_messages(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn
+      {msg, opts} -> String.replace(msg, "%{count}", to_string(opts[:count]))
+      msg -> msg
+    end)
+    |> to_html_list()
+    |> Phoenix.HTML.safe_to_string()
+  end
+
+  defp to_html_list(errors) when is_map(errors) do
+    content_tag(:ul) do
+      errors
+      |> Map.to_list()
+      |> Enum.map(fn e -> to_html_list(e) end)
+    end
+  end
+
+  defp to_html_list(errors) when is_list(errors) do
+    Enum.map(errors, fn e ->
+      to_html_list(e)
+    end)
+  end
+
+  defp to_html_list(errors) when is_bitstring(errors) do
+    " " <> errors
+  end
+
+  defp to_html_list({field, errors}) do
+    content_tag(:li) do
+      [content_tag(:span, Phoenix.Naming.humanize(field))] ++
+      to_html_list(errors)
+    end
+  end
+
+  @doc """
   Renders a form field within the new and edit form
   """
   def form_field(form, {field, opts}) do
@@ -62,10 +99,11 @@ defmodule Alkemist.FormView do
   Renders a has_many relationship.
   Please ensure you add the resources to preload
   """
-  def form_field_decorator(form, {_key, %{type: :has_many, fields: _fields}} = field) do
+  def form_field_decorator(form, {key, %{type: :has_many, fields: _fields}} = field) do
     template = build_empty_form_template(:association, form, field)
-    content_tag(:div, class: "alkemist_hm--container", "data-template": template) do
+    content_tag(:fieldset, class: "alkemist_hm--container", "data-template": template) do
       [
+        content_tag(:legend, Phoenix.Naming.humanize(key)),
         content_tag(:div, class: "alkemist_hm--groups") do
           render_has_many_inputs(form, field)
         end,
@@ -103,10 +141,11 @@ defmodule Alkemist.FormView do
     @doc """
   Renders an array of embeds
   """
-  def form_field_decorator(form, {_key, %{type: :map_array}} = field) do
+  def form_field_decorator(form, {key, %{type: :map_array}} = field) do
     template = build_empty_form_template(:embed, form, field)
-    content_tag(:div, class: "alkemist_hm--container", "data-template": template) do
+    content_tag(:fieldset, class: "alkemist_hm--container", "data-template": template) do
       [
+        content_tag(:legend, Phoenix.Naming.humanize(key)),
         content_tag(:div, class: "alkemist_hm--groups") do
           render_has_many_inputs(form, field)
         end,
@@ -289,8 +328,6 @@ defmodule Alkemist.FormView do
       :association -> Alkemist.Utils.get_association(form.data, key)
       :embed ->
         assoc = Alkemist.Utils.get_embed(form.data, key)
-        Map.put(assoc, :queryable, Map.get(assoc, :related))
-      _ -> nil
     end
     case assoc do
       %{cardinality: :many, queryable: queryable} ->
@@ -311,6 +348,24 @@ defmodule Alkemist.FormView do
 
         source = Map.put(source, :data, data)
         form = Map.put(form, :source, source)
+        Phoenix.HTML.safe_to_string(render_has_one_inputs(form, field, true))
+
+      %{cardinality: :many, related: related} ->
+        source = form.source
+
+        source = Map.put(source, :changes, Map.put(%{}, key, [related.__struct__]))
+        form = Map.put(form, :source, source)
+
+        Phoenix.HTML.safe_to_string(render_has_many_inputs(form, field, true))
+        |> String.replace("#{key}_0", "#{key}_$index")
+        |> String.replace("[#{key}][0]", "[#{key}][$index]")
+
+      %{cardinality: :many, related: related} ->
+        source = form.source
+
+        source = Map.put(source, :changes, Map.put(%{}, key, related.__struct__))
+        form = Map.put(form, :source, source)
+
         Phoenix.HTML.safe_to_string(render_has_one_inputs(form, field, true))
 
       _ ->
