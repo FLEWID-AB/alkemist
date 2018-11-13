@@ -50,6 +50,7 @@
           <tr>
             <%= for {field, _cb, opts} = column <- @columns do %>
               <%= if field == :selectable_column do %>
+
                 <th class="selectable">
                   <input class="toggle-all" id="selection-toggle-all" type="checkbox" />
                 </th>
