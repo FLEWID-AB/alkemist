@@ -21,6 +21,7 @@ defmodule Alkemist.Assign do
   @default_search_provider Alkemist.Config.search_provider()
   @default_pagination_provider Alkemist.Config.pagination_provider()
   @sortable_types ~w(string integer float date datetime)a
+  @default_sort "id+desc"
 
   @doc """
   Creates the default assigns for a controller index action.
@@ -42,7 +43,7 @@ defmodule Alkemist.Assign do
   def index_assigns(params, resource, opts \\ []) do
     opts = default_index_opts(opts, resource)
     repo = opts[:repo]
-    params = Utils.clean_params(params)
+    params = Utils.clean_params(params) |> Map.put_new("s", opts[:sort_by])
 
     query = opts[:query]
 
@@ -229,6 +230,7 @@ defmodule Alkemist.Assign do
     |> Keyword.put_new(:mod, resource)
     |> Keyword.put_new(:batch_actions, [])
     |> Keyword.put_new(:sidebars, [])
+    |> Keyword.put_new(:sort_by, @default_sort)
   end
 
   defp default_csv_opts(opts, resource) do
@@ -538,16 +540,16 @@ defmodule Alkemist.Assign do
     query =
       query
       |> callback.()
-      |> search_opts[:search_provider].run(params)
 
-    {query, pagination} = search_opts[:pagination_provider].run(query, params, repo: search_opts[:repo])
+    count_query = search_opts[:search_provider].searchq(query, params)
+    count = search_opts[:repo].one(from a in count_query, select: count(a.id))
 
     current = Map.get(params, "scope")
 
     opts =
       opts
       |> Keyword.put_new(:label, Utils.to_label(scope))
-      |> Keyword.put(:count, Map.get(pagination, :total_count, 0))
+      |> Keyword.put(:count, count)
 
     opts =
       cond do

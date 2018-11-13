@@ -7,7 +7,9 @@ defmodule Alkemist.MTM.BootstrapMapper do
 
   @doc false
   def bootstrap(form, field, input_opts, label_content, label_opts, _opts) do
-    input_opts = Keyword.put_new(input_opts, :class, "custom-control-input")
+    input_opts = input_opts
+      |> Keyword.delete(:class)
+      |> Keyword.put_new(:class, "custom-control-input")
     label_opts = Keyword.put_new(label_opts, :class, "custom-control-label")
     content_tag(:div, class: "custom-control custom-checkbox") do
       [

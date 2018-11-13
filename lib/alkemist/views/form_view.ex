@@ -65,7 +65,7 @@ defmodule Alkemist.FormView do
   def form_field_decorator(form, {key, %{type: :boolean} = opts}) do
     label = Map.get(opts, :label, Phoenix.Naming.humanize(key))
 
-    field_opts = get_field_opts(opts, %{class: "form-check-input"})
+    field_opts = get_field_opts(opts, %{class: "custom-control-input"})
     group_class = "form-group row"
     group_class = case Keyword.get(field_opts, :required) do
       true -> group_class <> " required"
@@ -76,10 +76,10 @@ defmodule Alkemist.FormView do
       [
         content_tag(:div, "", class: "col-sm-2"),
         content_tag(:div, class: "col-sm-10") do
-          content_tag(:div, class: "form-check") do
+          content_tag(:div, class: "custom-control custom-checkbox") do
             [
               checkbox(form, key, field_opts),
-              label(form, key, label, class: "form-check-label")
+              label(form, key, label, class: "custom-control-label")
             ]
           end
         end

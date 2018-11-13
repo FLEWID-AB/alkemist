@@ -7,11 +7,15 @@ defmodule Alkemist.Query.Search do
   @empty_values [nil, [], {}, [""], "", %{}]
 
   def run(query, params) do
+    searchq(query, params) |> Turbo.Ecto.sortq(params)
+  end
+
+  def searchq(query, params) do
     params =
       params
       |> prepare_params(query)
 
-    Turbo.Ecto.searchq(query, params) |> Turbo.Ecto.sortq(params)
+    Turbo.Ecto.searchq(query, params)
   end
 
   @doc """

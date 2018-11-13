@@ -7,6 +7,7 @@
       <% end %>
     </div>
     <div class="col-md-2 text-right page-actions">
+      <h6 class="small">Actions</h6>
       <%= for action <- @collection_actions do %>
         <%= collection_action(@conn, action, @mod) %>
       <% end %>
@@ -49,6 +50,7 @@
           <tr>
             <%= for {field, _cb, opts} = column <- @columns do %>
               <%= if field == :selectable_column do %>
+
                 <th class="selectable">
                   <input class="toggle-all" id="selection-toggle-all" type="checkbox" />
                 </th>
