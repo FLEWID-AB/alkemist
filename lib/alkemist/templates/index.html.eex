@@ -1,98 +1,95 @@
-<div class="row mb-4 mt-4" id="<%= @struct %>-index">
-  <div class="col-md-10">
-    <%= if assigns[:filters] && any?(@filters) do %>
-      <% {mod, template} = filter_view() %>
-      <%= render mod, template, assigns %>
-    <% end %>
-  </div>
-  <div class="col-md-2 text-right page-actions">
-    <%= for action <- @collection_actions do %>
-      <%= collection_action(@conn, action, @mod) %>
-    <% end %>
-    <%= if assigns[:has_export] do %>
-      <%= export_action(@conn, @struct, assigns) %>
-    <% end %>
-  </div>
-</div>
-
-
-<div class="title-and-scopes">
-  <ul class="nav scopes">
-    <%= if any?(@scopes) do %>
-      <%= for scope <- @scopes do %>
-        <%= scope_link(@conn, scope, @struct) %>
+<div class="index-view">
+  <div class="row mb-4 mt-4" id="<%= @struct %>-index">
+    <div class="col-md-10">
+      <%= if assigns[:filters] && any?(@filters) do %>
+        <% {mod, template} = filter_view() %>
+        <%= render mod, template, assigns %>
       <% end %>
-    <% end %>
-  </ul>
-</div>
-<%= if any?(@batch_actions) do %>
-<div class="row mt-1">
-  <%= form_for @conn, "", [id: "batch-action-form"], fn f -> %>
-
-  <% end %>
-  <div class="col-2 dropdown">
-    <button class="btn btn-default btn-sm dropdown-toggle" id="batch-menu-toggler" type="button" data-toggle="dropdown">Batch Actions</button>
-    <div class="dropdown-menu">
-      <%= for batch_action <- @batch_actions do %>
-        <%= batch_action_item(@conn, @struct, batch_action) %>
+    </div>
+    <div class="col-md-2 text-right page-actions">
+      <%= for action <- @collection_actions do %>
+        <%= collection_action(@conn, action, @mod) %>
+      <% end %>
+      <%= if assigns[:has_export] do %>
+        <%= export_action(@conn, @struct, assigns) %>
       <% end %>
     </div>
   </div>
-</div>
-<% end %>
 
-<div class="card main-content">
-  <div class="table-responsive">
-    <table class="table index-table table-hover">
-      <thead>
-        <tr>
-          <%= for {field, _cb, opts} = column <- @columns do %>
-            <%= if field == :selectable_column do %>
-              <th class="selectable">
-                <input class="toggle-all" id="selection-toggle-all" type="checkbox" />
-              </th>
-            <% else %>
-              <%= header_cell(@conn, @struct, column) %>
-            <% end %>
-          <% end %>
-          <th class="member-actions">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <%= for row <- @entries do %>
-          <tr class="clickable-row" data-href="<%= resource_action_path(@conn, row, :show) %>">
-            <%= for {field, cb, opts} <- @columns do %>
-              <%= if field == :selectable_column do %>
-                <td class="selectable">
-                  <input type="checkbox" class="collection-selection" value="<%= row.id %>" >
-                </td>
-              <%= else %>
-                <td class="<%= opts.type %> <%= Slugger.slugify_downcase(opts.label) %>">
-                  <%= if Map.has_key?(opts, :action) and not is_nil(opts.action) and not is_nil(Map.get(row, opts.assoc)) do %>
-                    <a href="<%= resource_action_path(@conn, Map.fetch!(row, opts.assoc), opts.action) %>"><%= string_value(cb, row) %></a>
-                  <% else %>
-                    <%= unless Map.has_key?(opts, :assoc) and is_nil(Map.get(row, opts.assoc)) do %>
-                      <%= string_value(cb, row) %>
-                    <% end %>
-                <% end %>
-                </td>
-              <% end %>
-            <% end %>
-            <td class="member-actions">
-              <%= for action <- @member_actions do %>
-                <%= member_action(@conn, action, row) %>
-              <% end %>
-            </td>
-          </tr>
+
+  <div class="title-and-scopes">
+    <ul class="nav scopes">
+      <%= if any?(@scopes) do %>
+        <%= for scope <- @scopes do %>
+          <%= scope_link(@conn, scope, @struct) %>
         <% end %>
-      </tbody>
-    </table>
+      <% end %>
+    </ul>
   </div>
+  <%= if any?(@batch_actions) do %>
+  <div class="row mt-1">
+    <%= form_for @conn, "", [id: "batch-action-form"], fn f -> %>
+
+    <% end %>
+    <div class="col-2 dropdown">
+      <button class="btn btn-default btn-sm dropdown-toggle" id="batch-menu-toggler" type="button" data-toggle="dropdown">Batch Actions</button>
+      <div class="dropdown-menu">
+        <%= for batch_action <- @batch_actions do %>
+          <%= batch_action_item(@conn, @struct, batch_action) %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <% end %>
+
+  <div class="card main-content">
+    <div class="table-responsive">
+      <table class="table index-table table-hover">
+        <thead>
+          <tr>
+            <%= for {field, _cb, opts} = column <- @columns do %>
+              <%= if field == :selectable_column do %>
+
+                <th class="selectable">
+                  <input class="toggle-all" id="selection-toggle-all" type="checkbox" />
+                </th>
+              <% else %>
+                <%= header_cell(@conn, @struct, column) %>
+              <% end %>
+            <% end %>
+            <th class="member-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= for row <- @entries do %>
+            <tr class="clickable-row" data-href="<%= resource_action_path(@conn, row, :show) %>">
+              <%= for {field, cb, opts} <- @columns do %>
+                <%= if field == :selectable_column do %>
+                  <td class="selectable">
+                    <input type="checkbox" class="collection-selection" value="<%= row.id %>" >
+                  </td>
+                <%= else %>
+                  <td class="<%= opts.type %> <%= Slugger.slugify_downcase(opts.label) %>">
+                    <%= if Map.has_key?(opts, :action) and not is_nil(opts.action) and not is_nil(Map.get(row, opts.assoc)) do %>
+                      <a href="<%= resource_action_path(@conn, Map.fetch!(row, opts.assoc), opts.action) %>"><%= string_value(cb, row) %></a>
+                    <% else %>
+                      <%= unless Map.has_key?(opts, :assoc) and is_nil(Map.get(row, opts.assoc)) do %>
+                        <%= string_value(cb, row) %>
+                      <% end %>
+                  <% end %>
+                  </td>
+                <% end %>
+              <% end %>
+              <td class="member-actions">
+                <%= for action <- @member_actions do %>
+                  <%= member_action(@conn, action, row) %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <%= render("_pagination.html", assigns) %>
 </div>
-
-
-
-
-
-
-<%= render("_pagination.html", assigns) %>
