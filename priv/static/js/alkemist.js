@@ -21078,12 +21078,16 @@ exports.default = {
       var $container = $(e.target).parents('.alkemist_hm--container');
       var $last = $container.find('.alkemist_hm--group').last();
       var index = $last.length > 0 ? parseInt($last.find(':input').first().attr('name').match(/\[([\d]+)\]/)[1]) + 1 : 0;
-      var template = $container.attr('data-template').replace(/\$index/g, index);
+      var template = $($container.attr('data-template').replace(/\$index/g, index));
       $container.find('.alkemist_hm--groups').append(template);
+      $container.trigger('group:add', template);
     }).on('click', '.alkemist_hm--group .close', function (e) {
       e.preventDefault();
-      var $container = $(e.target).parents('.alkemist_hm--group');
-      $container.remove();
+      var $container = $(e.target).parents('.alkemist_hm--container');
+      var $group = $(e.target).parents('.alkemist_hm--group');
+      $group.trigger('remove');
+      $group.remove();
+      $container.trigger('group:remove');
     });
   }
 };
@@ -21105,15 +21109,19 @@ exports.default = {
     $('body').on('click', '.alkemist_ho--add', function (e) {
       e.preventDefault();
       var $container = $(e.target).parents('.alkemist_ho--container');
-      var template = $container.attr('data-template');
+      var template = $($container.attr('data-template'));
       $container.find('.alkemist_ho--groups').append(template);
+      $container.trigger('group:add', template);
+
       _this.showOrHideAdd($container);
     });
     $('body').on('click', '.alkemist_ho--group .close', function (e) {
       e.preventDefault();
       var $container = $(e.target).parents('.alkemist_ho--container');
       var $group = $(e.target).parents('.alkemist_ho--group');
+      $group.trigger('remove');
       $group.remove();
+      $container.trigger('group:remove');
       _this.showOrHideAdd($container);
     });
   },
