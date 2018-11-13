@@ -162,7 +162,7 @@ defmodule AlkemistView do
   end
   def header_cell(_conn, _struct, {_field, _callback, opts}) do
     label = Map.get(opts, :label)
-    class = ["index-header", Map.get(opts, :type)]
+    class = ["index-header", Slugger.slugify_downcase(label), Map.get(opts, :type)]
     content_tag(:th, class: Enum.join(class, " ")) do
       label
     end

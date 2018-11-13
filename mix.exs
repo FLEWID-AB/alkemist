@@ -43,7 +43,8 @@ defmodule Alkemist.MixProject do
         :atomic_map,
         :turbo_ecto,
         :phoenix_mtm,
-        :html_sanitize_ex
+        :html_sanitize_ex,
+        :slugger
       ]
     ]
   end
@@ -71,7 +72,8 @@ defmodule Alkemist.MixProject do
       {:inch_ex, "~> 1.0", only: [:dev, :test, :doc]},
       {:postgrex, ">=0.0.0", only: :test},
       {:gettext, ">= 0.0.0"},
-      {:html_sanitize_ex, "~> 1.3.0-rc3"}
+      {:html_sanitize_ex, "~> 1.3.0-rc3"},
+      {:slugger, "~> 0.3"}
     ]
   end
 

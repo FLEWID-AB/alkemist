@@ -1,5 +1,5 @@
 <div class="row mt-5">
-  <div class="col-md-8 page-actions">
+  <div class="col-md-12 page-actions">
     <ul class="nav justify-content-end">
       <li class="nav-item">
         <%= action_link("Back to List", @conn, :index, @mod, [class: "nav-link"]) %>
@@ -12,9 +12,9 @@
     </ul>
   </div>
 </div>
-<div class="row model-info">
-  <div class="col-md-8">
-    <div class="card card-details">
+<div class="row">
+  <div class="col-md-12">
+    <div class="card card-details model-info">
       <div class="card-header">
         <h5><%= @singular_name %> Details</h5>
       </div>
@@ -38,7 +38,7 @@
       </div>
     </div>
     <%= for {label, opts} <- @panels do %>
-      <div class="card">
+      <div class="card model-relationship-info">
         <div class="card-header">
           <h5><%= label %></h5>
         </div>
