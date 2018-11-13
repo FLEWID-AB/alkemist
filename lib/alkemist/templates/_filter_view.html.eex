@@ -7,7 +7,7 @@
         <%= filter_field q, filter %>
       <% end %>
     <% end %>
-    <div class="col-md-4">
+    <div class="col-md-4 filter-actions">
       <%= if assigns[:search] do %>
         <%= link("Reset", to: resource_action_path(@conn, @resource, :index), class: "btn btn-link btn-sm") %>
       <% end %>
