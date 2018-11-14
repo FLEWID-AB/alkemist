@@ -18,6 +18,10 @@ defmodule Alkemist.Query.Search do
     Turbo.Ecto.searchq(query, params)
   end
 
+  def sortq(query, params) do
+    Turbo.Ecto.sortq(query, params)
+  end
+
   @doc """
   prepares the params so we can better handle naive_datetime and datetime fields
   right now this works not on associations
