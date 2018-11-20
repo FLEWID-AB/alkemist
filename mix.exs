@@ -61,7 +61,7 @@ defmodule Alkemist.MixProject do
       {:phoenix_html, "~> 2.10"},
       {:ecto, "~> 2.2"},
       {:inflex, "~> 1.10.0"},
-      {:atomic_map, github: "ruby2elixir/atomic_map"},
+      {:atomic_map, "~> 0.9.3"},
       {:csv, "~> 2.0"},
       {:turbo_ecto, "~> 0.1.7"},
       {:phoenix_mtm, "~> 0.5.1"},
