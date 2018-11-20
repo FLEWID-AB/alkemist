@@ -56,8 +56,8 @@ defmodule Alkemist.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:phoenix, "~> 1.3.3"},
-      {:phoenix_ecto, "~> 3.2"},
+      {:phoenix, "~> 1.3 or ~> 1.4"},
+      {:phoenix_ecto, "~> 3.6"},
       {:phoenix_html, "~> 2.10"},
       {:ecto, "~> 2.2"},
       {:inflex, "~> 1.10.0"},
