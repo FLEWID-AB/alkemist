@@ -1,7 +1,9 @@
 defmodule Alkemist do
   @moduledoc """
-  Alkemist is an admin tool for Phoenix applications.
-  TODO: write better documentation
+  Alkemist is an admin toolbox for Phoenix applications.
+  It allows developers to build admin interfaces in a modular and flexible way
+  by providing helper functions to render forms, show- and index pages for resources.
+
   """
 
   def view do
