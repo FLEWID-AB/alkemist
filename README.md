@@ -12,7 +12,7 @@ by adding `alkemist` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:alkemist, "~> 0.1.0"}
+    {:alkemist, "~> 1.0.1-rc"}
   ]
 end
 ```
