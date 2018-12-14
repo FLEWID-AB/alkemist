@@ -57,14 +57,14 @@ defmodule Alkemist.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.3 or ~> 1.4"},
-      {:phoenix_ecto, "~> 3.6"},
+      {:phoenix_ecto, "~> 4.0"},
       {:phoenix_html, "~> 2.10"},
-      {:ecto, "~> 2.2"},
+      {:ecto, "~> 3.0"},
       {:inflex, "~> 1.10.0"},
       {:atomic_map, "~> 0.9.3"},
       {:csv, "~> 2.0"},
-      {:turbo_ecto, "~> 0.1.7"},
-      {:phoenix_mtm, "~> 0.5.1"},
+      {:turbo_ecto, git: "git@github.com:zven21/turbo_ecto.git", ref: "17b9933f6e7976590660bf92c8668fe01d245646"},
+      {:phoenix_mtm, git: "git@github.com:kevbuchanan/phoenix_mtm.git", branch: "ecto-3"},
       # Test and dev
       {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.0", only: :test},
