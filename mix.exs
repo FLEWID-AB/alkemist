@@ -1,6 +1,5 @@
 defmodule Alkemist.MixProject do
   use Mix.Project
-
   @version "1.0.1-rc"
 
   def project do
@@ -12,6 +11,7 @@ defmodule Alkemist.MixProject do
       start_permanent: Mix.env() == :prod,
       build_embedded: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
 
       # Hex
       description: description(),
@@ -97,5 +97,11 @@ defmodule Alkemist.MixProject do
     """
     Provides some helper methods to build manager and admin applications quicker
     """
+  end
+
+  defp aliases do
+    [
+      test: ["ecto.create --quiet", "test"]
+    ]
   end
 end

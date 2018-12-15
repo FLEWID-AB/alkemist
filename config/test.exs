@@ -8,8 +8,8 @@ config :alkemist, ecto_repos: [Alkemist.Repo]
 
 config :alkemist, Alkemist.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: System.get_env("PG_USER"),
-  password: System.get_env("PG_PASSWORD"),
+  username: System.get_env("PG_USER") || "postgres",
+  password: System.get_env("PG_PASSWORD") || "postgres",
   database: "alkemist_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox

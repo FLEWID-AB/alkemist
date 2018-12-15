@@ -29,7 +29,7 @@
   </div>
   <%= if any?(@batch_actions) do %>
   <div class="row mt-1">
-    <%= form_for @conn, "", [id: "batch-action-form"], fn f -> %>
+    <%= form_for @conn, "", [id: "batch-action-form"], fn _f -> %>
 
     <% end %>
     <div class="col-2 dropdown">
@@ -48,7 +48,7 @@
       <table class="table index-table table-hover">
         <thead>
           <tr>
-            <%= for {field, _cb, opts} = column <- @columns do %>
+            <%= for {field, _cb, _opts} = column <- @columns do %>
               <%= if field == :selectable_column do %>
 
                 <th class="selectable">
@@ -69,7 +69,7 @@
                   <td class="selectable">
                     <input type="checkbox" class="collection-selection" value="<%= row.id %>" >
                   </td>
-                <%= else %>
+                <% else %>
                   <td class="<%= opts.type %> <%= Slugger.slugify_downcase(opts.label) %>">
                     <%= if Map.has_key?(opts, :action) and not is_nil(opts.action) and not is_nil(Map.get(row, opts.assoc)) do %>
                       <a href="<%= resource_action_path(@conn, Map.fetch!(row, opts.assoc), opts.action) %>"><%= string_value(cb, row) %></a>
