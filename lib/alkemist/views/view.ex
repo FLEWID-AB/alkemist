@@ -170,13 +170,14 @@ defmodule AlkemistView do
 
   def string_value(callback, row) do
     val = callback.(row)
-    field_string_value(val)
+    {module, func} = Alkemist.Config.field_value_decorator()
+    apply(module, func, [val])
   end
 
-  defp field_string_value({:safe, _} = val), do: val
-  defp field_string_value(val) when is_bitstring(val), do: raw(val)
+  def field_string_value({:safe, _} = val), do: val
+  def field_string_value(val) when is_bitstring(val), do: raw(val)
 
-  defp field_string_value(val) when is_boolean(val) do
+  def field_string_value(val) when is_boolean(val) do
     icon =
       if val do
         "fa-check"
@@ -190,17 +191,17 @@ defmodule AlkemistView do
     |> raw()
   end
 
-  defp field_string_value(%NaiveDateTime{} = nd) do
+  def field_string_value(%NaiveDateTime{} = nd) do
     "#{nd.day}.#{nd.month}.#{nd.year} - #{nd.hour}:#{nd.minute}:#{nd.second}"
   end
 
-  defp field_string_value(%Date{} = d) do
+  def field_string_value(%Date{} = d) do
     String.pad_leading("#{d.day}", 2, "0") <> "." <>
     String.pad_leading("#{d.month}", 2, "0") <> ".#{d.year}"
   end
 
-  defp field_string_value(val) when is_map(val), do: "#Object"
-  defp field_string_value(val), do: "#{val}"
+  def field_string_value(val) when is_map(val), do: "#Object"
+  def field_string_value(val), do: "#{val}"
 
   defp action(struct, params, opts) do
     path = action_path(struct, params)
