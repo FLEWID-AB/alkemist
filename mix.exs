@@ -63,8 +63,8 @@ defmodule Alkemist.MixProject do
       {:inflex, "~> 1.10.0"},
       {:atomic_map, "~> 0.9.3"},
       {:csv, "~> 2.0"},
-      {:turbo_ecto, git: "git@github.com:zven21/turbo_ecto.git", ref: "17b9933f6e7976590660bf92c8668fe01d245646"},
-      {:phoenix_mtm, git: "git@github.com:kevbuchanan/phoenix_mtm.git", branch: "ecto-3"},
+      {:turbo_ecto, git: "git@github.com:zven21/turbo_ecto.git"},
+      {:phoenix_mtm, "~> 1.0.0"},
       # Test and dev
       {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.0", only: :test},
