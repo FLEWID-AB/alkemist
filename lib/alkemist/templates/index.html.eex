@@ -95,5 +95,8 @@
       </table>
     </div>
   </div>
-  <%= render("_pagination.html", assigns) %>
+  <%= if assigns[:pagination] do %>
+    <% {mod, template} = pagination_view() %>
+    <%= render mod, template, assigns %>
+  <% end %>
 </div>

@@ -84,6 +84,7 @@ defmodule Alkemist.Config do
       right_header: {Alkemist.LayoutView, "_right_header.html"},
       left_header: {Alkemist.LayoutView, "_left_header.html"},
       sidebar: {Alkemist.LayoutView, "_sidebar_navigation.html"},
+      pagination: {AlkemistView, "_pagination.html"},
       filter: {AlkemistView, "_filter_view.html"},
       aside: {Alkemist.LayoutView, "_aside.html"},
       styles: {Alkemist.LayoutView, "_styles.html"},
