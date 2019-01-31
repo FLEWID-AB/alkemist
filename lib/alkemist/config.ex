@@ -61,7 +61,9 @@ defmodule Alkemist.Config do
       # Render custom form templates for filter and new/edit forms
       decorators: [
         filter: {MyApp.SearchView, :filter_decorator},
-        form: {MyApp.FormView, :form_field_decorator}
+        form: {MyApp.FormView, :form_field_decorator},
+        # Custom display for values in the index and show actions
+        field_value: {MyApp.IndexView, :field_string_value}
       ]
   """
 
@@ -82,6 +84,7 @@ defmodule Alkemist.Config do
       right_header: {Alkemist.LayoutView, "_right_header.html"},
       left_header: {Alkemist.LayoutView, "_left_header.html"},
       sidebar: {Alkemist.LayoutView, "_sidebar_navigation.html"},
+      pagination: {AlkemistView, "_pagination.html"},
       filter: {AlkemistView, "_filter_view.html"},
       aside: {Alkemist.LayoutView, "_aside.html"},
       styles: {Alkemist.LayoutView, "_styles.html"},
@@ -89,7 +92,8 @@ defmodule Alkemist.Config do
     ],
     decorators: [
       filter: {Alkemist.SearchView, :filter_field_decorator},
-      form: {Alkemist.FormView, :form_field_decorator}
+      form: {Alkemist.FormView, :form_field_decorator},
+      field_value: {AlkemistView, :field_string_value}
     ]
   ]
 
@@ -136,6 +140,14 @@ defmodule Alkemist.Config do
   def form_field_decorator(application \\ :alkemist) do
     decorators = get(:decorators, application)
     Keyword.get(decorators, :form, @defaults[:decorators][:form])
+  end
+
+  @doc """
+  Returns the field value decorator to render the string value for given field type(s)
+  """
+  def field_value_decorator(application \\ :alkemist) do
+    decorators = get(:decorators, application)
+    Keyword.get(decorators, :field_value, @defaults[:decorators][:field_value])
   end
 
   @doc """

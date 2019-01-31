@@ -50,7 +50,6 @@
           <tr>
             <%= for {field, _cb, opts} = column <- @columns do %>
               <%= if field == :selectable_column do %>
-
                 <th class="selectable">
                   <input class="toggle-all" id="selection-toggle-all" type="checkbox" />
                 </th>
@@ -58,7 +57,9 @@
                 <%= header_cell(@conn, @struct, column) %>
               <% end %>
             <% end %>
+            <%= if Enum.any?(@member_actions) do %>
             <th class="member-actions">Actions</th>
+            <% end %>
           </tr>
         </thead>
         <tbody>
@@ -81,16 +82,21 @@
                   </td>
                 <% end %>
               <% end %>
+              <%= if Enum.any?(@member_actions) do %>
               <td class="member-actions">
                 <%= for action <- @member_actions do %>
                   <%= member_action(@conn, action, row) %>
                 <% end %>
               </td>
+              <% end %>
             </tr>
           <% end %>
         </tbody>
       </table>
     </div>
   </div>
-  <%= render("_pagination.html", assigns) %>
+  <%= if assigns[:pagination] do %>
+    <% {mod, template} = pagination_view() %>
+    <%= render mod, template, assigns %>
+  <% end %>
 </div>

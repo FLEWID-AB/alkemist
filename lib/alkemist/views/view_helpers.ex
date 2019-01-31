@@ -169,6 +169,13 @@ defmodule Alkemist.ViewHelpers do
   end
 
   @doc """
+  Returns the view for the pagination
+  """
+  def pagination_view do
+    Keyword.get(Alkemist.Config.get(:views), :pagination)
+  end
+
+  @doc """
   Returns the site title to display in the title
   """
   def site_title do

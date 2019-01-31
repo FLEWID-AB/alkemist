@@ -541,7 +541,14 @@ defmodule Alkemist.Assign do
       query
       |> callback.()
 
-    count_query = search_opts[:search_provider].searchq(query, params)
+    count_query =
+      search_opts[:search_provider].searchq(query, params)
+      |> exclude(:limit)
+      |> exclude(:order_by)
+      |> exclude(:preload)
+      |> exclude(:select)
+      |> exclude(:order_by)
+
     count = search_opts[:repo].one(from a in count_query, select: count(a.id))
 
     current = Map.get(params, "scope")
