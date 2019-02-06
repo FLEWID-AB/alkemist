@@ -326,8 +326,7 @@ defmodule Alkemist.FormView do
   defp build_empty_form_template(type, form, {key, _opts} = field) do
     assoc = case type do
       :association -> Alkemist.Utils.get_association(form.data, key)
-      :embed ->
-        assoc = Alkemist.Utils.get_embed(form.data, key)
+      :embed -> Alkemist.Utils.get_embed(form.data, key)
     end
     case assoc do
       %{cardinality: :many, queryable: queryable} ->
@@ -359,14 +358,6 @@ defmodule Alkemist.FormView do
         Phoenix.HTML.safe_to_string(render_has_many_inputs(form, field, true))
         |> String.replace("#{key}_0", "#{key}_$index")
         |> String.replace("[#{key}][0]", "[#{key}][$index]")
-
-      %{cardinality: :many, related: related} ->
-        source = form.source
-
-        source = Map.put(source, :changes, Map.put(%{}, key, related.__struct__))
-        form = Map.put(form, :source, source)
-
-        Phoenix.HTML.safe_to_string(render_has_one_inputs(form, field, true))
 
       _ ->
         ""

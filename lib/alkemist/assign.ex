@@ -568,11 +568,6 @@ defmodule Alkemist.Assign do
     {scope, opts, callback}
   end
 
-  defp map_scope({scope, opts}, query, repo),
-    do: map_scope({scope, opts, fn q -> q end}, query, params, repo)
-
-  defp map_scope(scope, query, repo), do: map_scope({scope, []}, query, params, repo)
-
   # Merges the scope callback into the query
   defp scope(query, scopes) do
     current = Enum.find(scopes, fn {_s, opts, _cb} -> opts[:active] == true end)

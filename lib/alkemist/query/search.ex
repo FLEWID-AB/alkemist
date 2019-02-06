@@ -7,7 +7,7 @@ defmodule Alkemist.Query.Search do
   @empty_values [nil, [], {}, [""], "", %{}]
 
   def run(query, params) do
-    searchq(query, params) |> Turbo.Ecto.sortq(params)
+    searchq(query, params) |> Turbo.Ecto.Builder.run(params)
   end
 
   def searchq(query, params) do
@@ -15,11 +15,11 @@ defmodule Alkemist.Query.Search do
       params
       |> prepare_params(query)
 
-    Turbo.Ecto.searchq(query, params)
+    Turbo.Ecto.Builder.run(query, params)
   end
 
   def sortq(query, params) do
-    Turbo.Ecto.sortq(query, params)
+    Turbo.Ecto.Builder.run(query, params)
   end
 
   @doc """
@@ -27,7 +27,7 @@ defmodule Alkemist.Query.Search do
   right now this works not on associations
   """
   def prepare_params(params, query) do
-    queryable = Turbo.Ecto.Utils.schema_from_query(query)
+    queryable = Turbo.Ecto.Builder.extract_schema(query)
 
     search_params =
       params

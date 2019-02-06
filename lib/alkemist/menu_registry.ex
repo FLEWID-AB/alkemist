@@ -91,8 +91,11 @@ defmodule Alkemist.MenuRegistry do
     end
   end
 
-  defp cache_path(path \\ nil) do
-    if is_nil(path), do: path = Alkemist.Config.get(:web_interface)
+  defp cache_path do
+    cache_path(Alkemist.Config.get(:web_interface))
+  end
+
+  defp cache_path(path) do
     Path.join([System.tmp_dir!(), "#{path}", "alkemist"])
   end
 
@@ -160,11 +163,19 @@ defmodule Alkemist.MenuRegistry do
 
   defp build_tree([], results), do: results
 
+  defp ensure_setup, do: do_ensure_setup(cache_path())
 
-  defp ensure_setup(module \\ nil) do
-    unless is_nil(module), do: module = app_from_module(to_string(module))
-    unless File.exists?(cache_path(module)) do
-      File.mkdir_p(cache_path(module))
+  defp ensure_setup(module) do
+    module
+    |> to_string()
+    |> app_from_module()
+    |> cache_path()
+    |> do_ensure_setup()
+  end
+
+  defp do_ensure_setup(cache_path) do
+    unless File.exists?(cache_path) do
+      File.mkdir_p(cache_path)
     end
   end
 end

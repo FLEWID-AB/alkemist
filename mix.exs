@@ -12,6 +12,7 @@ defmodule Alkemist.MixProject do
       start_permanent: Mix.env() == :prod,
       build_embedded: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
 
       # Hex
       description: description(),
@@ -57,14 +58,14 @@ defmodule Alkemist.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.3 or ~> 1.4"},
-      {:phoenix_ecto, "~> 3.6"},
+      {:phoenix_ecto, "~> 4.0"},
       {:phoenix_html, "~> 2.10"},
-      {:ecto, "~> 2.2"},
+      {:ecto, "~> 3.0"},
       {:inflex, "~> 1.10.0"},
       {:atomic_map, "~> 0.9.3"},
       {:csv, "~> 2.0"},
-      {:turbo_ecto, "~> 0.1.7"},
-      {:phoenix_mtm, "~> 0.5.1"},
+      {:turbo_ecto, git: "git@github.com:zven21/turbo_ecto.git"},
+      {:phoenix_mtm, "~> 1.0.0"},
       # Test and dev
       {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.0", only: :test},
@@ -97,5 +98,11 @@ defmodule Alkemist.MixProject do
     """
     Provides some helper methods to build manager and admin applications quicker
     """
+  end
+
+  defp aliases do
+    [
+      test: ["ecto.create --quiet", "test"]
+    ]
   end
 end

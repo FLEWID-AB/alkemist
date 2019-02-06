@@ -15,7 +15,7 @@ defmodule Alkemist.Query.Paginate do
   """
 
   def run(query, params, opts \\ []) do
-    query = Turbo.Ecto.paginateq(query, params)
+    query = Turbo.Ecto.Builder.run(query, params)
     pagination = Turbo.Ecto.Hooks.Paginate.get_paginate(query, params, opts)
 
     {query, pagination}
