@@ -12,6 +12,7 @@ export default {
   bindListeners() {
     this.$toggler.on('change', () => {
       this.$inputs.prop('checked', this.$toggler.is(':checked'))
+      this.toggleBatchAvailability()
     })
     this.$inputs.on('change', () => { this.toggleBatchAvailability() })
     this.$actions.on('click', (e) => {
