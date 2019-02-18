@@ -28,7 +28,7 @@
     </ul>
   </div>
   <%= if any?(@batch_actions) do %>
-  <div class="row mt-1">
+  <div class="row batch-actions mt-1">
     <%= form_for @conn, "", [id: "batch-action-form"], fn f -> %>
 
     <% end %>

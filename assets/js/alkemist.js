@@ -26,7 +26,7 @@ $(document).ready(function () {
 
 function makeRowClickable() {
   let $clickableRows = $('.clickable-row');
-  $clickableRows.children('td').not('.member-actions').on('click', function() {
+  $clickableRows.children('td').not('.member-actions, .selectable').on('click', function() {
     window.location = $(this).parent().attr('data-href');
   })
 }
