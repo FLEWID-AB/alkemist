@@ -57,9 +57,7 @@
                 <%= header_cell(@conn, @struct, column) %>
               <% end %>
             <% end %>
-            <%= if Enum.any?(@member_actions) do %>
-            <th class="member-actions">Actions</th>
-            <% end %>
+            <%= member_actions(@member_actions) %>
           </tr>
         </thead>
         <tbody>
@@ -82,13 +80,7 @@
                   </td>
                 <% end %>
               <% end %>
-              <%= if Enum.any?(@member_actions) do %>
-              <td class="member-actions">
-                <%= for action <- @member_actions do %>
-                  <%= member_action(@conn, action, row) %>
-                <% end %>
-              </td>
-              <% end %>
+              <%= member_actions(@conn, @member_actions, row) %>
             </tr>
           <% end %>
         </tbody>
