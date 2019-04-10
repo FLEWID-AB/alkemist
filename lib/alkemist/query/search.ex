@@ -27,13 +27,13 @@ defmodule Alkemist.Query.Search do
   right now this works not on associations
   """
   def prepare_params(params, query) do
-    queryable = Turbo.Ecto.Utils.schema_from_query(query)
+    #queryable = Turbo.Ecto.Utils.schema_from_query(query)
 
     search_params =
       params
       |> Map.get("q", %{})
       |> Enum.filter(fn {_key, value} -> value not in @empty_values end)
-      |> Enum.map(&handle_special_fields(&1, queryable))
+      |> Enum.map(&handle_special_fields(&1, query))
       |> Enum.into(%{})
 
     Map.put(params, "q", search_params)
