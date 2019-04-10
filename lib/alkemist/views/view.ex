@@ -20,13 +20,40 @@ defmodule AlkemistView do
   end
 
   @doc """
+  Renders the member actions for a table row
+  """
+  def member_actions(actions) do
+    {mod, fun} = Alkemist.Config.member_actions_decorator()
+    apply(mod, fun, [actions])
+  end
+  def member_actions(conn, actions, resource) do
+    {mod, fun} = Alkemist.Config.member_actions_decorator()
+    apply(mod, fun, [conn, actions, resource])
+  end
+
+  @doc """
+  Decorator for the actions column - will render default links
+  """
+  def member_actions_decorator(actions) do
+    if Enum.any?(actions) do
+      content_tag(:th, class: "member-actions") do
+        "Actions"
+      end
+    end
+  end
+  def member_actions_decorator(conn, actions, resource) do
+    if Enum.any?(actions) do
+      content_tag(:td, class: "member-actions") do
+        Enum.map(actions, fn action -> member_action(conn, action, resource) end)
+      end
+    end
+  end
+
+  @doc """
   Creates an action link to a member action
   """
   def member_action(conn, action, resource) do
     {action, opts} = action
-
-
-
     label =
       case Keyword.get(opts, :icon) do
         nil ->
