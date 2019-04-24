@@ -73,6 +73,11 @@ defmodule Alkemist.SearchView do
     select(form, field, collection, class: "form-control form-control-sm", prompt: "Choose...")
   end
 
+  def input_field(form, field, :select_multi, opts) do
+    collection = Keyword.get(opts, :collection, [])
+    multiple_select(form, field, collection, class: "form-control form-control-sm", prompt: "Choose...")
+  end
+
   def input_field(form, field, :date, opts) do
     to_field = String.replace(Atom.to_string(field), "gteq", "lteq") |> String.to_atom()
     [
@@ -90,6 +95,7 @@ defmodule Alkemist.SearchView do
     case type do
       :boolean -> "#{field}_eq"
       :select -> "#{field}_eq"
+      :select_multi -> "#{field}_eq"
       :date -> "#{field}_gteq"
       _ -> "#{field}_ilike"
     end
