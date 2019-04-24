@@ -93,7 +93,8 @@ defmodule Alkemist.Config do
     decorators: [
       filter: {Alkemist.SearchView, :filter_field_decorator},
       form: {Alkemist.FormView, :form_field_decorator},
-      field_value: {AlkemistView, :field_string_value}
+      field_value: {AlkemistView, :field_string_value},
+      member_actions: {AlkemistView, :member_actions_decorator}
     ]
   ]
 
@@ -148,6 +149,18 @@ defmodule Alkemist.Config do
   def field_value_decorator(application \\ :alkemist) do
     decorators = get(:decorators, application)
     Keyword.get(decorators, :field_value, @defaults[:decorators][:field_value])
+  end
+
+  @doc """
+  Returns the Member Actions decorator so it can be customized in implementations
+  The method needs to have 2 implementations. One is for the header, the other one for the
+  Actions column.
+  `def member_actions(actions) do`
+  `def member_actions(conn, actions, resource) do
+  """
+  def member_actions_decorator(application \\ :alkemist) do
+    decorators = get(:decorators, application)
+    Keyword.get(decorators, :member_actions, @defaults[:decorators][:member_actions])
   end
 
   @doc """
