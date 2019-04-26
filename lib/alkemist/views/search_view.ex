@@ -75,7 +75,9 @@ defmodule Alkemist.SearchView do
 
   def input_field(form, field, :select_multi, opts) do
     collection = Keyword.get(opts, :collection, [])
-    multiple_select(form, field, collection, class: "form-control form-control-sm", prompt: "Choose...")
+    class = Keyword.get(opts, :class, "")
+
+    multiple_select(form, field, collection, class: class <> " form-control form-control-sm", prompt: "Choose...")
   end
 
   def input_field(form, field, :date, opts) do
