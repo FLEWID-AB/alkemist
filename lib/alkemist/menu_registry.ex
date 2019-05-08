@@ -92,7 +92,7 @@ defmodule Alkemist.MenuRegistry do
   end
 
   defp cache_path(path \\ nil) do
-    if is_nil(path), do: path = Alkemist.Config.get(:web_interface)
+    path = if is_nil(path), do: Alkemist.Config.get(:web_interface), else: path
     Path.join([System.tmp_dir!(), "#{path}", "alkemist"])
   end
 

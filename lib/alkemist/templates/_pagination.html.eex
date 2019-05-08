@@ -6,9 +6,9 @@
   </div>
 
   <div class="col-6">
-    <%= pagination_links(@conn, @pagination, @resource) %>
+    <%= pagination_links(@conn, @pagination, @resource, @alkemist_app) %>
   </div>
   <div class="col-3">
-    <%= per_page_links(@conn, @pagination, @resource) %>
+    <%= per_page_links(@conn, @pagination, @resource, @alkemist_app) %>
   </div>
 </div>

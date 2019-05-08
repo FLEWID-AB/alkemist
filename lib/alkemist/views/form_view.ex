@@ -327,7 +327,7 @@ defmodule Alkemist.FormView do
     assoc = case type do
       :association -> Alkemist.Utils.get_association(form.data, key)
       :embed ->
-        assoc = Alkemist.Utils.get_embed(form.data, key)
+        Alkemist.Utils.get_embed(form.data, key)
     end
     case assoc do
       %{cardinality: :many, queryable: queryable} ->

@@ -132,9 +132,10 @@ defmodule Alkemist.Controller do
 
   Module.register_attribute __MODULE__, :menu_items, accumulate: true, persist: true
 
-  defmacro __using__(_) do
+  defmacro __using__(opts) do
     Code.ensure_compiled(Alkemist.MenuRegistry)
-    quote do
+    quote bind_quoted: [opts: opts] do
+      @otp_app Keyword.get(opts, :otp_app, :alkemist)
       import Alkemist.Assign
       import Alkemist.Controller
       @behaviour Alkemist.Controller
@@ -289,10 +290,9 @@ defmodule Alkemist.Controller do
     opts = get_module_opts(opts, :index, conn)
     quote do
       conn = unquote(conn)
-
-      if Alkemist.Config.authorization_provider().authorize_action(@resource, conn, :index) ==
+      if Alkemist.Config.authorization_provider(@otp_app).authorize_action(@resource, conn, :index) ==
            true do
-        opts = unquote(opts)
+        opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
         assigns = Assign.index_assigns(unquote(params), @resource, opts)
 
         assigns =
@@ -306,7 +306,7 @@ defmodule Alkemist.Controller do
         |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
         |> Phoenix.Controller.render(AlkemistView, "index.html", assigns)
       else
-        Alkemist.Controller.forbidden(conn)
+        Alkemist.Controller.forbidden(conn, @otp_app)
       end
     end
   end
@@ -384,20 +384,20 @@ defmodule Alkemist.Controller do
 
     quote do
       conn = unquote(conn)
-      opts = unquote(opts)
+      opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
       resource = opts[:resource]
 
       if resource == nil do
         Alkemist.Controller.not_found(conn)
       else
-        if Alkemist.Config.authorization_provider().authorize_action(resource, conn, :show) do
+        if Alkemist.Config.authorization_provider(@otp_app).authorize_action(resource, conn, :show) do
           assigns = Assign.show_assigns(resource, opts)
 
           conn
           |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
           |> Phoenix.Controller.render(AlkemistView, "show.html", assigns)
         else
-          Alkemist.Controller.forbidden(conn)
+          Alkemist.Controller.forbidden(conn, @otp_app)
         end
       end
     end
@@ -414,10 +414,10 @@ defmodule Alkemist.Controller do
       conn = unquote(conn)
       opts = unquote(opts)
 
-      if Alkemist.Config.authorization_provider().authorize_action(@resource, conn, :create) do
+      if Alkemist.Config.authorization_provider(@otp_app).authorize_action(@resource, conn, :create) do
         render_form(conn, :new, opts)
       else
-        Alkemist.Controller.forbidden(conn)
+        Alkemist.Controller.forbidden(conn, @otp_app)
       end
     end
   end
@@ -437,10 +437,10 @@ defmodule Alkemist.Controller do
       if resource == nil do
         Alkemist.Controller.not_found(conn)
       else
-        if Alkemist.Config.authorization_provider().authorize_action(resource, conn, :update) do
+        if Alkemist.Config.authorization_provider(@otp_app).authorize_action(resource, conn, :update) do
           render_form(conn, :edit, opts)
         else
-          Alkemist.Controller.forbidden(conn)
+          Alkemist.Controller.forbidden(conn, @otp_app)
         end
       end
     end
@@ -501,7 +501,7 @@ defmodule Alkemist.Controller do
   """
   defmacro render_form(conn, action, opts \\ []) do
     quote do
-      opts = unquote(opts)
+      opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
       action = unquote(action)
 
       assigns = Assign.form_assigns(@resource, opts)
@@ -521,10 +521,11 @@ defmodule Alkemist.Controller do
     quote do
       conn = unquote(conn)
 
-      if Alkemist.Config.authorization_provider().authorize_action(@resource, conn, :create) do
+      if Alkemist.Config.authorization_provider(@otp_app).authorize_action(@resource, conn, :create) do
         opts =
           unquote(opts)
           |> Keyword.put_new(:changeset, :changeset)
+          |> Keyword.put_new(:otp_app, @otp_app)
 
         opts =
           if is_atom(opts[:changeset]) do
@@ -535,7 +536,7 @@ defmodule Alkemist.Controller do
             opts
           end
 
-        repo = Keyword.get(opts, :repo, Alkemist.Config.repo())
+        repo = Keyword.get(opts, :repo, Alkemist.Config.repo(@otp_app))
 
         case repo.insert(opts[:changeset]) do
           {:ok, new_resource} ->
@@ -550,7 +551,7 @@ defmodule Alkemist.Controller do
                 Utils.singular_name(@resource) <> " created successfully"
               )
               |> Phoenix.Controller.redirect(
-                to: apply(Alkemist.Config.router_helpers(), path, [conn, :show, new_resource])
+                to: apply(Alkemist.Config.router_helpers(@otp_app), path, [conn, :show, new_resource])
               )
             end
 
@@ -563,7 +564,7 @@ defmodule Alkemist.Controller do
             end
         end
       else
-        Alkemist.Controller.forbidden(conn)
+        Alkemist.Controller.forbidden(conn, @otp_app)
       end
     end
   end
@@ -605,13 +606,13 @@ defmodule Alkemist.Controller do
   defmacro do_update(conn, resource, params, opts \\ []) do
     quote do
       conn = unquote(conn)
-      opts = unquote(opts)
-      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
+      opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
+      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts, @otp_app)
 
       if resource == nil do
         Alkemist.Controller.not_found(conn)
       else
-        if Alkemist.Config.authorization_provider().authorize_action(resource, conn, :update) do
+        if Alkemist.Config.authorization_provider(@otp_app).authorize_action(resource, conn, :update) do
           params = unquote(params)
 
           opts =
@@ -627,7 +628,7 @@ defmodule Alkemist.Controller do
               opts
             end
 
-          repo = Keyword.get(opts, :repo, Alkemist.Config.repo())
+          repo = Keyword.get(opts, :repo, Alkemist.Config.repo(@otp_app))
 
           case repo.update(opts[:changeset]) do
             {:ok, new_resource} ->
@@ -642,7 +643,7 @@ defmodule Alkemist.Controller do
                   Utils.singular_name(@resource) <> " updated successfully"
                 )
                 |> Phoenix.Controller.redirect(
-                  to: apply(Alkemist.Config.router_helpers(), path, [conn, :show, new_resource])
+                  to: apply(Alkemist.Config.router_helpers(@otp_app), path, [conn, :show, new_resource])
                 )
               end
 
@@ -655,7 +656,7 @@ defmodule Alkemist.Controller do
               end
           end
         else
-          Alkemist.Controller.forbidden(conn)
+          Alkemist.Controller.forbidden(conn, @otp_app)
         end
       end
     end
@@ -689,18 +690,18 @@ defmodule Alkemist.Controller do
   defmacro do_delete(conn, resource, opts \\ []) do
     quote do
       conn = unquote(conn)
-      opts = unquote(opts)
-      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
+      opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
+      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts, @otp_app)
 
       if resource == nil do
         Alkemist.Controller.not_found(conn)
       else
-        if Alkemist.Config.authorization_provider().authorize_action(resource, conn, :delete) do
+        if Alkemist.Config.authorization_provider(@otp_app).authorize_action(resource, conn, :delete) do
           res =
             if opts[:delete_func] do
               opts[:delete_func].(resource)
             else
-              repo = Keyword.get(opts, :repo, Alkemist.Config.repo())
+              repo = Keyword.get(opts, :repo, Alkemist.Config.repo(@otp_app))
               repo.delete(resource)
             end
 
@@ -717,7 +718,7 @@ defmodule Alkemist.Controller do
                   Utils.singular_name(@resource) <> " deleted successfully"
                 )
                 |> Phoenix.Controller.redirect(
-                  to: apply(Alkemist.Config.router_helpers(), path, [conn, :index])
+                  to: apply(Alkemist.Config.router_helpers(@otp_app), path, [conn, :index])
                 )
               end
 
@@ -735,15 +736,15 @@ defmodule Alkemist.Controller do
                   end
 
                 conn
-                |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
+                |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@otp_app))
                 |> Phoenix.Controller.put_flash(:error, message)
                 |> Phoenix.Controller.redirect(
-                  to: apply(Alkemist.Config.router_helpers(), path, [conn, :index])
+                  to: apply(Alkemist.Config.router_helpers(@otp_app), path, [conn, :index])
                 )
               end
           end
         else
-          Alkemist.Controller.forbidden(conn)
+          Alkemist.Controller.forbidden(conn, @otp_app)
         end
       end
     end
@@ -760,7 +761,7 @@ defmodule Alkemist.Controller do
 
     quote do
       conn = unquote(conn)
-      opts = unquote(opts)
+      opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
       params = unquote(params)
 
       assigns = Assign.csv_assigns(params, @resource, opts)
@@ -787,12 +788,12 @@ defmodule Alkemist.Controller do
     end
   end
 
-  def forbidden(conn) do
+  def forbidden(conn, application) do
     conn
-    |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
+    |> Phoenix.Controller.put_layout(Alkemist.Config.layout(application))
     |> Phoenix.Controller.put_flash(:error, "You are not authorized to access this page")
     |> Phoenix.Controller.redirect(
-      to: Alkemist.Config.router_helpers().page_path(conn, :dashboard)
+      to: Alkemist.Config.router_helpers(application).page_path(conn, :dashboard)
     )
   end
 
@@ -805,17 +806,17 @@ defmodule Alkemist.Controller do
   @doc """
   Loads the resource from the repo and adds any preloads
   """
-  def load_resource(resource, mod, opts) when is_bitstring(resource),
-    do: load_resource(String.to_integer(resource), mod, opts)
+  def load_resource(resource, mod, opts, application) when is_bitstring(resource),
+    do: load_resource(String.to_integer(resource), mod, opts, application)
 
-  def load_resource(resource, mod, opts) when is_integer(resource) do
-    repo = Keyword.get(opts, :repo, Alkemist.Config.repo())
-    load_resource(repo.get(mod, resource), mod, opts)
+  def load_resource(resource, mod, opts, application) when is_integer(resource) do
+    repo = Keyword.get(opts, :repo, Alkemist.Config.repo(application))
+    load_resource(repo.get(mod, resource), mod, opts, application)
   end
 
-  def load_resource(resource, _mod, opts) do
+  def load_resource(resource, _mod, opts, application) do
     if opts[:preload] do
-      repo = Keyword.get(opts, :repo, Alkemist.Config.repo())
+      repo = Keyword.get(opts, :repo, Alkemist.Config.repo(application))
       resource |> repo.preload(opts[:preload])
     else
       resource
@@ -923,7 +924,7 @@ defmodule Alkemist.Controller do
 
     quote do
       opts = unquote(opts)
-      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
+      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts, @otp_app)
       conn = unquote(conn)
 
       Alkemist.Controller.opts_or_function(
@@ -941,7 +942,7 @@ defmodule Alkemist.Controller do
 
     quote do
       opts = unquote(opts)
-      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts)
+      resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts, @otp_app)
       conn = unquote(conn)
 
       opts =

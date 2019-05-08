@@ -3,11 +3,11 @@
     <div class="col-md-12 page-actions">
       <ul class="nav justify-content-end">
         <li class="nav-item">
-          <%= action_link("Back to List", @conn, :index, @mod, [class: "nav-link"]) %>
+          <%= action_link("Back to List", @conn, :index, @mod, [class: "nav-link", alkemist_app: @alkemist_app]) %>
         </li>
         <%= if Keyword.has_key?(@member_actions, :edit) do %>
         <li class="nav-item">
-          <%= action_link("Edit", @conn, :edit, @resource, [class: "nav-link"]) %>
+          <%= action_link("Edit", @conn, :edit, @resource, [class: "nav-link", alkemist_app: @alkemist_app]) %>
         </li>
         <% end %>
       </ul>
@@ -26,7 +26,7 @@
               <th scope="row"><%= opts.label %></th>
               <td>
                 <%= if Map.has_key?(opts, :action) and not is_nil(Map.get(@resource, opts.assoc)) do %>
-                  <a href="<%= resource_action_path(@conn, Map.fetch!(@resource, opts.assoc), opts.action) %>"><%= string_value(cb, @resource) %></a>
+                  <a href="<%= resource_action_path(@conn, Map.fetch!(@resource, opts.assoc), opts.action, %{}, @alkemist_app) %>"><%= string_value(cb, @resource) %></a>
                 <% else %>
                   <%= unless Map.has_key?(opts, :assoc) and is_nil(Map.get(@resource, opts.assoc)) do %>
                     <%= string_value(cb, @resource) %>
