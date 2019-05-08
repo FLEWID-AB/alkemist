@@ -28,7 +28,7 @@ defmodule AlkemistView do
   end
   def member_actions(conn, actions, resource, application \\ :alkemist) do
     {mod, fun} = Alkemist.Config.member_actions_decorator(application)
-    apply(mod, fun, [conn, actions, resource])
+    apply(mod, fun, [conn, actions, resource, application])
   end
 
   @doc """
