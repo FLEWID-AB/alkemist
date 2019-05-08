@@ -304,7 +304,8 @@ defmodule Alkemist.Controller do
 
         conn
         |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
-        |> Phoenix.Controller.render(AlkemistView, "index.html", assigns)
+        |> Phoenix.Controller.put_view(AlkemistView)
+        |> Phoenix.Controller.render("index.html", assigns)
       else
         Alkemist.Controller.forbidden(conn, @otp_app)
       end
@@ -395,7 +396,8 @@ defmodule Alkemist.Controller do
 
           conn
           |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
-          |> Phoenix.Controller.render(AlkemistView, "show.html", assigns)
+          |> Phoenix.Controller.put_view(AlkemistView)
+          |> Phoenix.Controller.render("show.html", assigns)
         else
           Alkemist.Controller.forbidden(conn, @otp_app)
         end
@@ -509,7 +511,8 @@ defmodule Alkemist.Controller do
 
       conn
       |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
-      |> Phoenix.Controller.render(AlkemistView, "#{action}.html", assigns)
+      |> Phoenix.Controller.put_view(AlkemistView)
+      |> Phoenix.Controller.render("#{action}.html", assigns)
     end
   end
 
@@ -800,7 +803,8 @@ defmodule Alkemist.Controller do
   def not_found(conn) do
     conn
     |> Plug.Conn.put_status(:not_found)
-    |> Phoenix.Controller.render(Alkemist.ErrorView, "404.html")
+    |> Phoenix.Controller.put_view(Alkemist.ErrorView)
+    |> Phoenix.Controller.render("404.html")
   end
 
   @doc """
