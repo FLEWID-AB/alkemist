@@ -2,5 +2,6 @@
 
 <%= if @form_partial do %>
   <% {view, partial} = @form_partial %>
-  <%= render(view, partial, Map.put(assigns, :action, action_path(@struct, [@conn, :create], @alkemist_app))) %>
+  <% params = [@conn, :create] ++ @route_params %>
+  <%= render(view, partial, Map.put(assigns, :action, action_path(@struct, params, @alkemist_app))) %>
 <% end %>

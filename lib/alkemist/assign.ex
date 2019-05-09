@@ -59,6 +59,10 @@ defmodule Alkemist.Assign do
       opts[:columns]
       |> maybe_add_selectable(opts[:batch_actions])
       |> Enum.map(fn col -> map_column(col, resource) end)
+      |> Enum.map(fn {field, cb, column_opts} ->
+        column_opts = Map.put(column_opts, :route_params, opts[:route_params])
+        {field, cb, column_opts}
+      end)
 
     query = opts[:search_provider].run(query, params)
     {query, pagination} = opts[:pagination_provider].run(query, params, repo: repo)
@@ -91,7 +95,8 @@ defmodule Alkemist.Assign do
       collection_actions: collection_actions(opts),
       singular_name: opts[:singular_name],
       plural_name: opts[:plural_name],
-      alkemist_app: Keyword.get(opts, :otp_app, :alkemist)
+      alkemist_app: Keyword.get(opts, :otp_app, :alkemist),
+      route_params: Keyword.get(opts, :route_params)
     ]
 
     Keyword.merge(assigns, global_opts)
@@ -215,6 +220,7 @@ defmodule Alkemist.Assign do
     |> Keyword.put_new(:singular_name, Utils.singular_name(resource))
     |> Keyword.put_new(:plural_name, Utils.plural_name(resource))
     |> Keyword.put_new(:alkemist_app, Keyword.get(opts, :otp_app, :alkemist))
+    |> Keyword.put_new(:route_params, [])
   end
 
   defp default_index_opts(opts, resource) do

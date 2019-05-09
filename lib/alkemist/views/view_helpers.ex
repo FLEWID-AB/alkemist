@@ -37,18 +37,19 @@ defmodule Alkemist.ViewHelpers do
   """
   def action_link(label, conn, action, resource, opts \\ []) do
     application = Keyword.get(opts, :alkemist_app, :alkemist)
+    route_params = Keyword.get(opts, :route_params, [])
     if Alkemist.Config.authorization_provider(application).authorize_action(resource, conn, action) do
       # use exsisting :to option if available
 
       opts = if resource != nil do
         opts
-        |> Keyword.put_new(:to, resource_action_path(conn, resource, action, %{}, application))
+        |> Keyword.put_new(:to, resource_action_path(conn, resource, action, route_params, %{}, application))
       else
         opts
       end
 
       wrap = Keyword.get(opts, :wrap)
-      opts = opts |> Keyword.delete(:wrap) |> Keyword.delete(:alkemist_app)
+      opts = opts |> Keyword.delete(:wrap) |> Keyword.delete(:alkemist_app) |> Keyword.delete(:route_params)
       link = link(raw(label), opts)
 
       case wrap do
@@ -92,26 +93,19 @@ defmodule Alkemist.ViewHelpers do
     |> Enum.into(%{})
   end
 
-  def resource_action_path(conn, resource, action, params \\ %{}, application \\ :alkemist)
+  def resource_action_path(conn, resource, action, route_params, params \\ %{}, application \\ :alkemist)
 
-  def resource_action_path(conn, resource, action, params, application) when is_map(resource) do
+  def resource_action_path(conn, resource, action, route_params, params, application) when is_map(resource) do
     helper = Utils.default_resource_helper(resource)
+    params = [conn, action] ++ route_params ++ [resource, params]
 
-    apply(Alkemist.Config.router_helpers(application), helper, [
-      conn,
-      action,
-      resource,
-      params
-    ])
+    apply(Alkemist.Config.router_helpers(application), helper, params)
   end
 
-  def resource_action_path(conn, resource, action, params, application) do
+  def resource_action_path(conn, resource, action, route_params, params, application) do
     helper = Utils.default_resource_helper(resource)
-    apply(Alkemist.Config.router_helpers(application), helper, [
-      conn,
-      action,
-      params
-    ])
+    params = [conn, action] ++ route_params ++ [params]
+    apply(Alkemist.Config.router_helpers(application), helper, params)
   end
 
 

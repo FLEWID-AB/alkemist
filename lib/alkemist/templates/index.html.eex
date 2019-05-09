@@ -9,7 +9,7 @@
     <div class="col-md-2 text-right page-actions">
       <h6 class="small">Actions</h6>
       <%= for action <- @collection_actions do %>
-        <%= collection_action(@conn, action, @mod, @alkemist_app) %>
+        <%= collection_action(@conn, action, @mod, @route_params, @alkemist_app) %>
       <% end %>
       <%= if assigns[:has_export] do %>
         <%= export_action(@conn, @struct, assigns, @alkemist_app) %>
@@ -62,7 +62,7 @@
         </thead>
         <tbody>
           <%= for row <- @entries do %>
-            <tr class="clickable-row" data-href="<%= resource_action_path(@conn, row, :show, %{}, @alkemist_app) %>">
+            <tr class="clickable-row" data-href="<%= resource_action_path(@conn, row, :show, @route_params, %{}, @alkemist_app) %>">
               <%= for {field, cb, opts} <- @columns do %>
                 <%= if field == :selectable_column do %>
                   <td class="selectable">
@@ -80,7 +80,7 @@
                   </td>
                 <% end %>
               <% end %>
-              <%= member_actions(@conn, @member_actions, row, @alkemist_app) %>
+              <%= member_actions(@conn, @member_actions, row, @route_params, @alkemist_app) %>
             </tr>
           <% end %>
         </tbody>
