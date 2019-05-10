@@ -1,4 +1,5 @@
 <div class="mt-3">
   <% {view, partial} = @form_partial %>
-  <%= render(view, partial, Map.put(assigns, :action, action_path(@struct, [@conn, :update, @resource], @alkemist_app))) %>
+  <% params = [@conn, :update] ++ @route_params ++ [@resource]%>
+  <%= render(view, partial, Map.put(assigns, :action, action_path(@struct, params, @alkemist_app))) %>
 </div>
