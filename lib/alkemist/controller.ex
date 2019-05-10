@@ -521,8 +521,10 @@ defmodule Alkemist.Controller do
   TODO: document opts
   """
   defmacro do_create(conn, params, opts \\ []) do
+    route_params = route_params(opts)
     quote do
       conn = unquote(conn)
+      route_params = unquote(route_params)
 
       if Alkemist.Config.authorization_provider(@otp_app).authorize_action(@resource, conn, :create) do
         opts =
@@ -547,14 +549,14 @@ defmodule Alkemist.Controller do
               opts[:success_callback].(new_resource)
             else
               path = String.to_atom("#{Utils.default_resource_helper(@resource)}")
-
+              params = [conn, :show] ++ route_params ++ [new_resource]
               conn
               |> Phoenix.Controller.put_flash(
                 :info,
                 Utils.singular_name(@resource) <> " created successfully"
               )
               |> Phoenix.Controller.redirect(
-                to: apply(Alkemist.Config.router_helpers(@otp_app), path, [conn, :show, new_resource])
+                to: apply(Alkemist.Config.router_helpers(@otp_app), path, params)
               )
             end
 
@@ -562,7 +564,7 @@ defmodule Alkemist.Controller do
             if opts[:error_callback] do
               opts[:error_callback].(changeset)
             else
-              opts = [changeset: changeset]
+              opts = [changeset: changeset, route_params: route_params]
               render_new(conn, opts)
             end
         end
@@ -607,10 +609,12 @@ defmodule Alkemist.Controller do
   ```
   """
   defmacro do_update(conn, resource, params, opts \\ []) do
+    route_params = route_params(opts)
     quote do
       conn = unquote(conn)
       opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
       resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts, @otp_app)
+      route_params = unquote(route_params)
 
       if resource == nil do
         Alkemist.Controller.not_found(conn)
@@ -639,14 +643,14 @@ defmodule Alkemist.Controller do
                 opts[:success_callback].(new_resource)
               else
                 path = String.to_atom("#{Utils.default_resource_helper(@resource)}")
-
+                route_params = [conn, :show] ++ route_params ++ [new_resource]
                 conn
                 |> Phoenix.Controller.put_flash(
                   :info,
                   Utils.singular_name(@resource) <> " updated successfully"
                 )
                 |> Phoenix.Controller.redirect(
-                  to: apply(Alkemist.Config.router_helpers(@otp_app), path, [conn, :show, new_resource])
+                  to: apply(Alkemist.Config.router_helpers(@otp_app), path, route_params)
                 )
               end
 
@@ -654,7 +658,7 @@ defmodule Alkemist.Controller do
               if opts[:error_callback] do
                 opts[:error_callback].(changeset)
               else
-                opts = [changeset: changeset]
+                opts = [changeset: changeset, route_params: route_params]
                 render_edit(conn, resource, opts)
               end
           end
@@ -691,10 +695,12 @@ defmodule Alkemist.Controller do
   ```
   """
   defmacro do_delete(conn, resource, opts \\ []) do
+    route_params = route_params(opts)
     quote do
       conn = unquote(conn)
       opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
       resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts, @otp_app)
+      route_params = unquote(route_params)
 
       if resource == nil do
         Alkemist.Controller.not_found(conn)
@@ -714,6 +720,7 @@ defmodule Alkemist.Controller do
                 opts[:success_callback].(deleted)
               else
                 path = String.to_atom("#{Utils.default_resource_helper(@resource)}")
+                route_params = [conn, :index] ++ route_params
 
                 conn
                 |> Phoenix.Controller.put_flash(
@@ -721,7 +728,7 @@ defmodule Alkemist.Controller do
                   Utils.singular_name(@resource) <> " deleted successfully"
                 )
                 |> Phoenix.Controller.redirect(
-                  to: apply(Alkemist.Config.router_helpers(@otp_app), path, [conn, :index])
+                  to: apply(Alkemist.Config.router_helpers(@otp_app), path, route_params)
                 )
               end
 
@@ -730,7 +737,7 @@ defmodule Alkemist.Controller do
                 opts[:error_callback].(message)
               else
                 path = String.to_atom("#{Utils.default_resource_helper(@resource)}")
-
+                route_params = [conn, :index] ++ route_params
                 message =
                   if message == :forbidden do
                     "You are not authorized to delete this resource"
@@ -742,7 +749,7 @@ defmodule Alkemist.Controller do
                 |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@otp_app))
                 |> Phoenix.Controller.put_flash(:error, message)
                 |> Phoenix.Controller.redirect(
-                  to: apply(Alkemist.Config.router_helpers(@otp_app), path, [conn, :index])
+                  to: apply(Alkemist.Config.router_helpers(@otp_app), path, route_params)
                 )
               end
           end
@@ -964,6 +971,18 @@ defmodule Alkemist.Controller do
         Keyword.put(opts, :changeset, changeset)
       else
         opts
+      end
+    end
+  end
+
+  defp route_params(opts) do
+    quote do
+      opts = unquote(opts)
+
+      case Keyword.get(opts, :route_params) do
+        a when is_list(a) -> a
+        b when is_nil(b) -> []
+        c -> [c]
       end
     end
   end
