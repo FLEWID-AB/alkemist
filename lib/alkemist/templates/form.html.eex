@@ -12,7 +12,7 @@
 			</div>
 			<div class="card-body">
 				<%= for field <- group.fields do %>
-					<%= form_field(f, field) %>
+					<%= form_field(f, field, @alkemist_app) %>
 				<% end %>
 			</div>
 		</div>

@@ -49,11 +49,11 @@ defmodule Alkemist.FormView do
   @doc """
   Renders a form field within the new and edit form
   """
-  def form_field(form, {field, opts}) do
+  def form_field(form, {field, opts}, application \\ :alkemist) do
     opts =
       opts
       |> Map.put_new(:label, Phoenix.Naming.humanize(field))
-      |> Map.put_new(:decorator, Alkemist.Config.form_field_decorator())
+      |> Map.put_new(:decorator, Alkemist.Config.form_field_decorator(application))
 
     {mod, fun} = opts.decorator
     apply(mod, fun, [form, {field, Map.delete(opts, :decorator)}])
