@@ -303,7 +303,7 @@ defmodule Alkemist.Controller do
           end
 
         conn
-        |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
+        |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@otp_app))
         |> Phoenix.Controller.put_view(AlkemistView)
         |> Phoenix.Controller.render("index.html", assigns)
       else
@@ -395,7 +395,7 @@ defmodule Alkemist.Controller do
           assigns = Assign.show_assigns(resource, opts)
 
           conn
-          |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
+          |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@otp_app))
           |> Phoenix.Controller.put_view(AlkemistView)
           |> Phoenix.Controller.render("show.html", assigns)
         else
@@ -510,7 +510,7 @@ defmodule Alkemist.Controller do
       conn = unquote(conn)
 
       conn
-      |> Phoenix.Controller.put_layout(Alkemist.Config.layout())
+      |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@otp_app))
       |> Phoenix.Controller.put_view(AlkemistView)
       |> Phoenix.Controller.render("#{action}.html", assigns)
     end
