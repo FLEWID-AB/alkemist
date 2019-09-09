@@ -39,18 +39,19 @@ defmodule Alkemist.Query.Search do
     Map.put(params, "q", search_params)
   end
 
-  def handle_special_fields({key, value}, queryable) do
-    regex = ~r/([a-z0-9_]+)_(#{BuildSearchQuery.search_types() |> Enum.join("|")})$/
+  def handle_special_fields({key, value}, _queryable) do
+    #regex = ~r/([a-z0-9_]+)_(#{BuildSearchQuery.search_types() |> Enum.join("|")})$/
 
-    {key, value} =
-      if Regex.match?(regex, key) do
-        [_, match, type] = Regex.run(regex, key)
-        value = handle_field({match, type}, value, queryable)
-        {key, value}
-      else
-        {key, value}
-      end
+    #{key, value} =
+    #  if Regex.match?(regex, key) do
+    #    #[_, match, type] = Regex.run(regex, key)
+    #    #value = handle_field({match, type}, value, queryable)
+    #    {key, value}
+    #  else
+    #    {key, value}
+    #  end
 
+    # TODO: find replacement for `schema_from_query`
     {key, value}
   end
 
