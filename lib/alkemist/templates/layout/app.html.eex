@@ -9,7 +9,7 @@
     <% {mod, template} = styles_view(@alkemist_app) %>
     <%= render mod, template, conn: @conn %>
 </head>
-<body class="app header-fixed sidebar-fixed sidebar-md-show <%= if assigns[:show_aside] do "aside-menu-show" end %>">
+<body class="<%= if assigns[:body_class] do @body_class end %> app header-fixed sidebar-fixed sidebar-md-show <%= if assigns[:show_aside] do "aside-menu-show" end %>">
       <%= render "_header.html", assigns %>
       <div class="app-body">
         <% {mod, template} = sidebar_view(@alkemist_app) %>
