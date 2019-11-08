@@ -75,6 +75,7 @@ defmodule Alkemist.Config do
     router_helpers: Alkemist.Router.Helpers,
     route_prefix: nil,
     authorization_provider: Alkemist.Authorization,
+    json_library: Poison,
     query: [
       search: Alkemist.Query.Search,
       paginate: Alkemist.Query.Paginate
@@ -192,6 +193,13 @@ defmodule Alkemist.Config do
   def pagination_provider(application \\ :alkemist) do
     query = get(:query, application)
     Keyword.get(query, :paginate, @defaults[:query][:paginate])
+  end
+
+  @doc """
+  Returns the json encoder to use by default
+  """
+  def json_provider(application \\ :alkemist) do
+    get(:json_library, application)
   end
 
   defp config(application) do

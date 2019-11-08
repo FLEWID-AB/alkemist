@@ -43,7 +43,8 @@ defmodule Alkemist.MenuRegistry do
   end
 
   defp add_menu(module, menu) do
-    case Poison.encode(menu) do
+    encoder = Alkemist.Config.json_provider
+    case encoder.encode(menu) do
       {:ok, json} -> File.write(module_path(module), json)
       _ -> :ok
     end
