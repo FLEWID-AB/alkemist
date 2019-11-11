@@ -63,7 +63,8 @@ defmodule Alkemist.Config do
         filter: {MyApp.SearchView, :filter_decorator},
         form: {MyApp.FormView, :form_field_decorator},
         # Custom display for values in the index and show actions
-        field_value: {MyApp.IndexView, :field_string_value}
+        field_value: {MyApp.IndexView, :field_string_value},
+        row_class: {MyApp.IndexView, :row_decorator}
       ]
   """
 
@@ -95,7 +96,8 @@ defmodule Alkemist.Config do
       filter: {Alkemist.SearchView, :filter_field_decorator},
       form: {Alkemist.FormView, :form_field_decorator},
       field_value: {AlkemistView, :field_string_value},
-      member_actions: {AlkemistView, :member_actions_decorator}
+      member_actions: {AlkemistView, :member_actions_decorator},
+      row_class: {Alkemist.View, :row_class_decorator}
     ]
   ]
 
@@ -162,6 +164,14 @@ defmodule Alkemist.Config do
   def member_actions_decorator(application \\ :alkemist) do
     decorators = get(:decorators, application)
     Keyword.get(decorators, :member_actions, @defaults[:decorators][:member_actions])
+  end
+
+  @doc """
+  Returns the row class decorator, so classes can be overridden
+  """
+  def row_class_decorator(application \\ :alkemist) do
+    decorators = get(:decorators, application)
+    Keyword.get(decorators, :row_class, @defaults[:decorators][:row_class])
   end
 
   @doc """

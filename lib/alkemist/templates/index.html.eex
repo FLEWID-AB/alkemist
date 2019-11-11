@@ -62,7 +62,7 @@
         </thead>
         <tbody>
           <%= for row <- @entries do %>
-            <tr class="clickable-row" data-href="<%= resource_action_path(@conn, row, :show, @route_params, %{}, @alkemist_app) %>">
+            <tr class="<%= row_class(row, "clickable-row", @alkemist_app) %>" data-href="<%= resource_action_path(@conn, row, :show, @route_params, %{}, @alkemist_app) %>">
               <%= for {field, cb, opts} <- @columns do %>
                 <%= if field == :selectable_column do %>
                   <td class="selectable">

@@ -267,4 +267,19 @@ defmodule AlkemistView do
 
     link(label, link_opts)
   end
+
+  @doc """
+  Return the row class for current row. Can be altered with a decorator
+  """
+  def row_class(row, default \\ "", application \\ :alkemist) do
+    {mod, fun} = Alkemist.Config.row_class_decorator(application)
+    apply(mod, fun, [row, default])
+  end
+
+  @doc """
+  Default Row class decorator - returns default
+  """
+  def row_class_decorator(row, default \\ "") do
+    default
+  end
 end
