@@ -177,17 +177,18 @@ defmodule AlkemistView do
   def header_cell(conn, struct, opts, application \\ :alkemist)
   def header_cell(conn, struct, {field, _cb, %{sortable: true} = opts}, application) do
     query_params = get_default_link_params(conn)
-    direction = if Map.get(query_params, "s") == "#{field}+asc" do
+    sort_field = Map.get(opts, :sort_field, field)
+    direction = if Map.get(query_params, "s") == "#{sort_field}+asc" do
           "desc"
         else
           "asc"
         end
     icon = cond do
-      Map.get(query_params, "s") == "#{field}+asc" -> "fas fa-sort-up"
-      Map.get(query_params, "s") == "#{field}+desc" -> "fas fa-sort-down"
+      Map.get(query_params, "s") == "#{sort_field}+asc" -> "fas fa-sort-up"
+      Map.get(query_params, "s") == "#{sort_field}+desc" -> "fas fa-sort-down"
       true -> "fas fa-sort"
     end
-    query_params = Map.put(query_params, "s", "#{field}+#{direction}")
+    query_params = Map.put(query_params, "s", "#{sort_field}+#{direction}")
     class = ["index-header", Map.get(opts, :type)]
 
     label = Map.get(opts, :label) <> " <i class=\"#{icon}\"></i>"
