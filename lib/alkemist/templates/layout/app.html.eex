@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="<%= Plug.CSRFProtection.get_csrf_token() %>">
     <title><%= site_title(@alkemist_app) %></title>
     <% {mod, template} = styles_view(@alkemist_app) %>
-    <%= render mod, template, conn: @conn %>
+    <%= render mod, template, assigns %>
 </head>
 <body class="<%= if assigns[:body_class] do @body_class end %> app header-fixed sidebar-fixed sidebar-md-show <%= if assigns[:show_aside] do "aside-menu-show" end %>">
       <%= render "_header.html", assigns %>
