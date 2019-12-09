@@ -59,7 +59,7 @@ defmodule Alkemist.MixProject do
       {:phoenix, "~> 1.3 or ~> 1.4"},
       {:phoenix_ecto, "~> 3.6"},
       {:phoenix_html, "~> 2.10"},
-      {:ecto, "~> 2.2"},
+      {:ecto, "~> 2.2 or ~> 3.0"},
       {:inflex, "~> 1.10.0"},
       {:atomic_map, "~> 0.9.3"},
       {:csv, "~> 2.0"},
