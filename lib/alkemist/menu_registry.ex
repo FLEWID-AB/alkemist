@@ -163,7 +163,7 @@ defmodule Alkemist.MenuRegistry do
 
 
   defp ensure_setup(module \\ nil) do
-    unless is_nil(module), do: module = app_from_module(to_string(module))
+    module = if is_nil(module), do: module, else: app_from_module(to_string(module))
     unless File.exists?(cache_path(module)) do
       File.mkdir_p(cache_path(module))
     end

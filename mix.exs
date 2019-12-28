@@ -68,7 +68,7 @@ defmodule Alkemist.MixProject do
       {:turbo_ecto, "~> 0.4.0"},
       {:phoenix_mtm, "~> 1.0"},
       # Test and dev
-      {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.0", only: :test},
       {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
       {:inch_ex, "~> 1.0", only: [:dev, :test, :doc]},

@@ -127,7 +127,7 @@ defmodule Alkemist.Controller do
   default is `:string`. If the type is `:select`, a collection to build the select must be passed (see `Phoenix.HTMl.Form.select/4`)
   """
   @type filter :: atom() | keyword()
-  @type field :: atom() | {atom(), map()} | %{title: string(), fields: [{atom(), map()}]}
+  @type field :: atom() | {atom(), map()} | %{title: String.t(), fields: [{atom(), map()}]}
 
 
   Module.register_attribute __MODULE__, :menu_items, accumulate: true, persist: true

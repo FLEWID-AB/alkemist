@@ -369,7 +369,7 @@ defmodule Alkemist.Assign do
         resource
       end
 
-    opts = unless Map.has_key?(opts, :field), do: Map.put(opts, :field, :id), else: opts
+    opts = Map.put_new(opts, :field, :id)
     # check for assoc & field opts
     assoc =
       cond do
@@ -386,18 +386,21 @@ defmodule Alkemist.Assign do
     if is_nil(assoc) do
       opts
     else
-      opts |> Map.put(:resource, assoc.queryable) |> Map.put(:assoc, assoc.field)
+      opts
+      |> Map.put(:resource, assoc.queryable)
+      |> Map.put(:assoc, assoc.field)
     end
   end
 
   defp check_sortable(opts, field) do
     case Map.get(opts, :type) do
       a when a in @sortable_types ->
-        unless field == nil do
-          Map.put(opts, :sortable, true)
-        else
+        if is_nil(field) do
           opts
+        else
+          Map.put(opts, :sortable, true)
         end
+
       _ -> opts
     end
   end

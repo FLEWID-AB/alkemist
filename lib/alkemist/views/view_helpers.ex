@@ -93,7 +93,7 @@ defmodule Alkemist.ViewHelpers do
     |> Enum.into(%{})
   end
 
-  def resource_action_path(conn, resource, action, route_params, params \\ %{}, application \\ :alkemist)
+  def resource_action_path(conn, resource, action, route_params \\ [], params \\ %{}, application \\ :alkemist)
 
   def resource_action_path(conn, resource, action, route_params, params, application) when is_map(resource) do
     helper = Utils.default_resource_helper(resource)

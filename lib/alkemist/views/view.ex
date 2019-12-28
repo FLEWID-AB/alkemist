@@ -1,4 +1,7 @@
 defmodule AlkemistView do
+  @moduledoc """
+  Global Alkemist View
+  """
   use Alkemist, :view
   import Alkemist.SearchView
   import Alkemist.FormView
@@ -279,7 +282,7 @@ defmodule AlkemistView do
   @doc """
   Default Row class decorator - returns default
   """
-  def row_class_decorator(row, default \\ "") do
+  def row_class_decorator(_row, default \\ "") do
     default
   end
 end

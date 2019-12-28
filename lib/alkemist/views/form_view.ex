@@ -329,7 +329,7 @@ defmodule Alkemist.FormView do
     |> Map.delete(:fields)
     |> Map.delete(:decorator)
     |> Map.delete(:alkemist_application)
-    |> Enum.map(fn({k,v}) -> {k,v} end) # back to keyword
+    |> Enum.map(fn({k, v}) -> {k, v} end) # back to keyword
 
   end
 
@@ -371,13 +371,13 @@ defmodule Alkemist.FormView do
         |> String.replace("#{key}_0", "#{key}_$index")
         |> String.replace("[#{key}][0]", "[#{key}][$index]")
 
-      %{cardinality: :many, related: related} ->
-        source = form.source
+      # %{cardinality: :many, related: related} ->
+      #   source = form.source
 
-        source = Map.put(source, :changes, Map.put(%{}, key, related.__struct__))
-        form = Map.put(form, :source, source)
+      #   source = Map.put(source, :changes, Map.put(%{}, key, related.__struct__))
+      #   form = Map.put(form, :source, source)
 
-        Phoenix.HTML.safe_to_string(render_has_one_inputs(form, field, true))
+      #   Phoenix.HTML.safe_to_string(render_has_one_inputs(form, field, true))
 
       _ ->
         ""

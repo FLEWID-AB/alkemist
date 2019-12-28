@@ -20,14 +20,14 @@ defmodule Alkemist.ViewTest do
     test "it creates basic link", %{conn: conn} do
       resource = %Alkemist.Post{id: 1}
       action = {:edit, [label: "edit"]}
-      link = View.member_action(conn, action, resource)
+      link = View.member_action(conn, action, resource, [])
       assert Phoenix.HTML.safe_to_string(link) =~ "href=\"/posts/1/edit\""
     end
 
     test "it handles icon class", %{conn: conn} do
       resource = %Alkemist.Post{id: 1}
       action = {:edit, [label: "edit", icon: "pencil"]}
-      link = View.member_action(conn, action, resource) |> Phoenix.HTML.safe_to_string()
+      link = View.member_action(conn, action, resource, []) |> Phoenix.HTML.safe_to_string()
       assert link =~ "<i class=\"pencil\""
     end
   end
@@ -48,21 +48,21 @@ defmodule Alkemist.ViewTest do
   describe "collection_action" do
     test "it creates a basic link", %{conn: conn} do
       action = {:new, [label: "Test"]}
-      link = View.collection_action(conn, action, Alkemist.Post)
+      link = View.collection_action(conn, action, Alkemist.Post, [])
       assert Phoenix.HTML.safe_to_string(link) =~ "href=\"/posts/new\""
       assert Phoenix.HTML.safe_to_string(link) =~ "Test"
     end
 
     test "it adds class when link_opts are given", %{conn: conn} do
       action = {:new, [label: "Test", link_opts: [class: "link"]]}
-      link = View.collection_action(conn, action, Alkemist.Post)
+      link = View.collection_action(conn, action, Alkemist.Post, [])
       assert Phoenix.HTML.safe_to_string(link) =~ "class=\"link\""
     end
 
     test "it handles icon class", %{conn: conn} do
       resource = Alkemist.Post
       action = {:new, [label: "new", icon: "pencil"]}
-      link = View.collection_action(conn, action, resource) |> Phoenix.HTML.safe_to_string()
+      link = View.collection_action(conn, action, resource, []) |> Phoenix.HTML.safe_to_string()
       assert link =~ "<i class=\"pencil\""
     end
   end
