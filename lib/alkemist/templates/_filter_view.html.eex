@@ -1,15 +1,15 @@
-<%= form_for @conn, resource_action_path(@conn, @resource, :index), [method: :get, class: "form", autocomplete: "off", id: "index-search-form"], fn f -> %>
+<%= form_for @conn, resource_action_path(@conn, @resource, :index, @route_params, %{}, @alkemist_app), [method: :get, class: "form", autocomplete: "off", id: "index-search-form"], fn f -> %>
   <%= hidden_input f, :s %>
   <%= hidden_input f, :scope %>
   <div class="row">
     <%= inputs_for f, :q, [as: :q, id: "search"], fn q -> %>
       <%= for filter <- @filters do %>
-        <%= filter_field q, filter %>
+        <%= filter_field q, filter, @alkemist_app %>
       <% end %>
     <% end %>
     <div class="col-md-4 filter-actions">
       <%= if assigns[:search] do %>
-        <%= link("Reset", to: resource_action_path(@conn, @resource, :index), class: "btn btn-link btn-sm") %>
+        <%= link("Reset", to: resource_action_path(@conn, @resource, :index, @route_params, %{}, @alkemist_app), class: "btn btn-link btn-sm") %>
       <% end %>
       <%= submit("Search", class: "btn btn-primary btn-sm") %>
       <span class="divider"></span>

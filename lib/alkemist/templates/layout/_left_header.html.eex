@@ -1,7 +1,7 @@
 <a class="navbar-brand" href="/">
-  <%= if site_logo() do %>
+  <%= if site_logo(@alkemist_app) do %>
     <img src='<%= static_path(@conn, "/images/#{site_logo()}") %>'>
   <% else %>
-    <%= site_title() %>
+    <%= site_title(@alkemist_app) %>
   <% end %>
 </a>

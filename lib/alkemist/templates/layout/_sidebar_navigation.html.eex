@@ -13,6 +13,9 @@
                     else
                       [class: "nav-link", wrap: {:li, [class: "nav-item"]}]
                     end
+                    opts = opts
+                    |> Keyword.put(:alkemist_app, @alkemist_app)
+                    |> Keyword.put(:route_params, @route_params)
                 %>
                 <%= action_link(child.label, @conn, :index, child.resource, opts) %>
               <% end %>
@@ -24,6 +27,10 @@
             else
               [class: "nav-link", wrap: {:li, [class: "nav-item"]}]
             end
+            opts = 
+              opts
+              |> Keyword.put(:alkemist_app, @alkemist_app)
+              |> Keyword.put(:route_params, @route_params)
           %>
           <%= action_link(menu.label, @conn, :index, menu.resource, opts) %>
         <% end %>

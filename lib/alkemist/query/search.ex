@@ -7,7 +7,7 @@ defmodule Alkemist.Query.Search do
   @empty_values [nil, [], {}, [""], "", %{}]
 
   def run(query, params) do
-    searchq(query, params) |> Turbo.Ecto.sortq(params)
+    searchq(query, params)
   end
 
   def searchq(query, params) do
@@ -15,11 +15,11 @@ defmodule Alkemist.Query.Search do
       params
       |> prepare_params(query)
 
-    Turbo.Ecto.searchq(query, params)
+    Turbo.Ecto.turboq(query, params)
   end
 
   def sortq(query, params) do
-    Turbo.Ecto.sortq(query, params)
+    Turbo.Ecto.turboq(query, params)
   end
 
   @doc """
@@ -27,30 +27,31 @@ defmodule Alkemist.Query.Search do
   right now this works not on associations
   """
   def prepare_params(params, query) do
-    queryable = Turbo.Ecto.Utils.schema_from_query(query)
+    #queryable = Turbo.Ecto.Utils.schema_from_query(query)
 
     search_params =
       params
       |> Map.get("q", %{})
       |> Enum.filter(fn {_key, value} -> value not in @empty_values end)
-      |> Enum.map(&handle_special_fields(&1, queryable))
+      |> Enum.map(&handle_special_fields(&1, query))
       |> Enum.into(%{})
 
     Map.put(params, "q", search_params)
   end
 
-  def handle_special_fields({key, value}, queryable) do
-    regex = ~r/([a-z0-9_]+)_(#{BuildSearchQuery.search_types() |> Enum.join("|")})$/
+  def handle_special_fields({key, value}, _queryable) do
+    #regex = ~r/([a-z0-9_]+)_(#{BuildSearchQuery.search_types() |> Enum.join("|")})$/
 
-    {key, value} =
-      if Regex.match?(regex, key) do
-        [_, match, type] = Regex.run(regex, key)
-        value = handle_field({match, type}, value, queryable)
-        {key, value}
-      else
-        {key, value}
-      end
+    #{key, value} =
+    #  if Regex.match?(regex, key) do
+    #    #[_, match, type] = Regex.run(regex, key)
+    #    #value = handle_field({match, type}, value, queryable)
+    #    {key, value}
+    #  else
+    #    {key, value}
+    #  end
 
+    # TODO: find replacement for `schema_from_query`
     {key, value}
   end
 

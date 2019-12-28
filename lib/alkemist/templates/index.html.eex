@@ -9,10 +9,10 @@
     <div class="col-md-2 text-right page-actions">
       <h6 class="small">Actions</h6>
       <%= for action <- @collection_actions do %>
-        <%= collection_action(@conn, action, @mod) %>
+        <%= collection_action(@conn, action, @mod, @route_params, @alkemist_app) %>
       <% end %>
       <%= if assigns[:has_export] do %>
-        <%= export_action(@conn, @struct, assigns) %>
+        <%= export_action(@conn, @struct, assigns, @alkemist_app) %>
       <% end %>
     </div>
   </div>
@@ -22,7 +22,7 @@
     <ul class="nav scopes">
       <%= if any?(@scopes) do %>
         <%= for scope <- @scopes do %>
-          <%= scope_link(@conn, scope, @struct) %>
+          <%= scope_link(@conn, scope, @struct, @alkemist_app) %>
         <% end %>
       <% end %>
     </ul>
@@ -54,15 +54,15 @@
                   <input class="toggle-all" id="selection-toggle-all" type="checkbox" />
                 </th>
               <% else %>
-                <%= header_cell(@conn, @struct, column) %>
+                <%= header_cell(@conn, @struct, column, @alkemist_app) %>
               <% end %>
             <% end %>
-            <%= member_actions(@member_actions) %>
+            <%= member_actions(@member_actions, @alkemist_app) %>
           </tr>
         </thead>
         <tbody>
           <%= for row <- @entries do %>
-            <tr class="clickable-row" data-href="<%= resource_action_path(@conn, row, :show) %>">
+            <tr class="<%= row_class(row, "clickable-row", @alkemist_app) %>" data-href="<%= resource_action_path(@conn, row, :show, @route_params, %{}, @alkemist_app) %>">
               <%= for {field, cb, opts} <- @columns do %>
                 <%= if field == :selectable_column do %>
                   <td class="selectable">
@@ -71,7 +71,7 @@
                 <%= else %>
                   <td class="<%= opts.type %> <%= Slugger.slugify_downcase(opts.label) %>">
                     <%= if Map.has_key?(opts, :action) and not is_nil(opts.action) and not is_nil(Map.get(row, opts.assoc)) do %>
-                      <a href="<%= resource_action_path(@conn, Map.fetch!(row, opts.assoc), opts.action) %>"><%= string_value(cb, row) %></a>
+                      <a href="<%= resource_action_path(@conn, Map.fetch!(row, opts.assoc), opts.action, %{}, @alkemist_app) %>"><%= string_value(cb, row) %></a>
                     <% else %>
                       <%= unless Map.has_key?(opts, :assoc) and is_nil(Map.get(row, opts.assoc)) do %>
                         <%= string_value(cb, row) %>
@@ -80,7 +80,7 @@
                   </td>
                 <% end %>
               <% end %>
-              <%= member_actions(@conn, @member_actions, row) %>
+              <%= member_actions(@conn, @member_actions, row, @route_params, @alkemist_app) %>
             </tr>
           <% end %>
         </tbody>

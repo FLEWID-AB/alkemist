@@ -43,7 +43,8 @@ defmodule Alkemist.MenuRegistry do
   end
 
   defp add_menu(module, menu) do
-    case Poison.encode(menu) do
+    encoder = Alkemist.Config.json_provider
+    case encoder.encode(menu) do
       {:ok, json} -> File.write(module_path(module), json)
       _ -> :ok
     end
@@ -92,7 +93,7 @@ defmodule Alkemist.MenuRegistry do
   end
 
   defp cache_path(path \\ nil) do
-    if is_nil(path), do: path = Alkemist.Config.get(:web_interface)
+    path = if is_nil(path), do: Alkemist.Config.get(:web_interface), else: path
     Path.join([System.tmp_dir!(), "#{path}", "alkemist"])
   end
 

@@ -14,11 +14,11 @@ defmodule Alkemist.SearchView do
     filter_field(form, {:category_id, [type: :select, collection: @categories]})
   ```
   """
-  def filter_field(form, {field, opts}) do
+  def filter_field(form, {field, opts}, application \\ :alkemist) do
     opts =
       opts
       |> Keyword.put_new(:label, Phoenix.Naming.humanize(field))
-      |> Keyword.put_new(:decorator, Alkemist.Config.filter_decorator())
+      |> Keyword.put_new(:decorator, Alkemist.Config.filter_decorator(application))
 
     field_name = field |> field_key(opts[:type]) |> String.to_atom()
     type = Keyword.get(opts, :type, :string)
@@ -80,7 +80,7 @@ defmodule Alkemist.SearchView do
     multiple_select(form, field, collection, class: class <> " form-control form-control-sm", prompt: "Choose...")
   end
 
-  def input_field(form, field, :date, opts) do
+  def input_field(form, field, :date, _opts) do
     to_field = String.replace(Atom.to_string(field), "gteq", "lteq") |> String.to_atom()
     [
       text_input(form, field, class: "form-control form-control-sm datepicker", placeholder: "From"),
@@ -89,7 +89,6 @@ defmodule Alkemist.SearchView do
   end
 
   def input_field(form, field, _type, opts) do
-    IO.inspect opts
     text_input(form, field, class: "form-control form-control-sm", placeholder: opts[:label])
   end
 

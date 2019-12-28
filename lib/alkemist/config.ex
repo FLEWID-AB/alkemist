@@ -63,7 +63,8 @@ defmodule Alkemist.Config do
         filter: {MyApp.SearchView, :filter_decorator},
         form: {MyApp.FormView, :form_field_decorator},
         # Custom display for values in the index and show actions
-        field_value: {MyApp.IndexView, :field_string_value}
+        field_value: {MyApp.IndexView, :field_string_value},
+        row_class: {MyApp.IndexView, :row_decorator}
       ]
   """
 
@@ -75,6 +76,7 @@ defmodule Alkemist.Config do
     router_helpers: Alkemist.Router.Helpers,
     route_prefix: nil,
     authorization_provider: Alkemist.Authorization,
+    json_library: Poison,
     query: [
       search: Alkemist.Query.Search,
       paginate: Alkemist.Query.Paginate
@@ -94,7 +96,8 @@ defmodule Alkemist.Config do
       filter: {Alkemist.SearchView, :filter_field_decorator},
       form: {Alkemist.FormView, :form_field_decorator},
       field_value: {AlkemistView, :field_string_value},
-      member_actions: {AlkemistView, :member_actions_decorator}
+      member_actions: {AlkemistView, :member_actions_decorator},
+      row_class: {Alkemist.View, :row_class_decorator}
     ]
   ]
 
@@ -164,6 +167,14 @@ defmodule Alkemist.Config do
   end
 
   @doc """
+  Returns the row class decorator, so classes can be overridden
+  """
+  def row_class_decorator(application \\ :alkemist) do
+    decorators = get(:decorators, application)
+    Keyword.get(decorators, :row_class, @defaults[:decorators][:row_class])
+  end
+
+  @doc """
   Returns the configured authorization provider from alkemist configuration
   """
   def authorization_provider(application \\ :alkemist) do
@@ -192,6 +203,13 @@ defmodule Alkemist.Config do
   def pagination_provider(application \\ :alkemist) do
     query = get(:query, application)
     Keyword.get(query, :paginate, @defaults[:query][:paginate])
+  end
+
+  @doc """
+  Returns the json encoder to use by default
+  """
+  def json_provider(application \\ :alkemist) do
+    get(:json_library, application)
   end
 
   defp config(application) do

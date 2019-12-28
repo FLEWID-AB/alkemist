@@ -22,13 +22,13 @@ defmodule AlkemistView do
   @doc """
   Renders the member actions for a table row
   """
-  def member_actions(actions) do
-    {mod, fun} = Alkemist.Config.member_actions_decorator()
+  def member_actions(actions, application \\ :alkemist) do
+    {mod, fun} = Alkemist.Config.member_actions_decorator(application)
     apply(mod, fun, [actions])
   end
-  def member_actions(conn, actions, resource) do
-    {mod, fun} = Alkemist.Config.member_actions_decorator()
-    apply(mod, fun, [conn, actions, resource])
+  def member_actions(conn, actions, resource, route_params, application \\ :alkemist) do
+    {mod, fun} = Alkemist.Config.member_actions_decorator(application)
+    apply(mod, fun, [conn, actions, resource, route_params, application])
   end
 
   @doc """
@@ -41,10 +41,10 @@ defmodule AlkemistView do
       end
     end
   end
-  def member_actions_decorator(conn, actions, resource) do
+  def member_actions_decorator(conn, actions, resource, route_params, application \\ :alkemist) do
     if Enum.any?(actions) do
       content_tag(:td, class: "member-actions") do
-        Enum.map(actions, fn action -> member_action(conn, action, resource) end)
+        Enum.map(actions, fn action -> member_action(conn, action, resource, route_params, application) end)
       end
     end
   end
@@ -52,7 +52,7 @@ defmodule AlkemistView do
   @doc """
   Creates an action link to a member action
   """
-  def member_action(conn, action, resource) do
+  def member_action(conn, action, resource, route_params, application \\ :alkemist) do
     {action, opts} = action
     label =
       case Keyword.get(opts, :icon) do
@@ -66,13 +66,17 @@ defmodule AlkemistView do
       end
 
     link_opts = Keyword.get(opts, :link_opts, [])
+    link_opts =
+      link_opts
+      |> Keyword.put(:alkemist_app, application)
+      |> Keyword.put(:route_params, route_params)
     action_link(label, conn, action, resource, link_opts)
   end
 
   @doc """
   Creates a collection action link above the index table
   """
-  def collection_action(conn, action, resource) do
+  def collection_action(conn, action, resource, route_params, application \\ :alkemist) do
     {action, opts} = action
 
     label =
@@ -89,6 +93,8 @@ defmodule AlkemistView do
     link_opts =
       Keyword.get(opts, :link_opts, [])
       |> Keyword.put_new(:class, "nav-link")
+      |> Keyword.put(:alkemist_app, application)
+      |> Keyword.put(:route_params, route_params)
 
     action_link(label, conn, action, resource, link_opts)
   end
@@ -96,26 +102,27 @@ defmodule AlkemistView do
   @doc """
   Create a link to the export action
   """
-  def export_action(conn, struct, assigns \\ []) do
+  def export_action(conn, struct, _assigns \\ [], application \\ :alkemist) do
     query_params = get_default_link_params(conn)
 
 
     params = [conn, :export, query_params]
-    action(struct, params, label: "Export", link_opts: [class: "nav-link"])
+    action(struct, params, label: "Export", link_opts: [class: "nav-link"], alkemist_app: application)
   end
 
   @doc """
   Returns the path for a controller action
   """
-  def action_path(struct, params) do
+  def action_path(struct, params, application \\ :alkemist) do
     path_function_name = Alkemist.Utils.default_struct_helper(struct)
-    apply(Alkemist.Config.router_helpers(), path_function_name, params)
+    apply(Alkemist.Config.router_helpers(application), path_function_name, params)
   end
+
 
   @doc """
   Renders a batch action item
   """
-  def batch_action_item(conn, struct, batch_action) do
+  def batch_action_item(conn, struct, batch_action, application \\ :alkemist) do
     {action, opts} =
       if is_atom(batch_action) do
         {batch_action, []}
@@ -130,7 +137,7 @@ defmodule AlkemistView do
       |> Keyword.put(:to, "#")
       |> Keyword.put(:class, "dropdown-item batch-action-item")
       |> Keyword.delete(:label)
-      |> Keyword.put(:"data-action", action_path(struct, [conn, action]))
+      |> Keyword.put(:"data-action", action_path(struct, [conn, action], application))
 
     link(label, opts)
   end
@@ -138,7 +145,7 @@ defmodule AlkemistView do
   @doc """
   Creates a scope link
   """
-  def scope_link(conn, scope, struct) do
+  def scope_link(conn, scope, struct, application \\ :alkemist) do
     {scope, opts, _} = scope
 
     label =
@@ -159,7 +166,7 @@ defmodule AlkemistView do
       |> Map.put(:scope, scope)
 
     content_tag(:li, class: "nav-item") do
-      link(label, to: action_path(struct, [conn, :index, query_params]), class: class)
+      link(label, to: action_path(struct, [conn, :index, query_params], application), class: class)
     end
   end
 
@@ -167,33 +174,40 @@ defmodule AlkemistView do
   Creates the header cell for the index table
   Accepts the conn, struct and actual column created by `Alkemist.Assign.map_column`
   """
-  def header_cell(conn, struct, {field, _cb, %{sortable: true} = opts}) do
+  def header_cell(conn, struct, opts, application \\ :alkemist)
+  def header_cell(conn, struct, {field, _cb, %{sortable: true} = opts}, application) do
     query_params = get_default_link_params(conn)
-    direction = if Map.get(query_params, "s") == "#{field}+asc" do
+    sort_field = Map.get(opts, :sort_field, field)
+    direction = if Map.get(query_params, "s") == "#{sort_field}+asc" do
           "desc"
         else
           "asc"
         end
     icon = cond do
-      Map.get(query_params, "s") == "#{field}+asc" -> "fas fa-sort-up"
-      Map.get(query_params, "s") == "#{field}+desc" -> "fas fa-sort-down"
+      Map.get(query_params, "s") == "#{sort_field}+asc" -> "fas fa-sort-up"
+      Map.get(query_params, "s") == "#{sort_field}+desc" -> "fas fa-sort-down"
       true -> "fas fa-sort"
     end
-    query_params = Map.put(query_params, "s", "#{field}+#{direction}")
+    query_params = Map.put(query_params, "s", "#{sort_field}+#{direction}")
     class = ["index-header", Map.get(opts, :type)]
 
     label = Map.get(opts, :label) <> " <i class=\"#{icon}\"></i>"
     content_tag(:th, class: Enum.join(class, " ")) do
-      link(raw(label), to: action_path(struct, [conn, :index, query_params]))
+      params = [conn, :index] ++ route_params(opts[:route_params]) ++ [query_params]
+      link(raw(label), to: action_path(struct, params, application))
     end
   end
-  def header_cell(_conn, _struct, {_field, _callback, opts}) do
+  def header_cell(_conn, _struct, {_field, _callback, opts}, _application) do
     label = Map.get(opts, :label)
     class = ["index-header", Slugger.slugify_downcase(label), Map.get(opts, :type)]
     content_tag(:th, class: Enum.join(class, " ")) do
       label
     end
   end
+
+  defp route_params(nil), do: []
+  defp route_params(params) when is_list(params), do: params
+  defp route_params(params), do: [params]
 
   def string_value(callback, row) do
     val = callback.(row)
@@ -231,7 +245,8 @@ defmodule AlkemistView do
   def field_string_value(val), do: "#{val}"
 
   defp action(struct, params, opts) do
-    path = action_path(struct, params)
+    application = Keyword.get(opts, :alkemist_app, :alkemist)
+    path = action_path(struct, params, application)
 
     label =
       case Keyword.get(opts, :icon) do
@@ -251,5 +266,20 @@ defmodule AlkemistView do
       |> Keyword.put_new(:title, opts[:label])
 
     link(label, link_opts)
+  end
+
+  @doc """
+  Return the row class for current row. Can be altered with a decorator
+  """
+  def row_class(row, default \\ "", application \\ :alkemist) do
+    {mod, fun} = Alkemist.Config.row_class_decorator(application)
+    apply(mod, fun, [row, default])
+  end
+
+  @doc """
+  Default Row class decorator - returns default
+  """
+  def row_class_decorator(row, default \\ "") do
+    default
   end
 end

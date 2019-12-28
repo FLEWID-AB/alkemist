@@ -8,54 +8,54 @@ defmodule Alkemist.PaginationView do
   @doc """
   Creates Bootstrap 4 pagination links
   """
-  def pagination_links(conn, pagination, resource) do
+  def pagination_links(conn, pagination, resource, route_params, application \\ :alkemist) do
     if pagination.total_pages > 1 do
       content_tag(:ul, class: "pagination") do
-        [first_link(conn, pagination, resource),
-          previous_link(conn, pagination, resource)] ++
-          middle_page_links(conn, pagination, resource) ++
-          [next_link(conn, pagination, resource), last_link(conn, pagination, resource)]
+        [first_link(conn, pagination, resource, route_params, application),
+          previous_link(conn, pagination, resource, route_params, application)] ++
+          middle_page_links(conn, pagination, resource, route_params, application) ++
+          [next_link(conn, pagination, resource, route_params, application), last_link(conn, pagination, resource, route_params, application)]
       end
     end
   end
 
-  defp first_link(conn, %{current_page: current_page}, resource) do
+  defp first_link(conn, %{current_page: current_page}, resource, route_params, application) do
     if current_page == 1 do
       page_link("First", "#", "disabled")
     else
       params = get_link_params(conn, 1)
-      page_link("First", resource_action_path(conn, resource, :index, params))
+      page_link("First", resource_action_path(conn, resource, :index, route_params, params, application))
     end
   end
 
-  defp last_link(conn, %{current_page: current_page, total_pages: total_pages}, resource) do
+  defp last_link(conn, %{current_page: current_page, total_pages: total_pages}, resource, route_params, application) do
     if current_page == total_pages do
       page_link("Last", "#", "disabled")
     else
       params = get_link_params(conn, total_pages)
-      page_link("Last", resource_action_path(conn, resource, :index, params))
+      page_link("Last", resource_action_path(conn, resource, :index, route_params, params, application))
     end
   end
 
-  defp previous_link(conn, %{prev_page: prev_page}, resource) do
+  defp previous_link(conn, %{prev_page: prev_page}, resource, route_params, application) do
     if prev_page == nil do
       page_link("Previous", "#", "disabled")
     else
       params = get_link_params(conn, prev_page)
-      page_link("Previous", resource_action_path(conn, resource, :index, params))
+      page_link("Previous", resource_action_path(conn, resource, :index, route_params, params, application))
     end
   end
 
-  defp next_link(conn, %{next_page: next_page}, resource) do
+  defp next_link(conn, %{next_page: next_page}, resource, route_params, application) do
     if next_page == nil do
       page_link("Next", "#", "disabled")
     else
       params = get_link_params(conn, next_page)
-      page_link("Next", resource_action_path(conn, resource, :index, params))
+      page_link("Next", resource_action_path(conn, resource, :index, route_params, params, application))
     end
   end
 
-  defp middle_page_links(conn, %{total_pages: total_pages, current_page: current_page}, resource) do
+  defp middle_page_links(conn, %{total_pages: total_pages, current_page: current_page}, resource, route_params, application) do
     lower_limit =
       cond do
         current_page <= div(@max_page_links, 2) ->
@@ -80,13 +80,13 @@ defmodule Alkemist.PaginationView do
 
         true ->
           params = get_link_params(conn, page)
-          path = resource_action_path(conn, resource, :index, params)
+          path = resource_action_path(conn, resource, :index, route_params, params, application)
           page_link(page, path)
       end
     end)
   end
 
-  def per_page_links(conn, %{per_page: per_page}, resource) do
+  def per_page_links(conn, %{per_page: per_page}, resource, route_params, application \\ :alkemist) do
     content_tag(:ul, class: "per-page-nav") do
       Enum.map(@per_page_values, fn val ->
         content_tag(:li, []) do
@@ -94,7 +94,7 @@ defmodule Alkemist.PaginationView do
             "#{val}"
           else
             params = get_per_page_params(conn, val)
-            link("#{val}", to: resource_action_path(conn, resource, :index, params))
+            link("#{val}", to: resource_action_path(conn, resource, :index, route_params, params, application))
           end
         end
       end)
