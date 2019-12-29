@@ -3,7 +3,7 @@ defmodule Alkemist.Assign do
   Provides helper functions for generic CRUD assigns
   """
   import Ecto.Query
-  alias Alkemist.Utils
+  alias Alkemist.{Utils, Types.Scope}
 
   @default_collection_actions [:new]
   @default_member_actions [
@@ -40,6 +40,7 @@ defmodule Alkemist.Assign do
     * plural_name - Pluralized name for labels. By default this is the db table name
     * search_provider - Provide a custom module for your search
   """
+  @deprecated "Use Alkemist.Assign.Index.assigns/3 instead"
   def index_assigns(params, resource, opts \\ []) do
     opts = default_index_opts(opts, resource)
     repo = opts[:repo]
@@ -47,13 +48,9 @@ defmodule Alkemist.Assign do
 
     query = opts[:query]
 
-    scopes =
-      opts[:scopes]
-      |> Enum.map(fn scope ->
-        map_scope(scope, query, params, opts)
-      end)
+    scopes = Scope.map_all(opts[:scopes], %{query: query, params: params, repo: repo, search_provider: opts[:search_provider]})
 
-    query = query |> scope(scopes)
+    query = query |> Scope.scope_by_active(scopes)
 
     columns =
       opts[:columns]
@@ -133,13 +130,9 @@ defmodule Alkemist.Assign do
 
     query = opts[:query]
 
-    scopes =
-      opts[:scopes]
-      |> Enum.map(fn scope ->
-        map_scope(scope, query, params, opts)
-      end)
+    scopes = Scope.map_all(opts[:scopes], %{query: query, params: params, repo: repo, search_provider: opts[:search_provider]})
 
-    query = query |> scope(scopes)
+    query = query |> Scope.scope_by_active(scopes)
 
     columns =
       opts[:columns]
@@ -543,56 +536,6 @@ defmodule Alkemist.Assign do
         :select
       end
       _ -> :string
-    end
-  end
-
-  # normalizes the scopes and retrieves the scope counts
-  defp map_scope({scope, opts, callback}, query, params, search_opts) do
-    query =
-      query
-      |> callback.()
-
-    count_query =
-      search_opts[:search_provider].searchq(query, params)
-      |> exclude(:limit)
-      |> exclude(:order_by)
-      |> exclude(:preload)
-      |> exclude(:select)
-      |> exclude(:order_by)
-
-    count = search_opts[:repo].one(from a in count_query, select: count(a.id))
-
-    current = Map.get(params, "scope")
-
-    opts =
-      opts
-      |> Keyword.put_new(:label, Utils.to_label(scope))
-      |> Keyword.put(:count, count)
-
-    opts =
-      cond do
-        current != nil && "#{scope}" == current -> Keyword.put(opts, :active, true)
-        current == nil && opts[:default] == true -> Keyword.put(opts, :active, true)
-        true -> Keyword.put(opts, :active, false)
-      end
-
-    {scope, opts, callback}
-  end
-
-  defp map_scope({scope, opts}, query, params, repo),
-    do: map_scope({scope, opts, fn q -> q end}, query, params, repo)
-
-  defp map_scope(scope, query, params, repo), do: map_scope({scope, []}, query, params, repo)
-
-  # Merges the scope callback into the query
-  defp scope(query, scopes) do
-    current = Enum.find(scopes, fn {_s, opts, _cb} -> opts[:active] == true end)
-
-    if current != nil do
-      {_s, _opts, cb} = current
-      query |> cb.()
-    else
-      query
     end
   end
 

@@ -6,6 +6,7 @@ defmodule AlkemistView do
   import Alkemist.SearchView
   import Alkemist.FormView
   import Alkemist.PaginationView
+  alias Alkemist.Types.Scope
 
   @doc """
   Boolean indicator if a column is sortable
@@ -148,17 +149,15 @@ defmodule AlkemistView do
   @doc """
   Creates a scope link
   """
-  def scope_link(conn, scope, struct, application \\ :alkemist) do
-    {scope, opts, _} = scope
-
+  def scope_link(conn, %Scope{} = scope, struct, application \\ :alkemist) do
     label =
       """
-      <span class="label">#{opts[:label]}</span> <span class="count">#{opts[:count]}</span>
+      <span class="label">#{scope.label}</span> <span class="count">#{scope.count}</span>
       """
       |> raw()
 
     class =
-      if opts[:active] == true do
+      if scope.active? do
         "nav-link active"
       else
         "nav-link"
@@ -166,7 +165,7 @@ defmodule AlkemistView do
 
     query_params =
       get_default_link_params(conn)
-      |> Map.put(:scope, scope)
+      |> Map.put(:scope, scope.key)
 
     content_tag(:li, class: "nav-item") do
       link(label, to: action_path(struct, [conn, :index, query_params], application), class: class)

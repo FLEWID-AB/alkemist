@@ -68,6 +68,9 @@ defmodule Alkemist.Config do
       ]
   """
 
+  @default_otp_app :alkemist
+  @default_implementation Alkemist
+
   @defaults [
     repo: nil,
     web_interface: "Alkemist",
@@ -104,53 +107,53 @@ defmodule Alkemist.Config do
   @doc """
   Returns a value from the configuration or the default value
   """
-  def get(key, application \\ :alkemist) do
+  def get(key, application \\ @default_otp_app, implementation \\ @default_implementation) do
     default = Keyword.get(@defaults, key)
-    config(key, default, application)
+    config(key, default, application, implementation)
   end
 
   @doc """
   Returns the configured Repo from alkemist configuration
   """
-  def repo(application \\ :alkemist) do
-    get(:repo, application)
+  def repo(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    get(:repo, application, implementation)
   end
 
   @doc """
   Returns the configured router helpers from alkemist configuration
   """
-  def router_helpers(application \\ :alkemist) do
-    get(:router_helpers, application)
+  def router_helpers(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    get(:router_helpers, application, implementation)
   end
 
   @doc """
   Returns the prefix or scope for the routes
   """
-  def route_prefix(application \\ :alkemist) do
-    get(:route_prefix, application)
+  def route_prefix(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    get(:route_prefix, application, implementation)
   end
 
   @doc """
   Returns the decorator for given areaa
   """
-  def filter_decorator(application \\ :alkemist) do
-    decorators = get(:decorators, application)
+  def filter_decorator(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    decorators = get(:decorators, application, implementation)
     Keyword.get(decorators, :filter, @defaults[:decorators][:filter])
   end
 
   @doc """
   Returns the decorator for form fields
   """
-  def form_field_decorator(application \\ :alkemist) do
-    decorators = get(:decorators, application)
+  def form_field_decorator(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    decorators = get(:decorators, application, implementation)
     Keyword.get(decorators, :form, @defaults[:decorators][:form])
   end
 
   @doc """
   Returns the field value decorator to render the string value for given field type(s)
   """
-  def field_value_decorator(application \\ :alkemist) do
-    decorators = get(:decorators, application)
+  def field_value_decorator(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    decorators = get(:decorators, application, implementation)
     Keyword.get(decorators, :field_value, @defaults[:decorators][:field_value])
   end
 
@@ -161,64 +164,64 @@ defmodule Alkemist.Config do
   `def member_actions(actions) do`
   `def member_actions(conn, actions, resource) do
   """
-  def member_actions_decorator(application \\ :alkemist) do
-    decorators = get(:decorators, application)
+  def member_actions_decorator(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    decorators = get(:decorators, application, implementation)
     Keyword.get(decorators, :member_actions, @defaults[:decorators][:member_actions])
   end
 
   @doc """
   Returns the row class decorator, so classes can be overridden
   """
-  def row_class_decorator(application \\ :alkemist) do
-    decorators = get(:decorators, application)
+  def row_class_decorator(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    decorators = get(:decorators, application, implementation)
     Keyword.get(decorators, :row_class, @defaults[:decorators][:row_class])
   end
 
   @doc """
   Returns the configured authorization provider from alkemist configuration
   """
-  def authorization_provider(application \\ :alkemist) do
-    get(:authorization_provider, application)
+  def authorization_provider(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    get(:authorization_provider, application, implementation)
   end
 
   @doc """
   Returns the configured layout from alkemist configuration or the default
   """
-  def layout(application \\ :alkemist) do
-    views = get(:views, application)
+  def layout(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    views = get(:views, application, implementation)
     Keyword.get(views, :layout, @defaults[:views][:layout])
   end
 
   @doc """
   Returns the search hook to use by default
   """
-  def search_provider(application \\ :alkemist) do
-    query = get(:query, application)
+  def search_provider(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    query = get(:query, application, implementation)
     Keyword.get(query, :search, @defaults[:query][:search])
   end
 
   @doc """
   Returns the pagination provider to use by default
   """
-  def pagination_provider(application \\ :alkemist) do
-    query = get(:query, application)
+  def pagination_provider(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    query = get(:query, application, implementation)
     Keyword.get(query, :paginate, @defaults[:query][:paginate])
   end
 
   @doc """
   Returns the json encoder to use by default
   """
-  def json_provider(application \\ :alkemist) do
-    get(:json_library, application)
+  def json_provider(application \\ @default_otp_app, implementation \\ @default_implementation) do
+    get(:json_library, application, implementation)
   end
 
-  defp config(application) do
-    Application.get_env(application, Alkemist, [])
+  defp config(application, implementation) do
+    Application.get_env(application, implementation, [])
   end
 
-  defp config(key, default, application) do
+  defp config(key, default, application, implementation) do
     application
-    |> config()
+    |> config(implementation)
     |> Keyword.get(key, default)
     |> merge_list(default)
     |> resolve_config(default)

@@ -25,7 +25,7 @@ defmodule Alkemist.Query.Search do
   prepares the params so we can better handle naive_datetime and datetime fields
   right now this works not on associations
   """
-  def prepare_params(params, query) do
+  def prepare_params(params, _query) do
     #queryable = Turbo.Ecto.Utils.schema_from_query(query)
 
     search_params =

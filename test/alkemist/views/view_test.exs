@@ -93,7 +93,7 @@ defmodule Alkemist.ViewTest do
 
   describe "scope_link" do
     test "it generates a link to a scope", %{conn: conn} do
-      scope = {:published, [count: 12, label: "Published"], fn q -> q end}
+      scope = %Alkemist.Types.Scope{key: :published, count: 12, label: "Published", callback: fn q -> q end}
       link = View.scope_link(conn, scope, :post) |> Phoenix.HTML.safe_to_string()
       assert link =~ "?scope=published"
     end
@@ -101,11 +101,17 @@ defmodule Alkemist.ViewTest do
     test "it handles q and s", %{conn: conn} do
       params = %{"s" => "title+asc", "q" => %{"title_ilike" => "test"}}
       conn = Map.put(conn, :params, params)
-      scope = {:published, [count: 12, label: "Published"], fn q -> q end}
+      scope = %Alkemist.Types.Scope{key: :published, count: 12, label: "Published", callback: fn q -> q end}
       link = View.scope_link(conn, scope, :post) |> Phoenix.HTML.safe_to_string()
       assert link =~ "scope=published"
       assert link =~ "title%2Basc"
       assert link =~ "[title_ilike]=test"
+    end
+
+    test "it sets scope class to active when it is marked active", %{conn: conn} do
+      scope = scope = %Alkemist.Types.Scope{key: :published, count: 12, label: "Published", callback: fn q -> q end, active?: true}
+      link = View.scope_link(conn, scope, :post) |> Phoenix.HTML.safe_to_string()
+      assert link =~ "active"
     end
   end
 

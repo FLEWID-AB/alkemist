@@ -3,6 +3,7 @@ defmodule Alkemist.Post do
   This is a schema to test various field types
   """
   use Ecto.Schema
+  import Ecto.Changeset
 
   schema "posts" do
     field(:title, :string)
@@ -11,5 +12,10 @@ defmodule Alkemist.Post do
     belongs_to(:category, Alkemist.Category)
 
     timestamps()
+  end
+
+  def changeset(struct, params \\ %{}) do
+    struct
+    |> cast(params, [:title, :body, :published])
   end
 end
