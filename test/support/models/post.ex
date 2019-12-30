@@ -16,6 +16,6 @@ defmodule Alkemist.Post do
 
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:title, :body, :published])
+    |> cast(params, [:title, :body, :published, :category_id])
   end
 end

@@ -21,6 +21,14 @@ defmodule Alkemist.Types.ActionTest do
       } = Action.map(action)
     end
 
+    test "it omits defaults when set" do
+      action = %Action{action: :delete, type: :member, link_opts: [class: "foo"]}
+
+      assert %Action{
+        link_opts: [class: "foo"]
+      } = Action.map(action)
+    end
+
     test "it can be created from atom" do
       assert %Action{
         type: :member,

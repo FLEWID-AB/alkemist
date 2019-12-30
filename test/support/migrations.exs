@@ -4,6 +4,7 @@ defmodule Alkemist.Migrations do
   def change do
     create table(:categories) do
       add(:name, :string)
+      timestamps()
     end
 
     create table(:posts) do

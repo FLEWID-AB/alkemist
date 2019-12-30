@@ -71,8 +71,11 @@ defmodule Alkemist.Assign.Index do
     |> Keyword.merge(Keyword.get(opts, :assigns, []))
   end
 
-  # Create default options
-  defp default_opts(opts, resource) do
+  @doc """
+  Returns the default options for the index action
+  """
+  @spec default_opts(keyword(), module()) :: keyword()
+  def default_opts(opts, resource) do
     opts = Global.opts(opts, resource)
 
     opts

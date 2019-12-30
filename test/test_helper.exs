@@ -1,7 +1,9 @@
 ExUnit.start()
+Faker.start()
 
 Code.require_file("./support/repo.ex", __DIR__)
 Code.require_file("./support/migrations.exs", __DIR__)
+Code.require_file("./support/fixtures.ex", __DIR__)
 Code.require_file("./support/data_case.exs", __DIR__)
 Code.require_file("./support/models/post.ex", __DIR__)
 Alkemist.Repo.start_link()

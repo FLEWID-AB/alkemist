@@ -76,27 +76,9 @@ defmodule Alkemist.Assign do
   Params:
     * resource - a single entry from the DB
   """
+  @deprecated "Use `Alkemist.Assign.Show.assigns/2` instead"
   def show_assigns(resource, opts \\ []) do
-    struct = resource.__struct__
-    opts = default_show_opts(opts, struct)
-
-    rows =
-      opts[:rows]
-      |> Enum.map(& Column.map(&1, resource))
-
-    resource =
-      resource
-      |> do_preload_resource(opts[:preload], opts[:alkemist_app])
-
-    [
-      struct: Utils.get_struct(struct),
-      resource: resource,
-      mod: resource.__struct__,
-      rows: rows,
-      panels: Keyword.get(opts, :show_panels, [])
-    ]
-    |> Keyword.merge(Alkemist.Assign.Global.assigns(opts))
-    |> Keyword.merge(Keyword.get(opts, :assigns, []))
+    Alkemist.Assign.Show.assigns(resource, opts)
   end
 
   defp default_csv_opts(opts, resource) do
@@ -156,14 +138,6 @@ defmodule Alkemist.Assign do
       |> Keyword.put_new(:fields, Utils.editable_fields(resource))
       |> Keyword.put(:form_partial, {AlkemistView, "form.html"})
     end
-  end
-
-  defp default_show_opts(opts, resource) do
-    opts = Alkemist.Assign.Global.opts(opts, resource)
-
-    opts
-    |> Keyword.put_new(:rows, Utils.display_fields(resource))
-    |> Keyword.put_new(:resource, resource)
   end
 
   # Add preloads to the query if any are given
