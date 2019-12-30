@@ -220,4 +220,65 @@ defmodule Alkemist.Utils do
     end
     String.to_atom("#{prefix}#{struct}_path")
   end
+
+  @doc """
+  Returns the field type for a field within a schema, defaults to `:string`
+
+  ## Examples
+
+    iex> Utils.get_field_type(nil, Alkemist.Post)
+    nil
+
+    iex> Utils.get_field_type(:title, Alkemist.Post)
+    :string
+
+    iex> Utils.get_field_type(:title, %Alkemist.Post{})
+    :string
+  """
+  def get_field_type(nil, _), do: nil
+
+  def get_field_type(field, resource) when is_map(resource),
+    do: get_field_type(field, resource.__struct__)
+
+  def get_field_type(field, resource) do
+    case resource.__schema__(:type, field) do
+      val when val in [:boolean, :integer, :date, :datetime, :float, :naive_datetime] -> val
+      {:embed, _} -> :embed
+      :id -> if field == :id do
+        :integer
+      else
+        :select
+      end
+      _ -> :string
+    end
+  end
+
+  @doc """
+  Returns the default display fields (for tables) from a schema
+
+  ## Examples
+
+    iex> Alkemist.Utils.display_fields(Alkemist.Post)
+    [:id, :title, :body, :published, :category_id]
+  """
+  @spec display_fields(module()) :: [atom()]
+  def display_fields(resource) do
+    resource.__schema__(:fields)
+    |> Enum.reject(& &1 in [:inserted_at, :updated_at])
+  end
+
+  @doc """
+  Returns the editable fields for a resource (for forms)
+
+  ## Examples
+
+    iex> Alkemist.Utils.editable_fields(Alkemist.Post)
+    [:title, :body, :published, :category_id]
+  """
+  @spec editable_fields(module()) :: [atom()]
+  def editable_fields(resource) do
+    resource
+    |> display_fields()
+    |> Enum.reject(& &1 == :id)
+  end
 end

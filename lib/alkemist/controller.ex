@@ -13,9 +13,6 @@ defmodule Alkemist.Controller do
     @resource MyApp.MySchema
     use Alkemist.Controller
 
-    # use if you want to customize the menu
-    menu "My Custom Label"
-
     def index(conn, params) do
       render_index(conn, params)
     end
@@ -89,6 +86,7 @@ defmodule Alkemist.Controller do
   """
 
   alias Alkemist.Assign
+  alias Alkemist.Assign.Index
   alias Alkemist.Utils
 
   @callback columns(Plug.Conn.t()) :: [column()]
@@ -130,72 +128,13 @@ defmodule Alkemist.Controller do
   @type field :: atom() | {atom(), map()} | %{title: String.t(), fields: [{atom(), map()}]}
 
 
-  Module.register_attribute __MODULE__, :menu_items, accumulate: true, persist: true
-
   defmacro __using__(opts) do
-    Code.ensure_compiled(Alkemist.MenuRegistry)
     quote bind_quoted: [opts: opts] do
       @otp_app Keyword.get(opts, :otp_app, :alkemist)
       import Alkemist.Assign
       import Alkemist.Controller
       @behaviour Alkemist.Controller
       import Ecto.Query
-      if @resource !== nil do
-        menu(Alkemist.Utils.plural_name(@resource))
-      end
-    end
-  end
-
-  def menu_items do
-    @menu_items
-  end
-
-  @doc """
-  Customize the Menu item in the sidebar.
-  You can call this function within the controller root
-  after including Alkemist.Controller and setting the @resource
-
-  ## Examples:
-
-  ### Display no menu:
-
-  ```elixir
-  menu false
-  ```
-
-  ### Display a custom label:
-
-  ```elixir
-  menu "My Custom Menu Label"
-  ```
-
-  ### Add this menu item to a dropdown menu:
-
-  If the same label for the parent is used multiple times, all menu items with the same parent will be grouped under it
-
-  ```elixir
-  menu "Label", parent: "Dropdown Menu Title"
-  ```
-
-  ### Alter the order and the order of the parent within the sidebar:
-
-  ```elixir
-  menu "Label", parent: "Parent", index: 2, parent_index: 1
-  ```
-  """
-  defmacro menu(label, opts \\ []) do
-    quote do
-      label = unquote(label)
-      opts = unquote(opts)
-
-      opts =
-        if is_nil(@resource) or is_bitstring(@resource) do
-          opts |> Keyword.put(:resource, label)
-        else
-          opts |> Keyword.put(:resource, @resource)
-        end
-
-      Alkemist.MenuRegistry.register_menu_item(__MODULE__, label, opts)
     end
   end
 
@@ -293,7 +232,7 @@ defmodule Alkemist.Controller do
       if Alkemist.Config.authorization_provider(@otp_app).authorize_action(@resource, conn, :index) ==
            true do
         opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
-        assigns = Assign.index_assigns(unquote(params), @resource, opts)
+        assigns = Index.assigns(unquote(params), @resource, opts)
 
         assigns =
           if Keyword.has_key?(__MODULE__.__info__(:functions), :export) do

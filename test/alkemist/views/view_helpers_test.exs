@@ -73,7 +73,4 @@ defmodule Alkemist.ViewHelpersTest do
     assert ViewHelpers.site_title() == Alkemist.Config.get(:title)
   end
 
-  test "menu_items returns value from MenuRegistry" do
-    assert ViewHelpers.menu_items() == Alkemist.MenuRegistry.menu_items()
-  end
 end

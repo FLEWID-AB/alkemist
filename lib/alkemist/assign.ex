@@ -3,122 +3,16 @@ defmodule Alkemist.Assign do
   Provides helper functions for generic CRUD assigns
   """
   import Ecto.Query
-  alias Alkemist.{Utils, Types.Scope}
+  alias Alkemist.{Utils, Types.Scope, Types.Column}
 
-  @default_collection_actions [:new]
-  @default_member_actions [
-    :edit,
-    :delete
-  ]
-  @default_action_opts [
-    show: [icon: "fas fa-fw fa-eye"],
-    edit: [icon: "fas fa-fw fa-edit"],
-    delete: [
-      icon: "fas fa-fw fa-trash",
-      link_opts: [method: :delete, data: [confirm: "Do you really want to delete this record?"]]
-    ]
-  ]
   @default_search_provider Alkemist.Config.search_provider()
-  @default_pagination_provider Alkemist.Config.pagination_provider()
-  @sortable_types ~w(string integer float date datetime)a
-  @default_sort "id+desc"
 
   @doc """
   Creates the default assigns for a controller index action.
-  Params:
-    * params - the controller route params
-    * resource - the resource module
-    * opts - a KeywordList with options
-
-  Opts:
-    * repo - the Ecto.Repo to use for the lookup
-    * query - an Ecto.Query. By default, the resource will be used
-    * preload - list of associations to preload
-    * collection_actions - global actions (without ID)
-    * member_actions - actions available for a single resource
-    * singular_name - Label for a single resource. By default the singular of the db table is used
-    * plural_name - Pluralized name for labels. By default this is the db table name
-    * search_provider - Provide a custom module for your search
   """
   @deprecated "Use Alkemist.Assign.Index.assigns/3 instead"
   def index_assigns(params, resource, opts \\ []) do
-    opts = default_index_opts(opts, resource)
-    repo = opts[:repo]
-    params = Utils.clean_params(params) |> Map.put_new("s", opts[:sort_by])
-
-    query = opts[:query]
-
-    scopes = Scope.map_all(opts[:scopes], %{query: query, params: params, repo: repo, search_provider: opts[:search_provider]})
-
-    query = query |> Scope.scope_by_active(scopes)
-
-    columns =
-      opts[:columns]
-      |> maybe_add_selectable(opts[:batch_actions])
-      |> Enum.map(fn col -> map_column(col, resource) end)
-      |> Enum.map(fn {field, cb, column_opts} ->
-        column_opts = Map.put(column_opts, :route_params, opts[:route_params])
-        {field, cb, column_opts}
-      end)
-
-    query = opts[:search_provider].run(query, params)
-    {query, pagination} = opts[:pagination_provider].run(query, params, repo: repo)
-    entries =
-      query
-      |> do_preload(opts[:preload])
-      |> repo.all()
-
-    [
-      struct: Utils.get_struct(resource),
-      resource: resource,
-      entries: entries,
-      pagination: pagination,
-      columns: columns,
-      scopes: scopes,
-      filters: opts[:filters],
-      sidebars: opts[:sidebars],
-      batch_actions: opts[:batch_actions],
-      show_aside: opts[:show_aside],
-      search: Map.has_key?(params, "q"),
-      mod: opts[:mod]
-    ]
-    |> global_assigns(opts)
-    |> additional_assigns(opts)
-  end
-
-  defp global_assigns(assigns, opts) do
-    global_opts = [
-      member_actions: member_actions(opts),
-      collection_actions: collection_actions(opts),
-      singular_name: opts[:singular_name],
-      plural_name: opts[:plural_name],
-      alkemist_app: Keyword.get(opts, :otp_app, :alkemist),
-      route_params: Keyword.get(opts, :route_params)
-    ]
-
-    Keyword.merge(assigns, global_opts)
-  end
-
-  defp member_actions(opts) do
-    opts[:member_actions]
-    |> Enum.map(&__MODULE__.format_action(&1, opts[:singular_name]))
-  end
-
-  defp collection_actions(opts) do
-    opts[:collection_actions]
-    |> Enum.map(&__MODULE__.format_action(&1, opts[:singular_name]))
-  end
-
-  defp maybe_add_selectable(columns, batch_actions) do
-    if Enum.empty?(batch_actions) do
-      columns
-    else
-      if Keyword.has_key?(columns, :selectable_column) || :selectable_column in columns do
-        columns
-      else
-        [:selectable_column | columns]
-      end
-    end
+    Alkemist.Assign.Index.assigns(params, resource, opts)
   end
 
   @doc """
@@ -136,7 +30,7 @@ defmodule Alkemist.Assign do
 
     columns =
       opts[:columns]
-      |> Enum.map(fn col -> map_column(col, resource) end)
+      |> Enum.map(& Column.map(&1, resource))
 
     query = opts[:search_provider].run(query, params)
 
@@ -173,8 +67,8 @@ defmodule Alkemist.Assign do
       form_partial: opts[:form_partial],
       form_fields: fields
     ]
-    |> global_assigns(opts)
-    |> additional_assigns(opts)
+    |> Keyword.merge(Alkemist.Assign.Global.assigns(opts))
+    |> Keyword.merge(Keyword.get(opts, :assigns, []))
   end
 
   @doc """
@@ -188,7 +82,7 @@ defmodule Alkemist.Assign do
 
     rows =
       opts[:rows]
-      |> Enum.map(fn col -> map_column(col, resource) end)
+      |> Enum.map(& Column.map(&1, resource))
 
     resource =
       resource
@@ -201,45 +95,16 @@ defmodule Alkemist.Assign do
       rows: rows,
       panels: Keyword.get(opts, :show_panels, [])
     ]
-    |> global_assigns(opts)
-    |> additional_assigns(opts)
-  end
-
-  defp global_opts(opts, resource) do
-    opts
-    |> Keyword.put_new(:repo, Alkemist.Config.repo(Keyword.get(opts, :otp_app, :alkemist)))
-    |> Keyword.put_new(:collection_actions, @default_collection_actions)
-    |> Keyword.put_new(:member_actions, @default_member_actions)
-    |> Keyword.put_new(:singular_name, Utils.singular_name(resource))
-    |> Keyword.put_new(:plural_name, Utils.plural_name(resource))
-    |> Keyword.put_new(:alkemist_app, Keyword.get(opts, :otp_app, :alkemist))
-    |> Keyword.put_new(:route_params, [])
-  end
-
-  defp default_index_opts(opts, resource) do
-    opts = global_opts(opts, resource)
-    show_aside = Keyword.has_key?(opts, :sidebars)
-
-    opts
-    |> Keyword.put_new(:query, resource)
-    |> Keyword.put_new(:columns, get_default_columns(resource))
-    |> Keyword.put_new(:scopes, [])
-    |> Keyword.put_new(:filters, [])
-    |> Keyword.put_new(:show_aside, show_aside)
-    |> Keyword.put_new(:search_provider, @default_search_provider)
-    |> Keyword.put_new(:pagination_provider, @default_pagination_provider)
-    |> Keyword.put_new(:mod, resource)
-    |> Keyword.put_new(:batch_actions, [])
-    |> Keyword.put_new(:sidebars, [])
-    |> Keyword.put_new(:sort_by, @default_sort)
+    |> Keyword.merge(Alkemist.Assign.Global.assigns(opts))
+    |> Keyword.merge(Keyword.get(opts, :assigns, []))
   end
 
   defp default_csv_opts(opts, resource) do
-    opts = global_opts(opts, resource)
+    opts = Alkemist.Assign.Global.opts(opts, resource)
 
     opts
     |> Keyword.put_new(:query, resource)
-    |> Keyword.put_new(:columns, get_default_columns(resource))
+    |> Keyword.put_new(:columns, Utils.display_fields(resource))
     |> Keyword.put_new(:scopes, [])
     |> Keyword.put_new(:search_provider, @default_search_provider)
   end
@@ -261,22 +126,8 @@ defmodule Alkemist.Assign do
     end
   end
 
-  # Adds any additional assigns to the assign KeywordList
-  # Those can be passed with [assigns: [key: "value"]]
-  defp additional_assigns(assigns, opts) do
-    case opts[:assigns] do
-      nil ->
-        assigns
-
-      values ->
-        Enum.reduce(values, assigns, fn {k, v}, assigns ->
-          Keyword.put(assigns, k, v)
-        end)
-    end
-  end
-
   defp default_form_opts(opts, resource) do
-    opts = global_opts(opts, resource)
+    opts = Alkemist.Assign.Global.opts(opts, resource)
 
     opts =
       opts
@@ -302,16 +153,16 @@ defmodule Alkemist.Assign do
       end
     else
       opts
-      |> Keyword.put_new(:fields, get_default_form_fields(resource))
+      |> Keyword.put_new(:fields, Utils.editable_fields(resource))
       |> Keyword.put(:form_partial, {AlkemistView, "form.html"})
     end
   end
 
   defp default_show_opts(opts, resource) do
-    opts = global_opts(opts, resource)
+    opts = Alkemist.Assign.Global.opts(opts, resource)
 
     opts
-    |> Keyword.put_new(:rows, get_default_columns(resource))
+    |> Keyword.put_new(:rows, Utils.display_fields(resource))
     |> Keyword.put_new(:resource, resource)
   end
 
@@ -330,147 +181,6 @@ defmodule Alkemist.Assign do
     else
       resource |> Alkemist.Config.repo(application).preload(preloads)
     end
-  end
-
-
-  # Creates a List with the default columns to display
-  def get_default_columns(resource) do
-    Enum.reduce(resource.__schema__(:fields), [], fn f, columns ->
-      case f do
-        :inserted_at -> columns
-        :updated_at -> columns
-        _ -> columns ++ [f]
-      end
-    end)
-  end
-
-  # Compiles a list of the default form fields
-  defp get_default_form_fields(resource) do
-    Enum.reduce(resource.__schema__(:fields), [], fn f, columns ->
-      case f do
-        a when a in [:inserted_at, :updated_at, :id] -> columns
-        _ -> columns ++ [f]
-      end
-    end)
-  end
-
-  defp check_for_assoc(opts, resource) do
-    struct =
-      if is_map(resource) do
-        resource.__struct__
-      else
-        resource
-      end
-
-    opts = Map.put_new(opts, :field, :id)
-    # check for assoc & field opts
-    assoc =
-      cond do
-        Map.has_key?(opts, :assoc) and opts.assoc in struct.__schema__(:associations) ->
-          struct.__schema__(:association, opts.assoc)
-
-        Map.has_key?(opts, :col) and opts.col in struct.__schema__(:associations) ->
-          struct.__schema__(:association, opts.col)
-
-        true ->
-          nil
-      end
-
-    if is_nil(assoc) do
-      opts
-    else
-      opts
-      |> Map.put(:resource, assoc.queryable)
-      |> Map.put(:assoc, assoc.field)
-    end
-  end
-
-  defp check_sortable(opts, field) do
-    case Map.get(opts, :type) do
-      a when a in @sortable_types ->
-        if is_nil(field) do
-          opts
-        else
-          Map.put(opts, :sortable, true)
-        end
-
-      _ -> opts
-    end
-  end
-
-  # Creates an Enum of field and callback
-  defp map_column({field, callback, opts}, resource) when is_atom(field) do
-    opts =
-      Map.put(opts, :type, get_field_type(field, resource))
-      |> check_sortable(field)
-      |> check_for_assoc(resource)
-
-    {field, callback, opts}
-  end
-
-  defp map_column({field, callback}, resource)
-       when is_bitstring(field) and is_function(callback) do
-    map_column({nil, callback, %{label: field}}, resource)
-  end
-
-  defp map_column({field, opts}, resource) when is_bitstring(field) and is_map(opts) do
-    opts =
-      opts
-      |> Map.put(:label, field)
-      |> check_for_assoc(resource)
-
-    map_column(
-      {nil,
-       fn row ->
-         default_callback(opts, row, field)
-       end, opts},
-      resource
-    )
-  end
-
-  defp map_column({field, callback, opts}, resource) when is_bitstring(field) and is_map(opts) do
-    opts =
-      opts
-      |> Map.put(:label, field)
-      |> check_for_assoc(resource)
-
-    map_column({nil, callback, opts}, resource)
-  end
-
-  defp map_column({field, callback}, resource) when is_atom(field) and is_function(callback) do
-    label = Utils.to_label(field)
-
-    opts =
-      %{label: label, col: field}
-      |> check_for_assoc(resource)
-
-    map_column({field, callback, opts}, resource)
-  end
-
-  defp map_column({field, opts}, resource) when is_atom(field) and is_map(opts) do
-    opts =
-      Map.put_new(opts, :label, Utils.to_label(field))
-      |> Map.put_new(:col, field)
-      |> check_for_assoc(resource)
-
-    map_column({field, fn row -> default_callback(opts, row, field) end, opts}, resource)
-  end
-
-  defp map_column(field, resource) do
-    opts = %{field: field} |> check_for_assoc(resource)
-    map_column({field, fn row -> default_callback(opts, row, field) end}, resource)
-  end
-
-  defp default_callback(opts, row, field) do
-    if is_association?(opts) do
-      Map.get(row, opts.assoc) |> Map.get(opts.field)
-    else
-      Map.get(row, field)
-    end
-  end
-
-  defp is_association?(opts) do
-    Map.has_key?(opts, :resource)
   end
 
   defp map_form_fields([field | tail], results, resource, opts) when is_map(field) do
@@ -507,7 +217,7 @@ defmodule Alkemist.Assign do
   defp map_form_field({field, opts}, resource) do
     opts =
       opts
-      |> Map.put_new(:type, get_field_type(field, resource))
+      |> Map.put_new(:type, Utils.get_field_type(field, resource))
 
     {field, opts}
   end
@@ -520,50 +230,5 @@ defmodule Alkemist.Assign do
     Enum.filter(fields, fn {_f, opts} ->
       Map.get(opts, :type) != :embed
     end)
-  end
-
-  # Returns the type of a given field. Default is :string. This is used for tables
-  defp get_field_type(field, resource) when is_map(resource),
-    do: get_field_type(field, resource.__struct__)
-
-  defp get_field_type(field, resource) do
-    case resource.__schema__(:type, field) do
-      val when val in [:boolean, :integer, :date, :datetime, :float] -> val
-      {:embed, _} -> :embed
-      :id -> if field == :id do
-        :integer
-      else
-        :select
-      end
-      _ -> :string
-    end
-  end
-
-  # Creates a {action, opts} struct for each member action
-  def format_action({action, opts} = params) do
-    if Keyword.get(opts, :label) do
-      params
-    else
-      label = Utils.to_label("#{action} #{opts[:singular_name]}")
-      {action, Keyword.put(opts, :label, label)}
-    end
-  end
-
-  def format_action({action, opts}, singular) do
-    opts = case Keyword.get(@default_action_opts, action) do
-      nil -> opts
-      default -> Keyword.merge(default, opts)
-    end
-    opts = if singular do
-      Keyword.put(opts, :singular_name, singular)
-    else
-      opts
-    end
-    format_action({action, opts})
-  end
-
-  def format_action(action, singular) when is_atom(action) do
-
-    format_action({action, []}, singular)
   end
 end

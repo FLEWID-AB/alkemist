@@ -2,39 +2,7 @@
 
   <nav class="sidebar-nav">
     <ul class="nav">
-      <%= for menu <- menu_items() do %>
-        <%= if menu.type == :branch do %>
-          <li class="nav-item nav-dropdown">
-            <a class="nav-link nav-dropdown-toggle" href="#"><%= Phoenix.HTML.raw menu.label %></a>
-            <ul class="nav-dropdown-items">
-              <%= for child <- menu.children do %>
-                <% opts = if is_bitstring(child.resource) and Map.has_key?(child, :to) do
-                      [class: "nav-link", wrap: {:li, [class: "nav-item"]}, to: child.to]
-                    else
-                      [class: "nav-link", wrap: {:li, [class: "nav-item"]}]
-                    end
-                    opts = opts
-                    |> Keyword.put(:alkemist_app, @alkemist_app)
-                    |> Keyword.put(:route_params, @route_params)
-                %>
-                <%= action_link(child.label, @conn, :index, child.resource, opts) %>
-              <% end %>
-            </ul>
-          </li>
-        <% else %>
-          <% opts = if is_bitstring(menu.resource) and Map.has_key?(menu, :to) do
-              [class: "nav-link", wrap: {:li, [class: "nav-item"]}, to: menu.to]
-            else
-              [class: "nav-link", wrap: {:li, [class: "nav-item"]}]
-            end
-            opts = 
-              opts
-              |> Keyword.put(:alkemist_app, @alkemist_app)
-              |> Keyword.put(:route_params, @route_params)
-          %>
-          <%= action_link(menu.label, @conn, :index, menu.resource, opts) %>
-        <% end %>
-      <% end %>
+     
     </ul>
   </nav>
 </div>

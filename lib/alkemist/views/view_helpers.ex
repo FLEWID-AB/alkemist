@@ -114,13 +114,6 @@ defmodule Alkemist.ViewHelpers do
   end
 
   @doc """
-  Returns the registered menu items for the sidebar
-  """
-  def menu_items do
-    Alkemist.MenuRegistry.menu_items()
-  end
-
-  @doc """
   Returns the view module and template for the right header menu if it is set in the configuration
   """
   def right_header_view(application \\ :alkemist) do

@@ -2,8 +2,7 @@ defmodule Alkemist.Assign.Index do
   @moduledoc """
   Generates the default assigns for the Controller's index view.
   """
-  alias Alkemist.{Utils, Assign.Global, Config}
-  #TODO: create a type and defstruct for options here so we can work with a map
+  alias Alkemist.{Utils, Assign.Global, Config, Types.Scope, Types.Column}
 
   @doc """
   Creates the default assigns for a controller index action.
@@ -40,10 +39,36 @@ defmodule Alkemist.Assign.Index do
       |> Utils.clean_params()
       |> Map.put_new("s", opts[:sort_by])
 
-    query = opts[:query]
+    scopes = Scope.map_all(opts[:scopes], %{query: opts[:query], params: params, repo: repo, search_provider: opts[:search_provider]})
+    {query, pagination} =
+      opts[:query]
+      |> Scope.scope_by_active(scopes)
+      |> opts[:search_provider].run(params)
+      |> opts[:pagination_provider].run(params, opts)
 
-    # TODO: implement scopes module
+    columns =
+      opts[:columns]
+      |> Enum.map(& Column.map(&1, resource))
+      |> maybe_add_selectable(opts[:batch_actions])
+      |> Enum.map(fn col ->
+        column_opts = Map.put(col.opts, :route_params, opts[:route_params])
+        Map.put(col, :opts, column_opts)
+      end)
 
+    entries = load_entries(query, opts)
+
+    [
+      struct: Utils.get_struct(resource),
+      resource: resource,
+      entries: entries,
+      pagination: pagination,
+      columns: columns,
+      scopes: scopes,
+      search: Map.has_key?(params, "q")
+    ]
+    |> Keyword.merge(Keyword.take(opts, [:filters, :sidebars, :batch_actions, :show_aside, :mod]))
+    |> Keyword.merge(Global.assigns(opts))
+    |> Keyword.merge(Keyword.get(opts, :assigns, []))
   end
 
   # Create default options
@@ -52,7 +77,7 @@ defmodule Alkemist.Assign.Index do
 
     opts
     |> Keyword.put_new(:query, resource)
-    |> Keyword.put_new(:columns, []) # TODO: default columns
+    |> Keyword.put_new(:columns, Utils.display_fields(resource))
     |> Keyword.put_new(:scopes, [])
     |> Keyword.put_new(:filters, [])
     |> Keyword.put_new(:show_aside, Keyword.has_key?(opts, :sidebars))
@@ -62,5 +87,20 @@ defmodule Alkemist.Assign.Index do
     |> Keyword.put_new(:batch_actions, [])
     |> Keyword.put_new(:sidebars, [])
     |> Keyword.put_new(:sort_by, "id+desc")
+  end
+
+  defp load_entries(query, opts) do
+    query
+    |> Global.preload(Keyword.get(opts, :preload))
+    |> opts[:repo].all()
+  end
+
+  defp maybe_add_selectable(columns, []), do: columns
+  defp maybe_add_selectable(columns, _) do
+    if Enum.find(columns, & &1.field == :selectable_column) do
+      columns
+    else
+      [%Column{field: :selectable_column} | columns]
+    end
   end
 end
