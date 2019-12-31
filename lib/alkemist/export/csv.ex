@@ -9,6 +9,7 @@ defmodule Alkemist.Export.CSV do
   * columns - generated columns from Manager.CRUD.Assign
   * entries - fetched entries from Manager.CRUD.Assign
   """
+  @spec create_csv([Alkemist.Types.Column.t()], [map()]) :: String.t()
   def create_csv(columns, entries) do
     []
     |> add_header(columns)
@@ -20,15 +21,15 @@ defmodule Alkemist.Export.CSV do
   end
 
   defp add_header(rows, columns) do
-    cols = Enum.reduce(columns, [], fn({_, _, opts}, cols) ->
-      cols ++ [opts[:label]]
+    cols = Enum.reduce(columns, [], fn(%{label: label}, cols) ->
+      cols ++ [label]
     end)
     rows ++ [cols]
   end
 
   defp add_entries(rows, columns, entries) do
     Enum.reduce(entries, rows, fn(entry, rows) ->
-      row = Enum.reduce(columns, [], fn({_, cb, _}, acc) ->
+      row = Enum.reduce(columns, [], fn(%{callback: cb}, acc) ->
         value = cb.(entry) |> format()
         acc ++ [value]
       end)
@@ -46,6 +47,6 @@ defmodule Alkemist.Export.CSV do
     |> HtmlSanitizeEx.strip_tags()
   end
 
-  defp format(content), do: "#{content}"
+  defp format(content), do: format("#{content}")
 
 end
