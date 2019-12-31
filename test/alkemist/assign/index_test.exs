@@ -14,7 +14,7 @@ defmodule Alkemist.Assign.IndexTest do
         Fixtures.post_fixture()
       end
 
-      assigns = Index.assigns(%{}, Post)
+      assigns = Index.assigns(Post, [], %{})
 
       assert length(assigns[:entries]) == 10
       assert length(assigns[:columns]) == 5
@@ -30,7 +30,7 @@ defmodule Alkemist.Assign.IndexTest do
       opts = [
         columns: [:id, :title, :body]
       ]
-      assigns = Index.assigns(%{}, Post, opts)
+      assigns = Index.assigns(Post, opts, %{})
       assert length(assigns[:columns]) == 3
 
       for col <- opts[:columns] do
@@ -49,14 +49,14 @@ defmodule Alkemist.Assign.IndexTest do
         ]
       ]
 
-      assigns = Index.assigns(%{}, Post, opts)
+      assigns = Index.assigns(Post, opts, %{})
       assert length(assigns[:scopes]) == 2
       assert length(assigns[:entries]) == 2
 
-      published_assigns = Index.assigns(%{"scope" => "published"}, Post, opts)
+      published_assigns = Index.assigns(Post, opts, %{"scope" => "published"})
       assert length(published_assigns[:entries]) == 1
 
-      unpublished_assigns = Index.assigns(%{"scope" => "unpublished"}, Post, opts)
+      unpublished_assigns = Index.assigns(Post, opts, %{"scope" => "unpublished"})
       assert length(unpublished_assigns[:entries]) == 1
     end
 
@@ -65,7 +65,7 @@ defmodule Alkemist.Assign.IndexTest do
         batch_actions: [:delete_batch]
       ]
 
-      assigns = Index.assigns(%{}, Post, opts)
+      assigns = Index.assigns(Post, opts, %{})
       assert length(assigns[:batch_actions]) == 1
       assert Enum.at(assigns[:columns], 0).field == :selectable_column
     end
@@ -75,7 +75,7 @@ defmodule Alkemist.Assign.IndexTest do
         columns: [:selectable_column, :id, :title],
         batch_actions: [:delete_batch]
       ]
-      assigns = Index.assigns(%{}, Post, opts)
+      assigns = Index.assigns(Post, opts, %{})
       assert length(assigns[:columns]) == 3
     end
   end

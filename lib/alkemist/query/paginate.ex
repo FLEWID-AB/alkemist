@@ -21,6 +21,7 @@ defmodule Alkemist.Query.Paginate do
   """
   @spec run(Ecto.Query.t(), Map.t(), Keyword.t()) :: {Ecto.Query.t(), Map.t()}
   def run(query, params, opts \\ []) do
+    params = Map.take(params, ["per_page", "page"])
     query = Turbo.Ecto.turboq(query, params)
     pagination = get_pagination(query, params, opts)
     {query, pagination}

@@ -4,9 +4,10 @@ defmodule Alkemist.Assign.Form do
   for the new and edit forms
   """
   alias Alkemist.{Utils, Assign.Global}
-
+  @behaviour Alkemist.Assign
   @since "2.0.0"
 
+  @impl Alkemist.Assign
   def assigns(resource, opts \\ []) do
     opts = default_opts(opts, resource)
     changeset = generate_changeset(opts)
@@ -25,6 +26,7 @@ defmodule Alkemist.Assign.Form do
   @doc """
   Ensures that all needed values are present in the options used by `assign`
   """
+  @impl Alkemist.Assign
   def default_opts(opts, resource) do
     opts
     |> Global.opts(resource)

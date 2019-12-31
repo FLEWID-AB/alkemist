@@ -84,8 +84,6 @@ defmodule Alkemist.Controller do
   end
   ```
   """
-
-  alias Alkemist.Assign
   alias Alkemist.{Utils, Assign.Index, Assign.Show, Assigns.Form}
 
   @callback columns(Plug.Conn.t()) :: [column()]
@@ -231,7 +229,7 @@ defmodule Alkemist.Controller do
       if Alkemist.Config.authorization_provider(@otp_app).authorize_action(@resource, conn, :index) ==
            true do
         opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
-        assigns = Index.assigns(unquote(params), @resource, opts)
+        assigns = Index.assigns(@resource, opts, unquote(params))
 
         assigns =
           if Keyword.has_key?(__MODULE__.__info__(:functions), :export) do
@@ -712,7 +710,7 @@ defmodule Alkemist.Controller do
       opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
       params = unquote(params)
 
-      assigns = Assign.csv_assigns(params, @resource, opts)
+      assigns = Alkemist.Assign.Export.assigns(@resource, opts, params)
       csv = Alkemist.Export.CSV.create_csv(assigns[:columns], assigns[:entries])
 
       conn

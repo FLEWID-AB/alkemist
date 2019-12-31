@@ -2,6 +2,7 @@ defmodule Alkemist.Assign.Index do
   @moduledoc """
   Generates the default assigns for the Controller's index view.
   """
+  @behaviour Alkemist.Assign
   alias Alkemist.{Utils, Assign.Global, Config, Types.Scope, Types.Column}
 
   @doc """
@@ -30,8 +31,9 @@ defmodule Alkemist.Assign.Index do
     * sort_by - default sort for this view, default 'id+desc'
   """
   @since "2.0.0"
-  def assigns(params, resource, opts \\ [])
-  def assigns(params, resource, opts) do
+
+  @impl Alkemist.Assign
+  def assigns(resource, opts, params) do
     opts = default_opts(opts, resource)
     repo = opts[:repo]
     params =
@@ -40,6 +42,7 @@ defmodule Alkemist.Assign.Index do
       |> Map.put_new("s", opts[:sort_by])
 
     scopes = Scope.map_all(opts[:scopes], %{query: opts[:query], params: params, repo: repo, search_provider: opts[:search_provider]})
+
     {query, pagination} =
       opts[:query]
       |> Scope.scope_by_active(scopes)
@@ -74,7 +77,7 @@ defmodule Alkemist.Assign.Index do
   @doc """
   Returns the default options for the index action
   """
-  @spec default_opts(keyword(), module()) :: keyword()
+  @impl Alkemist.Assign
   def default_opts(opts, resource) do
     opts = Global.opts(opts, resource)
 

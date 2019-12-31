@@ -2,11 +2,12 @@ defmodule Alkemist.Query.Search do
   @moduledoc """
   Implement Basic search functionality. You can define custom search hooks per module
   """
-
+  import Ecto.Query, only: [exclude: 2]
   @empty_values [nil, [], {}, [""], "", %{}]
 
   def run(query, params) do
-    searchq(query, params)
+    query
+    |> searchq(params)
   end
 
   def searchq(query, params) do
@@ -14,11 +15,11 @@ defmodule Alkemist.Query.Search do
       params
       |> prepare_params(query)
 
-    Turbo.Ecto.turboq(query, params)
-  end
 
-  def sortq(query, params) do
-    Turbo.Ecto.turboq(query, params)
+    query
+    |> Turbo.Ecto.turboq(params)
+    |> exclude(:limit)
+    |> exclude(:offset)
   end
 
   @doc """
@@ -34,7 +35,9 @@ defmodule Alkemist.Query.Search do
       |> Enum.filter(fn {_key, value} -> value not in @empty_values end)
       |> Enum.into(%{})
 
-    Map.put(params, "q", search_params)
+    params
+    |> Map.put("q", search_params)
+    |> Map.take(["q", "s"])
   end
 
 end

@@ -65,7 +65,7 @@ defmodule Alkemist.MixProject do
       {:inflex, "~> 1.10.0"},
       {:atomic_map, "~> 0.9.3"},
       {:csv, "~> 2.0"},
-      {:turbo_ecto, "~> 0.4.0"},
+      {:turbo_ecto, "~> 0.4.3"},
       {:phoenix_mtm, "~> 1.0"},
       # Test and dev
       {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},

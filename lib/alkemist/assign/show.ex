@@ -2,6 +2,7 @@ defmodule Alkemist.Assign.Show do
   @moduledoc """
   Handles assigning the needed values to the `show` action in a controller
   """
+  @behaviour Alkemist.Assign
   alias Alkemist.{Utils, Assign.Global, Types.Column}
 
   @doc """
@@ -21,7 +22,7 @@ defmodule Alkemist.Assign.Show do
     * preload - a list with Ecto.Query style preloads
   """
   @since "2.0.0"
-  @spec assigns(map(), keyword()) :: keyword()
+  @impl Alkemist.Assign
   def assigns(resource, opts \\ []) do
     struct = resource.__struct__
     opts = default_opts(opts, struct)
@@ -41,7 +42,7 @@ defmodule Alkemist.Assign.Show do
   @doc """
   Ensures that all needed options are available
   """
-  @spec default_opts(keyword(), module()) :: keyword()
+  @impl Alkemist.Assign
   def default_opts(opts, resource) do
     opts
     |> Global.opts(resource)
