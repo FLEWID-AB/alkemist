@@ -86,8 +86,7 @@ defmodule Alkemist.Controller do
   """
 
   alias Alkemist.Assign
-  alias Alkemist.Assign.Index
-  alias Alkemist.Utils
+  alias Alkemist.{Utils, Assign.Index, Assign.Show, Assigns.Form}
 
   @callback columns(Plug.Conn.t()) :: [column()]
   @callback csv_columns(Plug.Conn.t()) :: [column()]
@@ -331,7 +330,7 @@ defmodule Alkemist.Controller do
         Alkemist.Controller.not_found(conn)
       else
         if Alkemist.Config.authorization_provider(@otp_app).authorize_action(resource, conn, :show) do
-          assigns = Assign.show_assigns(resource, opts)
+          assigns = Show.assigns(resource, opts)
 
           conn
           |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@otp_app))
@@ -445,7 +444,7 @@ defmodule Alkemist.Controller do
       opts = unquote(opts) |> Keyword.put_new(:otp_app, @otp_app)
       action = unquote(action)
 
-      assigns = Assign.form_assigns(@resource, opts)
+      assigns = Form.assigns(@resource, opts)
       conn = unquote(conn)
 
       conn

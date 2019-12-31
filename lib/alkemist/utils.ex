@@ -18,6 +18,7 @@ defmodule Alkemist.Utils do
     iex> Utils.to_label(nil)
     ""
   """
+  @spec to_label(any()) :: String.t()
   def to_label(val) do
     "#{val}"
     |> String.split("_")
@@ -36,6 +37,7 @@ defmodule Alkemist.Utils do
     iex> Utils.get_struct(%Alkemist.Post{})
     :post
   """
+  @spec get_struct(module() | map()) :: atom()
   def get_struct(resource) when is_map(resource) do
     get_struct(resource.__struct__)
   end
@@ -71,6 +73,7 @@ defmodule Alkemist.Utils do
     iex> Utils.singular_name(Alkemist.Post)
     "Post"
   """
+  @spec singular_name(module() | map()) :: String.t()
   def singular_name(resource) when is_map(resource), do: singular_name(resource.__struct__)
 
   def singular_name(resource) do
@@ -90,6 +93,7 @@ defmodule Alkemist.Utils do
     iex> Utils.plural_name(Alkemist.Post)
     "Posts"
   """
+  @spec plural_name(module() | map()) :: String.t()
   def plural_name(resource) when is_map(resource), do: plural_name(resource.__struct__)
 
   def plural_name(resource) do
@@ -105,6 +109,7 @@ defmodule Alkemist.Utils do
     iex> Utils.clean_params(%{"q" => %{"title_like" => ""}, "page" => "1"})
     %{"page" => "1"}
   """
+  @spec clean_params(map()) :: map()
   def clean_params(params) do
     nil_values = [nil, %{}, [], ""]
 
@@ -181,6 +186,7 @@ defmodule Alkemist.Utils do
     end
   end
 
+  @spec get_embed(map() | module(), atom()) :: Ecto.Embedded.t() | {:error, atom()}
   def get_embed(resource, field) when is_map(resource),
     do: get_embed(resource.__struct__, field)
 
@@ -200,6 +206,7 @@ defmodule Alkemist.Utils do
     iex> Utils.default_resource_helper(Alkemist.Post)
     :post_path
   """
+  @spec default_resource_helper(module() | map()) :: atom()
   def default_resource_helper(resource) do
     struct = get_struct(resource)
     default_struct_helper(struct)
@@ -213,6 +220,7 @@ defmodule Alkemist.Utils do
     iex> Utils.default_struct_helper(:post)
     :post_path
   """
+  @spec default_struct_helper(atom()) :: atom()
   def default_struct_helper(struct) do
     prefix = case Alkemist.Config.route_prefix() do
       nil -> ""
@@ -235,6 +243,7 @@ defmodule Alkemist.Utils do
     iex> Utils.get_field_type(:title, %Alkemist.Post{})
     :string
   """
+  @spec get_field_type(atom() | nil, map() | module()) :: atom() | nil
   def get_field_type(nil, _), do: nil
 
   def get_field_type(field, resource) when is_map(resource),

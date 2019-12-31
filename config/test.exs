@@ -15,3 +15,5 @@ config :alkemist, Alkemist.Repo,
   database: "alkemist_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
+
+config :logger, level: :error

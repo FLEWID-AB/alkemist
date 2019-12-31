@@ -2,7 +2,6 @@ defmodule Alkemist.Assign do
   @moduledoc """
   Provides helper functions for generic CRUD assigns
   """
-  import Ecto.Query
   alias Alkemist.{Utils, Types.Scope, Types.Column}
 
   @default_search_provider Alkemist.Config.search_provider()
@@ -36,7 +35,7 @@ defmodule Alkemist.Assign do
 
     entries =
       query
-      |> do_preload(opts[:preload])
+      |> Alkemist.Assign.Global.preload(Keyword.get(opts, :preload))
       |> repo.all()
 
     [
@@ -48,33 +47,13 @@ defmodule Alkemist.Assign do
   @doc """
   Creates the view assigns for the new and edit actions
   """
+  @deprecated "Use `Alkemist.Assign.Form.assigns/2` instead"
   def form_assigns(resource, opts \\ []) do
-    opts = default_form_opts(opts, resource)
-    changeset = generate_changeset(resource, opts)
-
-    fields =
-      if opts[:fields] do
-        map_form_fields(opts[:fields], [], resource, opts)
-      else
-        []
-      end
-
-    [
-      struct: Utils.get_struct(resource),
-      changeset: changeset,
-      resource: changeset.data,
-      mod: opts[:mod],
-      form_partial: opts[:form_partial],
-      form_fields: fields
-    ]
-    |> Keyword.merge(Alkemist.Assign.Global.assigns(opts))
-    |> Keyword.merge(Keyword.get(opts, :assigns, []))
+    Alkemist.Assign.Form.assigns(resource, opts)
   end
 
   @doc """
   Creates the assigns for the show view
-  Params:
-    * resource - a single entry from the DB
   """
   @deprecated "Use `Alkemist.Assign.Show.assigns/2` instead"
   def show_assigns(resource, opts \\ []) do
@@ -91,118 +70,4 @@ defmodule Alkemist.Assign do
     |> Keyword.put_new(:search_provider, @default_search_provider)
   end
 
-  # Preloads any data
-  defp generate_changeset(_resource, opts) do
-    case opts[:preload] do
-      nil ->
-        opts[:changeset]
-
-      preloads ->
-        changeset = opts[:changeset]
-
-        data =
-          changeset.data
-          |> opts[:repo].preload(preloads)
-
-        Map.put(changeset, :data, data)
-    end
-  end
-
-  defp default_form_opts(opts, resource) do
-    opts = Alkemist.Assign.Global.opts(opts, resource)
-
-    opts =
-      opts
-      |> Keyword.put_new(:changeset, resource.changeset(resource.__struct__, %{}))
-      |> Keyword.put_new(:resource, resource)
-      |> Keyword.put_new(:mod, resource.__struct__)
-
-    if Keyword.has_key?(opts, :form_partial) do
-      {partial, assigns} =
-        case Keyword.get(opts, :form_partial) do
-          {mod, template, assigns} -> {{mod, template}, assigns}
-          {mod, template} -> {{mod, template}, []}
-        end
-
-      if Enum.empty?(assigns) do
-        Keyword.put(opts, :form_partial, partial)
-      else
-        assigns = Keyword.merge(Keyword.get(opts, :assigns, []), assigns)
-
-        opts
-        |> Keyword.put(:form_partial, partial)
-        |> Keyword.put(:assigns, assigns)
-      end
-    else
-      opts
-      |> Keyword.put_new(:fields, Utils.editable_fields(resource))
-      |> Keyword.put(:form_partial, {AlkemistView, "form.html"})
-    end
-  end
-
-  # Add preloads to the query if any are given
-  defp do_preload(query, preloads) do
-    if preloads == nil do
-      query
-    else
-      from(r in query, preload: ^preloads)
-    end
-  end
-
-  defp do_preload_resource(resource, preloads, application) do
-    if preloads == nil do
-      resource
-    else
-      resource |> Alkemist.Config.repo(application).preload(preloads)
-    end
-  end
-
-  defp map_form_fields([field | tail], results, resource, opts) when is_map(field) do
-    fields =
-      Map.get(field, :fields, [])
-      |> Enum.map(fn f -> map_form_field(f, resource) end)
-      |> filter_fields()
-
-    results = results ++ [Map.put(field, :fields, fields)]
-    map_form_fields(tail, results, resource, opts)
-  end
-
-  defp map_form_fields([field | tail], results, resource, opts) do
-    group =
-      if Enum.empty?(results) do
-        %{title: "#{opts[:singular_name]} Details", fields: []}
-      else
-        Enum.at(results, 0)
-      end
-
-    field = map_form_field(field, resource)
-
-    fields =
-      (Map.get(group, :fields, []) ++ [field])
-      |> filter_fields()
-
-    results = [Map.put(group, :fields, fields)]
-
-    map_form_fields(tail, results, resource, opts)
-  end
-
-  defp map_form_fields([], results, _resource, _opts), do: results
-
-  defp map_form_field({field, opts}, resource) do
-    opts =
-      opts
-      |> Map.put_new(:type, Utils.get_field_type(field, resource))
-
-    {field, opts}
-  end
-
-  defp map_form_field(field, resource) do
-    map_form_field({field, %{}}, resource)
-  end
-
-  defp filter_fields(fields) do
-    Enum.filter(fields, fn {_f, opts} ->
-      Map.get(opts, :type) != :embed
-    end)
-  end
 end
