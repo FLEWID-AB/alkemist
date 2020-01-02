@@ -152,9 +152,43 @@ defmodule Alkemist do
       @spec current_user_name(Plug.Conn.t()) :: String.t() | nil
       def current_user_name(_conn), do: nil
 
+      @doc """
+      Authorize a user to perform `action` on `resource`. Override this method to
+      implement custom authorization actions
+
+      ## Example
+
+      ### Implement a custom authorization module or e. g. use `canary`
+
+      ```elixir
+        defmodule MyApp.Authorization do
+          def can?(%{role: :superadmin}, _, _), do: true
+
+          def can?(%{role: :admin}, Alkemist.Post, :index), do: false
+        end
+      ```
+
+      ### In your `Alkemist` implementation module
+
+      ```elixir
+        defmodule MyAppWeb.Authorization do
+          use Alkemist, otp_app: :my_app
+
+          def current_user(conn), do: Map.get(conn.assigns, :current_user)
+
+          def authorize_action(conn, resource, action) do
+            MyApp.Authorization.can?(current_user(conn), resource, action)
+          end
+        end
+      ```
+      """
+      @spec authorize_action(Plug.Conn.t(), Alkemist.resource() | nil, atom()) :: boolean()
+      def authorize_action(_conn, _resource, _action), do: true
+
       defoverridable([
         current_user: 1,
-        current_user_name: 1
+        current_user_name: 1,
+        authorize_action: 3
       ])
     end
   end
