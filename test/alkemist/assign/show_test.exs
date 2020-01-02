@@ -6,13 +6,13 @@ defmodule Alkemist.Assign.ShowTest do
 
   describe "default_opts" do
     test "it adds default generated options" do
-      opts = Show.default_opts([], Post)
+      opts = Show.default_opts([], Alkemist.TestImplementation, Post)
       assert opts[:resource] == Post
       assert length(opts[:rows]) == 5
     end
 
     test "it customizes rows when passed" do
-      opts = Show.default_opts([rows: [:id, :title]], Post)
+      opts = Show.default_opts([rows: [:id, :title]], Alkemist.TestImplementation, Post)
       assert length(opts[:rows]) == 2
     end
   end
@@ -21,7 +21,7 @@ defmodule Alkemist.Assign.ShowTest do
     test "it creates default assigns" do
       post = Fixtures.post_fixture()
 
-      assert assigns = Show.assigns(post, [])
+      assert assigns = Show.assigns(Alkemist.TestImplementation, post, [])
       assert assigns[:resource] == post
       assert assigns[:struct] == :post
       assert assigns[:mod] == Post
@@ -33,7 +33,7 @@ defmodule Alkemist.Assign.ShowTest do
       category = Fixtures.category_fixture()
       post = Fixtures.post_fixture(%{category_id: category.id})
 
-      assert assigns = Show.assigns(post, [preload: [:category]])
+      assert assigns = Show.assigns(Alkemist.TestImplementation, post, [preload: [:category]])
       assert assigns[:resource].category.id == category.id
     end
   end

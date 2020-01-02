@@ -22,8 +22,8 @@ defmodule Alkemist.Assign.Export do
   * `query` - use a custom `type:Ecto.Query.t` as the base query
   """
   @impl Alkemist.Assign
-  def assigns(resource, opts, params) do
-    opts = default_opts(opts, resource)
+  def assigns(implementation, resource, opts, params) do
+    opts = default_opts(opts, implementation, resource)
     scopes = Scope.map_all(opts[:scopes], %{query: opts[:query], params: params, repo: opts[:repo], search_provider: opts[:search_provider]})
 
     query =
@@ -50,9 +50,9 @@ defmodule Alkemist.Assign.Export do
   creates a list of the default options that need to be available during export
   """
   @impl Alkemist.Assign
-  def default_opts(opts, resource) do
+  def default_opts(opts, implementation, resource) do
     opts
-    |> Global.opts(resource)
+    |> Global.opts(implementation, resource)
     |> Keyword.put_new(:query, resource)
     |> Keyword.put_new_lazy(:columns, fn -> Utils.display_fields(resource) end)
     |> Keyword.put_new(:scopes, [])

@@ -11,29 +11,23 @@ defmodule Alkemist.Assign.Global do
     * opts - KeywordList with options
     * resource - a Struct or Ecto Struct module
   """
-  @default_otp_app :alkemist
-  @default_implementation Alkemist
 
-  alias Alkemist.{Config, Utils, Types.Action}
+  alias Alkemist.{Utils, Types.Action}
   import Ecto.Query, only: [from: 2]
 
-  def opts(opts, resource) do
+  def opts(opts, implementation, resource) do
     opts =
       opts
-      |> Keyword.put_new(:alkemist_app, @default_otp_app)
-      |> Keyword.put_new(:implementation, @default_implementation)
+      |> Keyword.put_new(:alkemist_app, implementation.otp_app())
+      |> Keyword.put_new(:implementation, implementation)
 
     opts
-    |> add_repo()
+    |> Keyword.put_new(:repo, implementation.config(:repo))
     |> Keyword.put_new(:collection_actions, Action.default_collection_actions)
     |> Keyword.put_new(:member_actions, Action.default_member_actions)
     |> Keyword.put_new(:singular_name, Utils.singular_name(resource))
     |> Keyword.put_new(:plural_name, Utils.plural_name(resource))
     |> Keyword.put_new(:route_params, [])
-  end
-
-  defp add_repo(opts) do
-    Keyword.put_new(opts, :repo, Config.repo(opts[:alkemist_app], opts[:implementation]))
   end
 
   @doc """
@@ -45,7 +39,7 @@ defmodule Alkemist.Assign.Global do
       member_actions: Action.map_all(opts[:member_actions], :member),
       collection_actions: Action.map_all(opts[:collection_actions], :collection)
     ]
-    |> Keyword.merge(Keyword.take(opts, [:alkemist_app, :route_params, :singular_name, :plural_name]))
+    |> Keyword.merge(Keyword.take(opts, [:alkemist_app, :implementation, :route_params, :singular_name, :plural_name]))
   end
 
   @doc """

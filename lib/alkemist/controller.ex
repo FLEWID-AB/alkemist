@@ -128,7 +128,6 @@ defmodule Alkemist.Controller do
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
       @otp_app Keyword.get(opts, :otp_app, :alkemist)
-      import Alkemist.Assign
       import Alkemist.Controller
       @behaviour Alkemist.Controller
       import Ecto.Query

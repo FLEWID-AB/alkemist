@@ -23,9 +23,9 @@ defmodule Alkemist.Assign.Show do
   """
   @since "2.0.0"
   @impl Alkemist.Assign
-  def assigns(resource, opts \\ []) do
+  def assigns(implementation, resource, opts \\ []) do
     struct = resource.__struct__
-    opts = default_opts(opts, struct)
+    opts = default_opts(opts, implementation, struct)
     rows = Enum.map(opts[:rows], & Column.map(&1, resource))
 
     [
@@ -43,9 +43,9 @@ defmodule Alkemist.Assign.Show do
   Ensures that all needed options are available
   """
   @impl Alkemist.Assign
-  def default_opts(opts, resource) do
+  def default_opts(opts, implementation, resource) do
     opts
-    |> Global.opts(resource)
+    |> Global.opts(implementation, resource)
     |> Keyword.put_new(:rows, Utils.display_fields(resource))
     |> Keyword.put_new(:resource, resource)
   end

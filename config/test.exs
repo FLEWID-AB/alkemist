@@ -1,9 +1,8 @@
 use Mix.Config
 
-config :alkemist, Alkemist,
+config :alkemist, Alkemist.TestImplementation,
   router_helpers: AlkemistTest.Router.Helpers,
-  repo: Alkemist.Repo,
-  web_interface: "AlkemistWeb"
+  repo: Alkemist.Repo
 
 config :alkemist, ecto_repos: [Alkemist.Repo]
 

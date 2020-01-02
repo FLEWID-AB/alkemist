@@ -8,8 +8,8 @@ defmodule Alkemist.Assign.Form do
   @since "2.0.0"
 
   @impl Alkemist.Assign
-  def assigns(resource, opts \\ []) do
-    opts = default_opts(opts, resource)
+  def assigns(implementation, resource, opts \\ []) do
+    opts = default_opts(opts, implementation, resource)
     changeset = generate_changeset(opts)
     fields = map_form_fields(Keyword.get(opts, :fields, []), [], resource, opts)
 
@@ -27,9 +27,9 @@ defmodule Alkemist.Assign.Form do
   Ensures that all needed values are present in the options used by `assign`
   """
   @impl Alkemist.Assign
-  def default_opts(opts, resource) do
+  def default_opts(opts, implementation, resource) do
     opts
-    |> Global.opts(resource)
+    |> Global.opts(implementation, resource)
     |> Keyword.put_new(:changeset, resource.changeset(resource.__struct__, %{}))
     |> Keyword.put_new(:resource, resource)
     |> Keyword.put_new(:mod, resource.__struct__)

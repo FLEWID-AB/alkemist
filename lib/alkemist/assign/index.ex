@@ -33,8 +33,8 @@ defmodule Alkemist.Assign.Index do
   @since "2.0.0"
 
   @impl Alkemist.Assign
-  def assigns(resource, opts, params) do
-    opts = default_opts(opts, resource)
+  def assigns(implementation, resource, opts, params) do
+    opts = default_opts(opts, implementation, resource)
     repo = opts[:repo]
     params =
       params
@@ -78,10 +78,9 @@ defmodule Alkemist.Assign.Index do
   Returns the default options for the index action
   """
   @impl Alkemist.Assign
-  def default_opts(opts, resource) do
-    opts = Global.opts(opts, resource)
-
+  def default_opts(opts, implementation, resource) do
     opts
+    |> Global.opts(implementation, resource)
     |> Keyword.put_new(:query, resource)
     |> Keyword.put_new(:columns, Utils.display_fields(resource))
     |> Keyword.put_new(:scopes, [])

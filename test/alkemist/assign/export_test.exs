@@ -5,7 +5,7 @@ defmodule Alkemist.Assign.ExportTest do
 
   describe "assigns" do
     test "it creates default assigns" do
-      assert assigns = Export.assigns(Post, [], %{})
+      assert assigns = Export.assigns(Alkemist.TestImplementation, Post, [], %{})
       assert assigns[:columns]
       assert length(assigns[:columns]) == 5
       assert assigns[:entries]
@@ -16,7 +16,7 @@ defmodule Alkemist.Assign.ExportTest do
       for _ <- 1..20 do
         Fixtures.post_fixture()
       end
-      assigns = Export.assigns(Post, [], %{})
+      assigns = Export.assigns(Alkemist.TestImplementation, Post, [], %{})
       assert length(assigns[:entries]) == 20
     end
 
@@ -25,7 +25,7 @@ defmodule Alkemist.Assign.ExportTest do
       Fixtures.post_fixture(%{title: "M Post"})
       Fixtures.post_fixture(%{title: "Custom Title"})
 
-      assigns = Export.assigns(Post, [], %{"s" => "title+asc", "q" => %{"title_ilike" => "post"}})
+      assigns = Export.assigns(Alkemist.TestImplementation, Post, [], %{"s" => "title+asc", "q" => %{"title_ilike" => "post"}})
       assert length(assigns[:entries]) == 2
       assert Enum.at(assigns[:entries], 0).title == "M Post"
     end
