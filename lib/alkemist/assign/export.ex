@@ -56,6 +56,6 @@ defmodule Alkemist.Assign.Export do
     |> Keyword.put_new(:query, resource)
     |> Keyword.put_new_lazy(:columns, fn -> Utils.display_fields(resource) end)
     |> Keyword.put_new(:scopes, [])
-    |> Keyword.put_new(:search_provider, Config.search_provider(opts[:alkemist_app], opts[:implementation]))
+    |> Keyword.put_new(:search_provider, Config.search_provider(implementation))
   end
 end

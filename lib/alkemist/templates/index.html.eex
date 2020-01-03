@@ -2,17 +2,17 @@
   <div class="row mb-4 mt-4" id="<%= @struct %>-index">
     <div class="col-md-10">
       <%= if assigns[:filters] && any?(@filters) do %>
-        <% {mod, template} = filter_view() %>
+        <% {mod, template} = filter_view(@implementation) %>
         <%= render mod, template, assigns %>
       <% end %>
     </div>
     <div class="col-md-2 text-right page-actions">
       <h6 class="small">Actions</h6>
       <%= for action <- @collection_actions do %>
-        <%= collection_action(@conn, action, @mod, @route_params, @alkemist_app) %>
+        <%= collection_action(@conn, action, @mod, @route_params) %>
       <% end %>
       <%= if assigns[:has_export] do %>
-        <%= export_action(@conn, @struct, assigns, @alkemist_app) %>
+        <%= export_action(@conn, @struct, assigns) %>
       <% end %>
     </div>
   </div>
@@ -22,7 +22,7 @@
     <ul class="nav scopes">
       <%= if any?(@scopes) do %>
         <%= for scope <- @scopes do %>
-          <%= scope_link(@conn, scope, @struct, @alkemist_app) %>
+          <%= scope_link(@conn, scope, @struct) %>
         <% end %>
       <% end %>
     </ul>
@@ -54,15 +54,15 @@
                   <input class="toggle-all" id="selection-toggle-all" type="checkbox" />
                 </th>
               <% else %>
-                <%= header_cell(@conn, @struct, column, @alkemist_app) %>
+                <%= header_cell(@conn, @struct, column) %>
               <% end %>
             <% end %>
-            <%= member_actions(@member_actions, @alkemist_app) %>
+            <%= member_actions(@member_actions, @implementation) %>
           </tr>
         </thead>
         <tbody>
           <%= for row <- @entries do %>
-            <tr class="<%= row_class(row, "clickable-row", @alkemist_app) %>" data-href="<%= resource_action_path(@conn, row, :show, @route_params, %{}, @alkemist_app) %>">
+            <tr class="<%= row_class(row, "clickable-row", @implementation) %>" data-href="<%= resource_action_path(@conn, row, :show, @route_params, %{}) %>">
               <%= for column <- @columns do %>
                 <%= if column.field == :selectable_column do %>
                   <td class="selectable">
@@ -76,16 +76,16 @@
                       
                     <% end %>
                     <%= if Map.has_key?(column.opts, :action) and not is_nil(column.opts.action) and not is_nil(Map.get(row, column.assoc)) do %>
-                      <a href="<%= resource_action_path(@conn, Map.fetch!(row, column.assoc), column.opts.action, %{}, @alkemist_app) %>"><%= string_value(column.callback, row) %></a>
+                      <a href="<%= resource_action_path(@conn, Map.fetch!(row, column.assoc), column.opts.action, %{}) %>"><%= string_value(column.callback, row, @implementation) %></a>
                     <% else %>
                       <%= if column.assoc && Map.get(row, column.assoc) do %>
-                        <%= string_value(column.callback, row) %>
+                        <%= string_value(column.callback, row, @implementation) %>
                       <% end %>
                   <% end %>
                   </td>
                 <% end %>
               <% end %>
-              <%= member_actions(@conn, @member_actions, row, @route_params, @alkemist_app) %>
+              <%= member_actions(@conn, @member_actions, row, @route_params) %>
             </tr>
           <% end %>
         </tbody>
@@ -93,7 +93,7 @@
     </div>
   </div>
   <%= if assigns[:pagination] do %>
-    <% {mod, template} = pagination_view() %>
+    <% {mod, template} = pagination_view(@implementation) %>
     <%= render mod, template, assigns %>
   <% end %>
 </div>

@@ -1,4 +1,4 @@
-defmodule AlkemistTest.Router do
+defmodule Alkemist.TestRouter do
   use Phoenix.Router
   use Alkemist.Router
 

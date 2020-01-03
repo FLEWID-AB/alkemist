@@ -2,20 +2,21 @@ defmodule Alkemist.ViewHelpersTest do
   use ExUnit.Case, async: true
 
   alias Alkemist.ViewHelpers
+  alias Alkemist.TestImplementation, as: Implementation
 
   setup do
-    conn = Phoenix.ConnTest.build_conn()
+    conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.assign(:implementation, Implementation)
     {:ok, conn: conn}
   end
 
   test "current_user returns value from authorization provider", %{conn: conn} do
     assert ViewHelpers.current_user(conn) ==
-             Alkemist.Config.authorization_provider().current_user(conn)
+      Implementation.current_user(conn)
   end
 
   test "current_user_name returns value from authorization_provider", %{conn: conn} do
     assert ViewHelpers.current_user_name(conn) ==
-             Alkemist.Config.authorization_provider().current_user_name(conn)
+      Implementation.current_user_name(conn)
   end
 
   test "resource_action_path returns the path from router helpers", %{conn: conn} do
@@ -55,22 +56,22 @@ defmodule Alkemist.ViewHelpersTest do
   end
 
   test "right_header_view returns value from config" do
-    assert ViewHelpers.right_header_view() ==
-             Keyword.get(Alkemist.Config.get(:views), :right_header)
+    assert ViewHelpers.right_header_view(Implementation) ==
+             Keyword.get(Alkemist.Config.get(:views, Implementation), :right_header)
   end
 
   test "views return value from config" do
-    assert ViewHelpers.left_header_view() == Keyword.get(Alkemist.Config.get(:views), :left_header)
+    assert ViewHelpers.left_header_view(Implementation) == Keyword.get(Alkemist.Config.get(:views, Implementation), :left_header)
 
-    assert ViewHelpers.right_header_view() ==
-             Keyword.get(Alkemist.Config.get(:views), :right_header)
+    assert ViewHelpers.right_header_view(Implementation) ==
+             Keyword.get(Alkemist.Config.get(:views, Implementation), :right_header)
 
-    assert ViewHelpers.sidebar_view() == Keyword.get(Alkemist.Config.get(:views), :sidebar)
-    assert ViewHelpers.aside_view() == Keyword.get(Alkemist.Config.get(:views), :aside)
+    assert ViewHelpers.sidebar_view(Implementation) == Keyword.get(Alkemist.Config.get(:views, Implementation), :sidebar)
+    assert ViewHelpers.aside_view(Implementation) == Keyword.get(Alkemist.Config.get(:views, Implementation), :aside)
   end
 
   test "site_title returns value from config" do
-    assert ViewHelpers.site_title() == Alkemist.Config.get(:title)
+    assert ViewHelpers.site_title(Implementation) == Alkemist.Config.get(:title, Implementation)
   end
 
 end

@@ -9,7 +9,6 @@ defmodule Alkemist.Assign.GlobalTest do
     test "it returns a keyword list with default options" do
       assert opts = Global.opts([], Alkemist.TestImplementation, Post)
 
-      assert opts[:alkemist_app] == :alkemist
       assert opts[:implementation] == Alkemist.TestImplementation
       assert opts[:repo] == Alkemist.Repo
       assert opts[:collection_actions] == Action.default_collection_actions()
@@ -29,7 +28,7 @@ defmodule Alkemist.Assign.GlobalTest do
       assert length(assigns[:member_actions]) == 3
       assert [%Action{action: :new}] = assigns[:collection_actions]
 
-      assert assigns[:alkemist_app]
+      assert assigns[:implementation] == Alkemist.TestImplementation
       assert assigns[:singular_name]
       assert assigns[:plural_name]
       assert assigns[:route_params]

@@ -67,13 +67,7 @@ defmodule Alkemist.Config do
         row_class: {MyApp.IndexView, :row_decorator}
       ]
   """
-
-  @default_otp_app :alkemist
-  @default_implementation Alkemist
-
   @defaults [
-    repo: nil,
-    web_interface: "Alkemist",
     title: "Alkemist",
     logo: false,
     router_helpers: Alkemist.Router.Helpers,
@@ -107,53 +101,53 @@ defmodule Alkemist.Config do
   @doc """
   Returns a value from the configuration or the default value
   """
-  def get(key, application \\ @default_otp_app, implementation \\ @default_implementation) do
+  def get(key, implementation) do
     default = Keyword.get(@defaults, key)
-    config(key, default, application, implementation)
+    config(key, default, implementation)
   end
 
   @doc """
   Returns the configured Repo from alkemist configuration
   """
-  def repo(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    get(:repo, application, implementation)
+  def repo(implementation) do
+    get(:repo, implementation)
   end
 
   @doc """
   Returns the configured router helpers from alkemist configuration
   """
-  def router_helpers(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    get(:router_helpers, application, implementation)
+  def router_helpers(implementation) do
+    get(:router_helpers, implementation)
   end
 
   @doc """
   Returns the prefix or scope for the routes
   """
-  def route_prefix(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    get(:route_prefix, application, implementation)
+  def route_prefix(implementation) do
+    get(:route_prefix, implementation)
   end
 
   @doc """
   Returns the decorator for given areaa
   """
-  def filter_decorator(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    decorators = get(:decorators, application, implementation)
+  def filter_decorator(implementation) do
+    decorators = get(:decorators, implementation)
     Keyword.get(decorators, :filter, @defaults[:decorators][:filter])
   end
 
   @doc """
   Returns the decorator for form fields
   """
-  def form_field_decorator(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    decorators = get(:decorators, application, implementation)
+  def form_field_decorator(implementation) do
+    decorators = get(:decorators, implementation)
     Keyword.get(decorators, :form, @defaults[:decorators][:form])
   end
 
   @doc """
   Returns the field value decorator to render the string value for given field type(s)
   """
-  def field_value_decorator(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    decorators = get(:decorators, application, implementation)
+  def field_value_decorator(implementation) do
+    decorators = get(:decorators, implementation)
     Keyword.get(decorators, :field_value, @defaults[:decorators][:field_value])
   end
 
@@ -164,67 +158,53 @@ defmodule Alkemist.Config do
   `def member_actions(actions) do`
   `def member_actions(conn, actions, resource) do
   """
-  def member_actions_decorator(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    decorators = get(:decorators, application, implementation)
+  def member_actions_decorator(implementation) do
+    decorators = get(:decorators, implementation)
     Keyword.get(decorators, :member_actions, @defaults[:decorators][:member_actions])
   end
 
   @doc """
   Returns the row class decorator, so classes can be overridden
   """
-  def row_class_decorator(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    decorators = get(:decorators, application, implementation)
+  def row_class_decorator(implementation) do
+    decorators = get(:decorators, implementation)
     Keyword.get(decorators, :row_class, @defaults[:decorators][:row_class])
-  end
-
-  @doc """
-  Returns the configured authorization provider from alkemist configuration
-  """
-  def authorization_provider(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    get(:authorization_provider, application, implementation)
   end
 
   @doc """
   Returns the configured layout from alkemist configuration or the default
   """
-  def layout(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    views = get(:views, application, implementation)
+  def layout(implementation) do
+    views = get(:views, implementation)
     Keyword.get(views, :layout, @defaults[:views][:layout])
   end
 
   @doc """
   Returns the search hook to use by default
   """
-  def search_provider(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    query = get(:query, application, implementation)
+  def search_provider(implementation) do
+    query = get(:query, implementation)
     Keyword.get(query, :search, @defaults[:query][:search])
   end
 
   @doc """
   Returns the pagination provider to use by default
   """
-  def pagination_provider(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    query = get(:query, application, implementation)
+  def pagination_provider(implementation) do
+    query = get(:query, implementation)
     Keyword.get(query, :paginate, @defaults[:query][:paginate])
   end
 
   @doc """
   Returns the json encoder to use by default
   """
-  def json_provider(application \\ @default_otp_app, implementation \\ @default_implementation) do
-    get(:json_library, application, implementation)
+  def json_provider(implementation) do
+    get(:json_library, implementation)
   end
 
-  defp config(application, implementation) do
-    Application.get_env(application, implementation, [])
-  end
-
-  defp config(key, default, application, implementation) do
-    application
-    |> config(implementation)
-    |> Keyword.get(key, default)
+  defp config(key, default, implementation) do
+    implementation.config(key, default)
     |> merge_list(default)
-    |> resolve_config(default)
   end
 
   defp merge_list(config, default) when is_list(config) do
@@ -232,6 +212,4 @@ defmodule Alkemist.Config do
   end
 
   defp merge_list(config, _default), do: config
-
-  defp resolve_config(value, _default), do: value
 end

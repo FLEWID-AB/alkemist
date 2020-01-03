@@ -4,7 +4,8 @@ defmodule Alkemist.PaginationViewTest do
   alias Alkemist.PaginationView
 
   setup do
-    conn = Phoenix.ConnTest.build_conn()
+    conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.assign(:implementation, Alkemist.TestImplementation)
+
     {:ok, conn: conn}
   end
 

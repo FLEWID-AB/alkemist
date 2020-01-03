@@ -2,10 +2,11 @@ defmodule Alkemist.ViewTest do
   use ExUnit.Case, async: true
 
   alias AlkemistView, as: View
+  alias Alkemist.TestImplementation, as: Implementation
   doctest View
 
   setup do
-    conn = Phoenix.ConnTest.build_conn()
+    conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.assign(:implementation, Implementation)
     {:ok, conn: conn}
   end
 
@@ -86,7 +87,7 @@ defmodule Alkemist.ViewTest do
   describe "action_path" do
     test "it generates the path to an action by struct and params", %{conn: conn} do
       params = [conn, :edit, %Alkemist.Post{id: 1}]
-      link = View.action_path(:post, params)
+      link = View.action_path(conn, :post, params)
       assert link == "/posts/1/edit"
     end
   end
@@ -118,19 +119,19 @@ defmodule Alkemist.ViewTest do
   describe "string_value" do
     test "it renders regular strings" do
       cb = fn r -> Map.get(r, :title) end
-      assert elem(View.string_value(cb, %{title: "foo"}), 1) == "foo"
+      assert elem(View.string_value(cb, %{title: "foo"}, Implementation), 1) == "foo"
     end
 
     test "it renders true and false" do
       cb = fn r -> Map.get(r, :published) end
-      assert elem(View.string_value(cb, %{published: true}), 1) =~ "fa-check"
+      assert elem(View.string_value(cb, %{published: true}, Implementation), 1) =~ "fa-check"
 
-      assert elem(View.string_value(cb, %{published: false}), 1) =~ "fa-times"
+      assert elem(View.string_value(cb, %{published: false}, Implementation), 1) =~ "fa-times"
     end
 
     test "it renders nil values as empty string" do
       cb = fn r -> Map.get(r, :val) end
-      assert View.string_value(cb, %{val: nil}) == ""
+      assert View.string_value(cb, %{val: nil}, Implementation) == ""
     end
   end
 end

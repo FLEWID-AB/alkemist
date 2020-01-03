@@ -12,13 +12,12 @@ defmodule Alkemist.Assign.Global do
     * resource - a Struct or Ecto Struct module
   """
 
-  alias Alkemist.{Utils, Types.Action}
+  alias Alkemist.{Utils, Types.Action, Config}
   import Ecto.Query, only: [from: 2]
 
   def opts(opts, implementation, resource) do
     opts =
       opts
-      |> Keyword.put_new(:alkemist_app, implementation.otp_app())
       |> Keyword.put_new(:implementation, implementation)
 
     opts
@@ -39,7 +38,9 @@ defmodule Alkemist.Assign.Global do
       member_actions: Action.map_all(opts[:member_actions], :member),
       collection_actions: Action.map_all(opts[:collection_actions], :collection)
     ]
-    |> Keyword.merge(Keyword.take(opts, [:alkemist_app, :implementation, :route_params, :singular_name, :plural_name]))
+    |> Keyword.put_new(:title, Config.get(:title, opts[:implementation]))
+    |> Keyword.put_new(:logo, Config.get(:logo, opts[:implementation]))
+    |> Keyword.merge(Keyword.take(opts, [:implementation, :route_params, :singular_name, :plural_name]))
   end
 
   @doc """

@@ -203,13 +203,13 @@ defmodule Alkemist.Utils do
 
   ## Examples
 
-    iex> Utils.default_resource_helper(Alkemist.Post)
+    iex> Utils.default_resource_helper(Alkemist.Post, Alkemist.TestImplementation)
     :post_path
   """
-  @spec default_resource_helper(module() | map()) :: atom()
-  def default_resource_helper(resource) do
+  @spec default_resource_helper(module() | map(), module()) :: atom()
+  def default_resource_helper(resource, implementation) do
     struct = get_struct(resource)
-    default_struct_helper(struct)
+    default_struct_helper(struct, implementation)
   end
 
   @doc """
@@ -217,12 +217,12 @@ defmodule Alkemist.Utils do
 
   ## Examples
 
-    iex> Utils.default_struct_helper(:post)
+    iex> Utils.default_struct_helper(:post, Alkemist.TestImplementation)
     :post_path
   """
-  @spec default_struct_helper(atom()) :: atom()
-  def default_struct_helper(struct) do
-    prefix = case Alkemist.Config.route_prefix() do
+  @spec default_struct_helper(atom(), module()) :: atom()
+  def default_struct_helper(struct, implementation) do
+    prefix = case Alkemist.Config.route_prefix(implementation) do
       nil -> ""
       val -> "#{val}_"
     end

@@ -1,35 +1,30 @@
 defmodule Alkemist.ConfigTest do
   use ExUnit.Case, async: true
   alias Alkemist.Config
-
-  @config Application.get_env(:alkemist, Alkemist, [])
+  alias Alkemist.TestImplementation, as: Implementation
 
   test "uses Repo from config" do
-    assert @config[:repo] == Config.repo()
+    assert Alkemist.Repo == Config.repo(Implementation)
   end
 
   test "router helpers returns value from config" do
-    assert @config[:router_helpers] == Config.router_helpers()
+    assert Implementation.config(:router_helpers) == Config.router_helpers(Implementation)
   end
 
   test "layout returns alkemist default" do
-    assert {Alkemist.LayoutView, "app.html"} == Config.layout()
-  end
-
-  test "authorization provider returns default" do
-    assert Alkemist.Authorization == Config.authorization_provider()
+    assert {Alkemist.LayoutView, "app.html"} == Config.layout(Implementation)
   end
 
   test "route prefix returns value form config or nil" do
-    assert nil == Config.route_prefix()
+    assert nil == Config.route_prefix(Implementation)
   end
 
   test "search provider defaults to alkemist" do
-    assert Alkemist.Query.Search == Config.search_provider()
+    assert Alkemist.Query.Search == Config.search_provider(Implementation)
   end
 
   test "pagination provider defaults to alkemist" do
-    assert Alkemist.Query.Paginate == Config.pagination_provider()
+    assert Alkemist.Query.Paginate == Config.pagination_provider(Implementation)
   end
 
 end

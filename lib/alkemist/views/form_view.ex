@@ -49,12 +49,12 @@ defmodule Alkemist.FormView do
   @doc """
   Renders a form field within the new and edit form
   """
-  def form_field(form, {field, opts}, application \\ :alkemist) do
+  def form_field(form, {field, opts}, implementation) do
     opts =
       opts
       |> Map.put_new(:label, Phoenix.Naming.humanize(field))
-      |> Map.put_new(:decorator, Alkemist.Config.form_field_decorator(application))
-      |> Map.put_new(:alkemist_application, application)
+      |> Map.put_new(:decorator, Alkemist.Config.form_field_decorator(implementation))
+      |> Map.put_new(:implementation, implementation)
 
     {mod, fun} = opts.decorator
     apply(mod, fun, [form, {field, Map.delete(opts, :decorator)}])
@@ -202,27 +202,27 @@ defmodule Alkemist.FormView do
     end
   end
 
-  def render_has_many_inputs(form, {key, %{fields: fields, alkemist_application: application} = opts}, new_record \\ false) do
+  def render_has_many_inputs(form, {key, %{fields: fields, implementation: implementation} = opts}, new_record \\ false) do
     field_opts = get_field_opts(opts, %{})
     inputs_for(form, key, field_opts, fn f ->
       content_tag(:div, class: "alkemist_hm--group", "data-field": "#{key}") do
         if new_record == true do
-          [content_tag(:a, Phoenix.HTML.raw("&times;"), href: "#", class: "close") | Enum.map(Keyword.delete(fields, :_destroy), fn field -> form_field(f, field, application) end)]
+          [content_tag(:a, Phoenix.HTML.raw("&times;"), href: "#", class: "close") | Enum.map(Keyword.delete(fields, :_destroy), fn field -> form_field(f, field, implementation) end)]
         else
-          Enum.map(fields, fn field -> form_field(f, field, application) end)
+          Enum.map(fields, fn field -> form_field(f, field, implementation) end)
         end
       end
     end)
   end
 
-  def render_has_one_inputs(form, {key, %{fields: fields, alkemist_application: application} = opts}, new_record \\ false) do
+  def render_has_one_inputs(form, {key, %{fields: fields, implementation: implementation} = opts}, new_record \\ false) do
     field_opts = get_field_opts(opts, %{})
     inputs_for(form, key, field_opts, fn f ->
       content_tag(:div, class: "alkemist_ho--group", "data-field": "#{key}") do
         if new_record == true do
-          [content_tag(:a, Phoenix.HTML.raw("&times;"), href: "#", class: "close") | Enum.map(Keyword.delete(fields, :_destroy), fn field -> form_field(f, field, application) end)]
+          [content_tag(:a, Phoenix.HTML.raw("&times;"), href: "#", class: "close") | Enum.map(Keyword.delete(fields, :_destroy), fn field -> form_field(f, field, implementation) end)]
         else
-          Enum.map(fields, fn field -> form_field(f, field, application) end)
+          Enum.map(fields, fn field -> form_field(f, field, implementation) end)
         end
       end
     end)
@@ -328,7 +328,7 @@ defmodule Alkemist.FormView do
     |> Map.delete(:label)
     |> Map.delete(:fields)
     |> Map.delete(:decorator)
-    |> Map.delete(:alkemist_application)
+    |> Map.delete(:implementation)
     |> Enum.map(fn({k, v}) -> {k, v} end) # back to keyword
 
   end

@@ -1,9 +1,9 @@
 <header class="app-header navbar">
-  <%= if left_view = left_header_view(@alkemist_app) do %>
+  <%= if left_view = left_header_view(@implementation) do %>
     <% {mod, template} = left_view %>
     <%= render mod, template, assigns %>
   <% end %>
-  <%= if right_view = right_header_view(@alkemist_app) do %>
+  <%= if right_view = right_header_view(@implementation) do %>
     <% {mod, template} = right_view %>
     <%= render mod, template, assigns %>
   <% end %>
