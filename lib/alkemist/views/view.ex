@@ -200,7 +200,7 @@ defmodule AlkemistView do
       link(raw(label), to: action_path(conn, struct, params))
     end
   end
-  def header_cell(_conn, _struct, {_field, _callback, opts}, _application) do
+  def header_cell(_conn, _struct, {_field, _callback, opts}, _implementation) do
     label = Map.get(opts, :label)
     class = ["index-header", Slugger.slugify_downcase(label), Map.get(opts, :type)]
     content_tag(:th, class: Enum.join(class, " ")) do
@@ -273,8 +273,8 @@ defmodule AlkemistView do
   @doc """
   Return the row class for current row. Can be altered with a decorator
   """
-  def row_class(row, default \\ "", application \\ :alkemist) do
-    {mod, fun} = Alkemist.Config.row_class_decorator(application)
+  def row_class(row, default \\ "", implementation) do
+    {mod, fun} = Alkemist.Config.row_class_decorator(implementation)
     apply(mod, fun, [row, default])
   end
 

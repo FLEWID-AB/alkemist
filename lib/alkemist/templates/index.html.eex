@@ -57,7 +57,7 @@
                 <%= header_cell(@conn, @struct, column) %>
               <% end %>
             <% end %>
-            <%= member_actions(@member_actions, @implementation) %>
+            <%= member_actions(@conn, @member_actions) %>
           </tr>
         </thead>
         <tbody>

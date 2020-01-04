@@ -14,11 +14,11 @@ defmodule Alkemist.SearchView do
     filter_field(form, {:category_id, [type: :select, collection: @categories]})
   ```
   """
-  def filter_field(form, {field, opts}, application \\ :alkemist) do
+  def filter_field(form, {field, opts}, implementation) do
     opts =
       opts
       |> Keyword.put_new(:label, Phoenix.Naming.humanize(field))
-      |> Keyword.put_new(:decorator, Alkemist.Config.filter_decorator(application))
+      |> Keyword.put_new(:decorator, Alkemist.Config.filter_decorator(implementation))
 
     field_name = field |> field_key(opts[:type]) |> String.to_atom()
     type = Keyword.get(opts, :type, :string)

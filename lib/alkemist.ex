@@ -79,16 +79,15 @@ defmodule Alkemist do
               |> String.to_existing_atom()
 
             resource = Keyword.get(opts, :resource)
-            otp_app = implementation.otp_app()
             quote do
               @implementation unquote(implementation)
               @resource unquote(resource)
-              @otp_app unquote(otp_app)
 
-              use Alkemist.Controller
+              use Alkemist.Controller, implementation: @implementation
 
               def index(conn, params \\ %{}) do
-                render_index(conn, params)
+                conn
+                |> text("index")
               end
 
               def show(conn, params \\ %{}) do
