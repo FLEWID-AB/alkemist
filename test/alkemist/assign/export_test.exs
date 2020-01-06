@@ -9,7 +9,7 @@ defmodule Alkemist.Assign.ExportTest do
       assert assigns[:columns]
       assert length(assigns[:columns]) == 5
       assert assigns[:entries]
-      assert length(assigns[:entries]) == 0
+      assert Enum.empty?(assigns[:entries])
     end
 
     test "it fetches data unpaginated" do

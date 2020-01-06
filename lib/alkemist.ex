@@ -33,6 +33,36 @@ defmodule Alkemist do
   - `title`: "My Admin Area title". Default will be "Admin"
   - `logo`: Path of a logo image relative to `priv/static` of your module's OTP app. Default `false`
 
+
+  ## Creating Controllers
+
+  Create a new Controller for one of your Ecto resources (e. g. MyApp.Post)
+  and use the automatically generated Controller module. {MyAlkemistImplementation}.Controller
+
+  __Options:__
+  - `resource` the Ecto schema definition that this controller represents
+  - `only` (optional) limit the generated default controller actions. Please note that you will also have to disable them in your router
+
+  ```elixir
+    defmodule MyAppWeb.PostController do
+      use MyAppWeb, :controller
+      use MyAppWeb.Alkemist.Controller,
+        resource: MyApp.Post,
+        only: [:index, :show] # only generate the index and show actions for this resource
+    end
+  ```
+
+  By default it will generate the following methods:
+
+  - `index/2`
+  - `show/2`
+  - `new/2`
+  - `create/2`
+  - `edit/2`
+  - `update/2`
+  - `delete/2`
+
+  All of the default generated methods are overridable so you can implement a custom behavior in your controller by redefining them.
   """
 
   @typedoc """
@@ -79,31 +109,13 @@ defmodule Alkemist do
               |> String.to_existing_atom()
 
             resource = Keyword.get(opts, :resource)
+            only = Keyword.get(opts, :only)
+
             quote do
-              @implementation unquote(implementation)
-              @resource unquote(resource)
-
-              use Alkemist.Controller, implementation: @implementation
-
-              def index(conn, params \\ %{}) do
-                conn
-                |> text("index")
-              end
-
-              def show(conn, params \\ %{}) do
-                conn
-                |> text("Show")
-              end
-
-              def columns(_conn) do
-                Alkemist.Utils.display_fields(@resource)
-              end
-
-              defoverridable([
-                index: 2,
-                show: 2,
-                columns: 1
-              ])
+              use Alkemist.Controller,
+                implementation: unquote(implementation),
+                resource: unquote(resource),
+                only: unquote(only)
             end
           end
         end,
