@@ -1,5 +1,5 @@
 defmodule Alkemist.Fixtures do
-  alias Alkemist.{Post, Category, Repo}
+  alias TestAlkemist.{Post, Category, Repo}
 
   def post_fixture(params \\ %{}) do
     defaults = %{

@@ -1,18 +1,19 @@
 defmodule Alkemist.Assign.ShowTest do
   use Alkemist.DataCase, async: true
   alias Alkemist.Assign.Show
-  alias Alkemist.{Post, Fixtures}
+  alias Alkemist.{Fixtures}
+  alias TestAlkemist.Post
   doctest Show
 
   describe "default_opts" do
     test "it adds default generated options" do
-      opts = Show.default_opts([], Alkemist.TestImplementation, Post)
+      opts = Show.default_opts([], TestAlkemist.Alkemist, Post)
       assert opts[:resource] == Post
       assert length(opts[:rows]) == 5
     end
 
     test "it customizes rows when passed" do
-      opts = Show.default_opts([rows: [:id, :title]], Alkemist.TestImplementation, Post)
+      opts = Show.default_opts([rows: [:id, :title]], TestAlkemist.Alkemist, Post)
       assert length(opts[:rows]) == 2
     end
   end
@@ -21,7 +22,7 @@ defmodule Alkemist.Assign.ShowTest do
     test "it creates default assigns" do
       post = Fixtures.post_fixture()
 
-      assert assigns = Show.assigns(Alkemist.TestImplementation, post, [])
+      assert assigns = Show.assigns(TestAlkemist.Alkemist, post, [])
       assert assigns[:resource] == post
       assert assigns[:struct] == :post
       assert assigns[:mod] == Post
@@ -33,7 +34,7 @@ defmodule Alkemist.Assign.ShowTest do
       category = Fixtures.category_fixture()
       post = Fixtures.post_fixture(%{category_id: category.id})
 
-      assert assigns = Show.assigns(Alkemist.TestImplementation, post, [preload: [:category]])
+      assert assigns = Show.assigns(TestAlkemist.Alkemist, post, [preload: [:category]])
       assert assigns[:resource].category.id == category.id
     end
   end

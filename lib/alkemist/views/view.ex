@@ -110,7 +110,7 @@ defmodule AlkemistView do
     query_params = get_default_link_params(conn)
 
 
-    params = [conn, :export, query_params]
+    params = [conn, :index, Map.put(query_params, :export, "true")]
     action(conn, struct, params, label: "Export", link_opts: [class: "nav-link"])
   end
 

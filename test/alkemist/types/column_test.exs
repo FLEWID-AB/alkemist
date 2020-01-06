@@ -1,9 +1,10 @@
 defmodule Alkemist.Types.ColumnTest do
   use Alkemist.DataCase, async: true
-  doctest Alkemist.Types.Column
 
+
+  alias TestAlkemist.Post
+  doctest Alkemist.Types.Column
   alias Alkemist.Types.Column
-  alias Alkemist.Post
 
   describe "map" do
     test "it creates new struct from map" do

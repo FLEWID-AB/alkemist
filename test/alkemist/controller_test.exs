@@ -3,7 +3,7 @@ defmodule Alkemist.ControllerTest do
 
   defmodule ControllerWithDefaults do
     use Phoenix.Controller
-    use Alkemist.TestImplementation.Controller, resource: Alkemist.Post
+    use TestAlkemist.Alkemist.Controller, resource: TestAlkemist.Post
   end
 
 

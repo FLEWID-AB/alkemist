@@ -2,9 +2,10 @@ defmodule Alkemist.PaginationViewTest do
   use ExUnit.Case
 
   alias Alkemist.PaginationView
+  alias TestAlkemist.Post
 
   setup do
-    conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.assign(:implementation, Alkemist.TestImplementation)
+    conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.assign(:implementation, TestAlkemist.Alkemist)
 
     {:ok, conn: conn}
   end
@@ -21,7 +22,7 @@ defmodule Alkemist.PaginationViewTest do
   describe "pagination_links" do
     test "it generates previous and next links", %{conn: conn} do
       links =
-        PaginationView.pagination_links(conn, @paginate, Alkemist.Post, [])
+        PaginationView.pagination_links(conn, @paginate, Post, [])
         |> Phoenix.HTML.safe_to_string()
 
       assert links =~ "Previous"
@@ -36,7 +37,7 @@ defmodule Alkemist.PaginationViewTest do
         |> Map.put(:next_page, 1)
 
       links =
-        PaginationView.pagination_links(conn, paginate, Alkemist.Post, [])
+        PaginationView.pagination_links(conn, paginate, Post, [])
         |> Phoenix.HTML.safe_to_string()
 
       assert links =~ "Previous"
@@ -52,7 +53,7 @@ defmodule Alkemist.PaginationViewTest do
         |> Map.put(:next_page, nil)
 
       links =
-        PaginationView.pagination_links(conn, paginate, Alkemist.Post, [])
+        PaginationView.pagination_links(conn, paginate, Post, [])
         |> Phoenix.HTML.safe_to_string()
 
       assert links =~ "Previous"

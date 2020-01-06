@@ -3,16 +3,15 @@ defmodule Alkemist.DataCase do
 
   using do
     quote do
-      alias Alkemist.Repo
+      alias TestAlkemist.Repo
       import Ecto.Query
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Alkemist.Repo)
-    _ = Ecto.Migrator.up(Alkemist.Repo, 0, Alkemist.Migrations, log: false)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(TestAlkemist.Repo)
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Alkemist.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(TestAlkemist.Repo, {:shared, self()})
     end
 
     :ok

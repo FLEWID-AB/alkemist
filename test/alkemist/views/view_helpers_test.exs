@@ -2,7 +2,8 @@ defmodule Alkemist.ViewHelpersTest do
   use ExUnit.Case, async: true
 
   alias Alkemist.ViewHelpers
-  alias Alkemist.TestImplementation, as: Implementation
+  alias TestAlkemist.Alkemist, as: Implementation
+  alias TestAlkemist.Post
 
   setup do
     conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.assign(:implementation, Implementation)
@@ -20,11 +21,11 @@ defmodule Alkemist.ViewHelpersTest do
   end
 
   test "resource_action_path returns the path from router helpers", %{conn: conn} do
-    assert ViewHelpers.resource_action_path(conn, Alkemist.Post, :index) == "/posts"
+    assert ViewHelpers.resource_action_path(conn, Post, :index) == "/posts"
   end
 
   test "resource_action_path returns the path for a single resource", %{conn: conn} do
-    post = %Alkemist.Post{id: 1}
+    post = %Post{id: 1}
     assert ViewHelpers.resource_action_path(conn, post, :show)
   end
 
@@ -34,12 +35,12 @@ defmodule Alkemist.ViewHelpersTest do
   end
 
   test "action_link creates a link to a router action", %{conn: conn} do
-    link = ViewHelpers.action_link("Posts", conn, :index, Alkemist.Post)
+    link = ViewHelpers.action_link("Posts", conn, :index, Post)
     assert Phoenix.HTML.safe_to_string(link) =~ "href=\"/posts\""
   end
 
   test "action link accepts wrap to wrap it in a tag", %{conn: conn} do
-    link = ViewHelpers.action_link("Posts", conn, :index, Alkemist.Post, wrap: {:li, []})
+    link = ViewHelpers.action_link("Posts", conn, :index, Post, wrap: {:li, []})
     assert Phoenix.HTML.safe_to_string(link) =~ "<li><a"
   end
 

@@ -2,7 +2,7 @@ defmodule Alkemist.Assign.IndexTest do
   use Alkemist.DataCase, async: true
 
   alias Alkemist.Assign.Index
-  alias Alkemist.Post
+  alias TestAlkemist.Post
   alias Alkemist.Fixtures
   doctest Index
 
@@ -14,7 +14,7 @@ defmodule Alkemist.Assign.IndexTest do
         Fixtures.post_fixture()
       end
 
-      assigns = Index.assigns(Alkemist.TestImplementation, Post, [], %{})
+      assigns = Index.assigns(TestAlkemist.Alkemist, Post, [], %{})
 
       assert length(assigns[:entries]) == 10
       assert length(assigns[:columns]) == 5
@@ -30,7 +30,7 @@ defmodule Alkemist.Assign.IndexTest do
       opts = [
         columns: [:id, :title, :body]
       ]
-      assigns = Index.assigns(Alkemist.TestImplementation, Post, opts, %{})
+      assigns = Index.assigns(TestAlkemist.Alkemist, Post, opts, %{})
       assert length(assigns[:columns]) == 3
 
       for col <- opts[:columns] do
@@ -49,14 +49,14 @@ defmodule Alkemist.Assign.IndexTest do
         ]
       ]
 
-      assigns = Index.assigns(Alkemist.TestImplementation, Post, opts, %{})
+      assigns = Index.assigns(TestAlkemist.Alkemist, Post, opts, %{})
       assert length(assigns[:scopes]) == 2
       assert length(assigns[:entries]) == 2
 
-      published_assigns = Index.assigns(Alkemist.TestImplementation, Post, opts, %{"scope" => "published"})
+      published_assigns = Index.assigns(TestAlkemist.Alkemist, Post, opts, %{"scope" => "published"})
       assert length(published_assigns[:entries]) == 1
 
-      unpublished_assigns = Index.assigns(Alkemist.TestImplementation, Post, opts, %{"scope" => "unpublished"})
+      unpublished_assigns = Index.assigns(TestAlkemist.Alkemist, Post, opts, %{"scope" => "unpublished"})
       assert length(unpublished_assigns[:entries]) == 1
     end
 
@@ -65,7 +65,7 @@ defmodule Alkemist.Assign.IndexTest do
         batch_actions: [:delete_batch]
       ]
 
-      assigns = Index.assigns(Alkemist.TestImplementation, Post, opts, %{})
+      assigns = Index.assigns(TestAlkemist.Alkemist, Post, opts, %{})
       assert length(assigns[:batch_actions]) == 1
       assert Enum.at(assigns[:columns], 0).field == :selectable_column
     end
@@ -75,14 +75,14 @@ defmodule Alkemist.Assign.IndexTest do
         columns: [:selectable_column, :id, :title],
         batch_actions: [:delete_batch]
       ]
-      assigns = Index.assigns(Alkemist.TestImplementation, Post, opts, %{})
+      assigns = Index.assigns(TestAlkemist.Alkemist, Post, opts, %{})
       assert length(assigns[:columns]) == 3
     end
   end
 
   describe "default_opts" do
     test "it populates the opts passed to this method with defaults" do
-      assert defaults = Index.default_opts([], Alkemist.TestImplementation, Post)
+      assert defaults = Index.default_opts([], TestAlkemist.Alkemist, Post)
 
       assert defaults[:query] == Post
       Enum.each([:id, :title, :body, :category_id], fn col ->

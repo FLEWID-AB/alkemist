@@ -31,10 +31,10 @@ defmodule Alkemist.Utils do
 
   ## Examples:
 
-    iex> Utils.get_struct(Alkemist.Post)
+    iex> Utils.get_struct(Post)
     :post
 
-    iex> Utils.get_struct(%Alkemist.Post{})
+    iex> Utils.get_struct(%Post{})
     :post
   """
   @spec get_struct(module() | map()) :: atom()
@@ -67,10 +67,10 @@ defmodule Alkemist.Utils do
 
   ## Examples:
 
-    iex> Utils.singular_name(%Alkemist.Post{})
+    iex> Utils.singular_name(%Post{})
     "Post"
 
-    iex> Utils.singular_name(Alkemist.Post)
+    iex> Utils.singular_name(Post)
     "Post"
   """
   @spec singular_name(module() | map()) :: String.t()
@@ -87,10 +87,10 @@ defmodule Alkemist.Utils do
 
   ## Examples:
 
-    iex> Utils.plural_name(%Alkemist.Post{})
+    iex> Utils.plural_name(%Post{})
     "Posts"
 
-    iex> Utils.plural_name(Alkemist.Post)
+    iex> Utils.plural_name(Post)
     "Posts"
   """
   @spec plural_name(module() | map()) :: String.t()
@@ -140,7 +140,7 @@ defmodule Alkemist.Utils do
 
   ## Examples:
 
-    iex> Utils.get_association(Alkemist.Category, :posts)
+    iex> Utils.get_association(Category, :posts)
     %Ecto.Association.Has{
              cardinality: :many,
              defaults: [],
@@ -148,16 +148,16 @@ defmodule Alkemist.Utils do
              on_cast: nil,
              on_delete: :nothing,
              on_replace: :raise,
-             owner: Alkemist.Category,
+             owner: Category,
              owner_key: :id,
-             queryable: Alkemist.Post,
-             related: Alkemist.Post,
+             queryable: Post,
+             related: Post,
              related_key: :category_id,
              relationship: :child,
              unique: true
            }
 
-    iex> Utils.get_association(%Alkemist.Category{}, :posts)
+    iex> Utils.get_association(%Category{}, :posts)
     %Ecto.Association.Has{
              cardinality: :many,
              defaults: [],
@@ -165,10 +165,10 @@ defmodule Alkemist.Utils do
              on_cast: nil,
              on_delete: :nothing,
              on_replace: :raise,
-             owner: Alkemist.Category,
+             owner: Category,
              owner_key: :id,
-             queryable: Alkemist.Post,
-             related: Alkemist.Post,
+             queryable: Post,
+             related: Post,
              related_key: :category_id,
              relationship: :child,
              unique: true
@@ -203,7 +203,7 @@ defmodule Alkemist.Utils do
 
   ## Examples
 
-    iex> Utils.default_resource_helper(Alkemist.Post, Alkemist.TestImplementation)
+    iex> Utils.default_resource_helper(Post, TestAlkemist.Alkemist)
     :post_path
   """
   @spec default_resource_helper(module() | map(), module()) :: atom()
@@ -217,7 +217,7 @@ defmodule Alkemist.Utils do
 
   ## Examples
 
-    iex> Utils.default_struct_helper(:post, Alkemist.TestImplementation)
+    iex> Utils.default_struct_helper(:post, TestAlkemist.Alkemist)
     :post_path
   """
   @spec default_struct_helper(atom(), module()) :: atom()
@@ -234,13 +234,13 @@ defmodule Alkemist.Utils do
 
   ## Examples
 
-    iex> Utils.get_field_type(nil, Alkemist.Post)
+    iex> Utils.get_field_type(nil, Post)
     nil
 
-    iex> Utils.get_field_type(:title, Alkemist.Post)
+    iex> Utils.get_field_type(:title, Post)
     :string
 
-    iex> Utils.get_field_type(:title, %Alkemist.Post{})
+    iex> Utils.get_field_type(:title, %Post{})
     :string
   """
   @spec get_field_type(atom() | nil, map() | module()) :: atom() | nil
@@ -267,7 +267,7 @@ defmodule Alkemist.Utils do
 
   ## Examples
 
-    iex> Alkemist.Utils.display_fields(Alkemist.Post)
+    iex> Alkemist.Utils.display_fields(Post)
     [:id, :title, :body, :published, :category_id]
   """
   @spec display_fields(module()) :: [atom()]
@@ -281,7 +281,7 @@ defmodule Alkemist.Utils do
 
   ## Examples
 
-    iex> Alkemist.Utils.editable_fields(Alkemist.Post)
+    iex> Alkemist.Utils.editable_fields(Post)
     [:title, :body, :published, :category_id]
   """
   @spec editable_fields(module()) :: [atom()]

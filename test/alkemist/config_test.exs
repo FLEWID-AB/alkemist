@@ -1,10 +1,10 @@
 defmodule Alkemist.ConfigTest do
   use ExUnit.Case, async: true
   alias Alkemist.Config
-  alias Alkemist.TestImplementation, as: Implementation
+  alias TestAlkemist.Alkemist, as: Implementation
 
   test "uses Repo from config" do
-    assert Alkemist.Repo == Config.repo(Implementation)
+    assert TestAlkemist.Repo == Config.repo(Implementation)
   end
 
   test "router helpers returns value from config" do

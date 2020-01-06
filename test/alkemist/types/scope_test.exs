@@ -1,6 +1,6 @@
 defmodule Alkemist.Types.ScopeTest do
   use Alkemist.DataCase, async: true
-  alias Alkemist.Post
+  alias TestAlkemist.Post
   alias Alkemist.Types.Scope
 
   @default_opts %{query: Post, repo: Repo, search_provider: Alkemist.Query.Search, params: %{}}

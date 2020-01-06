@@ -2,7 +2,7 @@ defmodule Alkemist.FormViewTest do
   use ExUnit.Case, async: true
   import Phoenix.ConnTest, only: [build_conn: 0]
   alias Alkemist.FormView
-  alias Alkemist.TestImplementation, as: Implementation
+  alias TestAlkemist.Alkemist, as: Implementation
 
   describe "form_field" do
     test "it renders hidden fields" do
@@ -25,7 +25,7 @@ defmodule Alkemist.FormViewTest do
     end
 
     test "it renders has many fields and adds empty form template" do
-      changeset = Alkemist.Category.changeset(%Alkemist.Category{}, %{})
+      changeset = TestAlkemist.Category.changeset(%TestAlkemist.Category{}, %{})
       field = {:posts, %{
         type: :has_many,
         fields: [

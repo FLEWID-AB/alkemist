@@ -38,18 +38,18 @@ defmodule Alkemist.Types.Column do
 
   ## Examples
 
-    iex> Alkemist.Types.Column.map(:title, Alkemist.Post)
+    iex> Alkemist.Types.Column.map(:title, Post)
     %Alkemist.Types.Column{field: :title, label: "Title", sortable?: true, sort_field: :title, type: :string}
 
-    iex> Alkemist.Types.Column.map({"Category", %{assoc: :category, field: :name, class: "custom", custom_option: "foo"}}, Alkemist.Post)
+    iex> Alkemist.Types.Column.map({"Category", %{assoc: :category, field: :name, class: "custom", custom_option: "foo"}}, Post)
     %Alkemist.Types.Column{field: :name, assoc: :category, label: "Category", sort_field: :category_name, type: :string, sortable?: true, class: "custom", opts: %{custom_option: "foo"}}
 
-    iex> Alkemist.Types.Column.map(%{field: :title}, Alkemist.Post)
+    iex> Alkemist.Types.Column.map(%{field: :title}, Post)
     %Alkemist.Types.Column{field: :title, label: "Title", sort_field: :title, sortable?: true, type: :string}
 
   You can also create custom columns with a callback
 
-    Alkemist.Types.Column.map({"Custom Title", fn row -> row.title end}, Alkemist.Post)
+    Alkemist.Types.Column.map({"Custom Title", fn row -> row.title end}, Post)
     > %Alkemist.Types.Column{label: "Custom Title", callback: fn row -> row.title end}
   """
   @spec map(t() | atom() | tuple(), map() | module()) :: t()

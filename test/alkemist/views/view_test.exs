@@ -2,7 +2,8 @@ defmodule Alkemist.ViewTest do
   use ExUnit.Case, async: true
 
   alias AlkemistView, as: View
-  alias Alkemist.TestImplementation, as: Implementation
+  alias TestAlkemist.Alkemist, as: Implementation
+  alias TestAlkemist.Post
   doctest View
 
   setup do
@@ -19,14 +20,14 @@ defmodule Alkemist.ViewTest do
 
   describe "member_action" do
     test "it creates basic link", %{conn: conn} do
-      resource = %Alkemist.Post{id: 1}
+      resource = %Post{id: 1}
       action = {:edit, [label: "edit"]}
       link = View.member_action(conn, action, resource, [])
       assert Phoenix.HTML.safe_to_string(link) =~ "href=\"/posts/1/edit\""
     end
 
     test "it handles icon class", %{conn: conn} do
-      resource = %Alkemist.Post{id: 1}
+      resource = %Post{id: 1}
       action = {:edit, [label: "edit", icon: "pencil"]}
       link = View.member_action(conn, action, resource, []) |> Phoenix.HTML.safe_to_string()
       assert link =~ "<i class=\"pencil\""
@@ -35,33 +36,33 @@ defmodule Alkemist.ViewTest do
 
   describe "batch_action_item" do
     test "it creates a batch action from atom", %{conn: conn} do
-      action = :export
+      action = :batch_action
       assert link = View.batch_action_item(conn, :post, action) |> Phoenix.HTML.safe_to_string()
-      assert link =~ "data-action=\"/posts/export\""
+      assert link =~ "data-action=\"/posts/batch_action\""
     end
 
     test "it creates batch action with options", %{conn: conn} do
-      assert link = View.batch_action_item(conn, :post, {:export, [label: "Export this"]}) |> Phoenix.HTML.safe_to_string()
-      assert link =~ "Export this"
+      assert link = View.batch_action_item(conn, :post, {:batch_action, [label: "Custom label"]}) |> Phoenix.HTML.safe_to_string()
+      assert link =~ "Custom label"
     end
   end
 
   describe "collection_action" do
     test "it creates a basic link", %{conn: conn} do
       action = {:new, [label: "Test"]}
-      link = View.collection_action(conn, action, Alkemist.Post, [])
+      link = View.collection_action(conn, action, Post, [])
       assert Phoenix.HTML.safe_to_string(link) =~ "href=\"/posts/new\""
       assert Phoenix.HTML.safe_to_string(link) =~ "Test"
     end
 
     test "it adds class when link_opts are given", %{conn: conn} do
       action = {:new, [label: "Test", link_opts: [class: "link"]]}
-      link = View.collection_action(conn, action, Alkemist.Post, [])
+      link = View.collection_action(conn, action, Post, [])
       assert Phoenix.HTML.safe_to_string(link) =~ "class=\"link\""
     end
 
     test "it handles icon class", %{conn: conn} do
-      resource = Alkemist.Post
+      resource = Post
       action = {:new, [label: "new", icon: "pencil"]}
       link = View.collection_action(conn, action, resource, []) |> Phoenix.HTML.safe_to_string()
       assert link =~ "<i class=\"pencil\""
@@ -71,7 +72,7 @@ defmodule Alkemist.ViewTest do
   describe "export_action" do
     test "it generates a link to the export action", %{conn: conn} do
       link = View.export_action(conn, :post) |> Phoenix.HTML.safe_to_string()
-      assert link =~ "href=\"/posts/export\""
+      assert link =~ "href=\"/posts?export=true\""
     end
 
     test "it adds all query adn scope params", %{conn: conn} do
@@ -86,7 +87,7 @@ defmodule Alkemist.ViewTest do
 
   describe "action_path" do
     test "it generates the path to an action by struct and params", %{conn: conn} do
-      params = [conn, :edit, %Alkemist.Post{id: 1}]
+      params = [conn, :edit, %Post{id: 1}]
       link = View.action_path(conn, :post, params)
       assert link == "/posts/1/edit"
     end

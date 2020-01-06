@@ -3,10 +3,10 @@ defmodule AlkemistTest do
   doctest Alkemist
 
   test "it creates custom controller module" do
-    assert Code.ensure_compiled?(Alkemist.TestImplementation.Controller)
+    assert Code.ensure_compiled?(TestAlkemist.Alkemist.Controller)
   end
 
   test "it has runtime configuration" do
-    assert Alkemist.TestImplementation.config(:repo)
+    assert TestAlkemist.Alkemist.config(:repo)
   end
 end

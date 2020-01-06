@@ -1,12 +1,13 @@
 defmodule Alkemist.Assign.FormTest do
   use Alkemist.DataCase, async: true
 
-  alias Alkemist.{Post, Assign.Form}
+  alias Alkemist.{Assign.Form}
+  alias TestAlkemist.Post
   doctest Form
 
   describe "assigns" do
     test "it creates default assigns without options" do
-      assigns = Form.assigns(Alkemist.TestImplementation, Post)
+      assigns = Form.assigns(TestAlkemist.Alkemist, Post)
       assert length(assigns[:form_fields]) == 1
       assert is_map(Enum.at(assigns[:form_fields], 0))
       assert %Ecto.Changeset{} = assigns[:changeset]
@@ -15,7 +16,7 @@ defmodule Alkemist.Assign.FormTest do
     test "it preloads associations in changeset" do
       category = Alkemist.Fixtures.category_fixture()
       post = Alkemist.Fixtures.post_fixture(%{category_id: category.id})
-      assigns = Form.assigns(Alkemist.TestImplementation, Post, [preload: [:category], changeset: Post.changeset(post, %{})])
+      assigns = Form.assigns(TestAlkemist.Alkemist, Post, [preload: [:category], changeset: Post.changeset(post, %{})])
       assert %{data: data} = assigns[:changeset]
       assert data.category
       assert data.category.id == category.id
@@ -28,14 +29,14 @@ defmodule Alkemist.Assign.FormTest do
           %{title: "Meta", fields: [:published]}
         ]
       ]
-      assigns = Form.assigns(Alkemist.TestImplementation, Post, opts)
+      assigns = Form.assigns(TestAlkemist.Alkemist, Post, opts)
       assert length(assigns[:form_fields]) == 2
     end
   end
 
   describe "default_opts" do
     test "it creates default options" do
-      assert opts = Form.default_opts([], Alkemist.TestImplementation, Post)
+      assert opts = Form.default_opts([], TestAlkemist.Alkemist, Post)
 
       assert %Ecto.Changeset{data: %Post{}} = opts[:changeset]
       assert opts[:fields] == Alkemist.Utils.editable_fields(Post)
@@ -44,7 +45,7 @@ defmodule Alkemist.Assign.FormTest do
 
     test "it adds form_partial" do
       partial = {AlkemistView, "custom_form.html"}
-      opts = Form.default_opts([form_partial: partial], Alkemist.TestImplementation, Post)
+      opts = Form.default_opts([form_partial: partial], TestAlkemist.Alkemist, Post)
 
       refute opts[:fields]
       assert opts[:form_partial] == partial
@@ -57,7 +58,7 @@ defmodule Alkemist.Assign.FormTest do
         assigns: [bar: "foo"]
       ]
 
-      opts = Form.default_opts(opts, Alkemist.TestImplementation, Post)
+      opts = Form.default_opts(opts, TestAlkemist.Alkemist, Post)
       assert opts[:assigns][:foo] == "bar"
       assert opts[:assigns][:bar] == "foo"
     end

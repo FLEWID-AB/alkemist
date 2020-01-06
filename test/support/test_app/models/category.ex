@@ -1,4 +1,4 @@
-defmodule Alkemist.Category do
+defmodule TestAlkemist.Category do
   @moduledoc """
   This is a Schema for testing with associations
   """
@@ -8,7 +8,7 @@ defmodule Alkemist.Category do
 
   schema "categories" do
     field(:name, :string)
-    has_many(:posts, Alkemist.Post)
+    has_many(:posts, TestAlkemist.Post)
 
     timestamps()
   end
