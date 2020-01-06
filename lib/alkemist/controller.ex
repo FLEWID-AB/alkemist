@@ -91,43 +91,43 @@ defmodule Alkemist.Controller do
   """
   alias Alkemist.{Utils, Assign.Index, Assign.Show, Assign.Form}
 
-  @callback columns(Plug.Conn.t()) :: [column()]
-  @callback csv_columns(Plug.Conn.t()) :: [column()]
-  @callback fields(Plug.Conn.t(), struct() | nil) :: [field() | map()]
-  @callback scopes(Plug.Conn.t()) :: [scope()]
-  @callback filters(Plug.Conn.t()) :: keyword()
-  @callback repo() :: module()
-  @callback preload() :: keyword()
-  @callback rows(Plug.Conn.t(), struct() | nil) :: list()
-  @callback form_partial(Plug.Conn.t(), struct() | nil) :: tuple()
-  @callback batch_actions() :: keyword()
-  @callback singular_name() :: String.t()
-  @callback plural_name() :: String.t()
+  # @callback columns(Plug.Conn.t()) :: [column()]
+  # @callback csv_columns(Plug.Conn.t()) :: [column()]
+  # @callback fields(Plug.Conn.t(), struct() | nil) :: [field() | map()]
+  # @callback scopes(Plug.Conn.t()) :: [scope()]
+  # @callback filters(Plug.Conn.t()) :: keyword()
+  # @callback repo() :: module()
+  # @callback preload() :: keyword()
+  # @callback rows(Plug.Conn.t(), struct() | nil) :: list()
+  # @callback form_partial(Plug.Conn.t(), struct() | nil) :: tuple()
+  # @callback batch_actions() :: keyword()
+  # @callback singular_name() :: String.t()
+  # @callback plural_name() :: String.t()
 
-  @optional_callbacks [
-    columns: 1,
-    csv_columns: 1,
-    fields: 2,
-    scopes: 1,
-    filters: 1,
-    repo: 0,
-    preload: 0,
-    rows: 2,
-    form_partial: 2,
-    batch_actions: 0,
-    singular_name: 0,
-    plural_name: 0
-  ]
+  # @optional_callbacks [
+  #   columns: 1,
+  #   csv_columns: 1,
+  #   fields: 2,
+  #   scopes: 1,
+  #   filters: 1,
+  #   repo: 0,
+  #   preload: 0,
+  #   rows: 2,
+  #   form_partial: 2,
+  #   batch_actions: 0,
+  #   singular_name: 0,
+  #   plural_name: 0
+  # ]
 
-  # Type definitions
-  @type scope :: {atom(), keyword(), (%{} -> Ecto.Query.t())}
-  @type column :: atom() | {String.t(), (%{} -> any())}
-  @typedoc """
-  Used to create custom filters in the filter form. Type can be in `[:string, :boolean, :select, :date]`,
-  default is `:string`. If the type is `:select`, a collection to build the select must be passed (see `Phoenix.HTMl.Form.select/4`)
-  """
-  @type filter :: atom() | keyword()
-  @type field :: atom() | {atom(), map()} | %{title: String.t(), fields: [{atom(), map()}]}
+  # # Type definitions
+  # @type scope :: {atom(), keyword(), (%{} -> Ecto.Query.t())}
+  # @type column :: atom() | {String.t(), (%{} -> any())}
+  # @typedoc """
+  # Used to create custom filters in the filter form. Type can be in `[:string, :boolean, :select, :date]`,
+  # default is `:string`. If the type is `:select`, a collection to build the select must be passed (see `Phoenix.HTMl.Form.select/4`)
+  # """
+  # @type filter :: atom() | keyword()
+  # @type field :: atom() | {atom(), map()} | %{title: String.t(), fields: [{atom(), map()}]}
 
 
   defmacro __using__(opts) do
@@ -145,20 +145,17 @@ defmodule Alkemist.Controller do
       @behaviour Alkemist.Controller
       import Ecto.Query
 
-      # plug Alkemist.Plug, implementation: @implementation, resource: @resource
+      plug Alkemist.Plug, implementation: @implementation, resource: @resource, controller: __MODULE__
 
       if Enum.member?(methods, :index) do
         def index(conn, params \\ %{}) do
-          IO.inspect(conn)
-          conn
-          |> text("index")
-          #render_index(conn, params, [])
+          render_index(conn, params, [])
         end
       end
 
       if Enum.member?(methods, :show) do
         def show(conn, %{"id" => id}) do
-          #render_show(conn, id, [])
+          render_show(conn, id, [])
         end
       end
 
@@ -194,97 +191,107 @@ defmodule Alkemist.Controller do
         end
       end
 
-      # defp render_show(conn, resource, opts \\ []) do
-      #   opts = get_module_opts(opts, :show, conn, resource)
-      #   resource = opts[:resource]
-
-      #   if resource == nil do
-      #     not_found(conn)
-      #   else
-      #     if @implementation.authorize_action(conn, resource, :show) do
-      #       assigns = Show.assigns(@implementation, resource, opts)
-
-      #       conn
-      #       |> put_layout(Alkemist.Config.layout(@implementation))
-      #       |> put_view(AlkemistView)
-      #       |> render("show.html", assigns)
-      #     else
-      #       forbidden(conn, @implementation)
-      #     end
-      #   end
-      # end
-
-      # defp render_new(conn, opts \\ []) do
-      #   opts = get_module_opts(opts, :new, conn)
-
-      #   if @implementation.authorize_action(conn, @resource, :create) do
-      #     render_form(conn, :new, opts)
-      #   else
-      #     forbidden(conn, @implementation)
-      #   end
-      # end
-
-      # defp render_edit(conn, resource, opts \\ []) do
-      #   opts = get_module_opts(opts, :edit, conn, resource)
-
-      #   resource = opts[:resource]
-
-      #   if resource == nil do
-      #     not_found(conn)
-      #   else
-      #     if @implementation.authorize_action(conn, resource, :update) do
-      #       render_form(conn, :edit, opts)
-      #     else
-      #       forbidden(conn, @implementation)
-      #     end
-      #   end
-      # end
-
       defoverridable([] ++ Enum.map(methods, & {&1, 2}))
     end
   end
 
-  # def render_index(conn, params, opts \\ []) do
+  @doc """
+  Renders the index view based on the passed options
+  """
+  @spec render_index(Plug.Conn.t(), map(), keyword()) :: Plug.Conn.t()
+  def render_index(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource}} = conn, params, opts \\ []) do
+    opts = get_module_opts(conn, opts, :index)
 
-  #   opts = get_module_opts(__MODULE__, opts, :index, conn)
+    if implementation.authorize_action(conn, resource, :index) do
+      assigns = Index.assigns(implementation, resource, opts, params)
 
-  #   if @implementation.authorize_action(conn, @resource, :index) do
-  #     assigns = Index.assigns(@implementation, @resource, opts, params)
+      conn
+      |> render_template(Keyword.get(opts, :template, "index.html"), assigns)
+    else
+      forbidden(conn, implementation)
+    end
+  end
 
-  #     assigns =
-  #       if Keyword.has_key?(__MODULE__.__info__(:functions), :export) do
-  #         Keyword.put(assigns, :has_export, true)
-  #       else
-  #         assigns
-  #       end
+  @doc """
+  Renders the show view based on the passed options
+  """
+  @spec render_show(Plug.Conn.t(), String.t() | non_neg_integer() | map(), keyword()) :: Plug.Conn.t()
+  def render_show(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource}} = conn, resource, opts \\ []) do
+    opts = get_module_opts(conn, opts, :show, resource)
+    resource = opts[:resource]
 
-  #     conn
-  #     |> put_layout(Alkemist.Config.layout(@implementation))
-  #     |> put_view(AlkemistView)
-  #     |> render("index.html", assigns)
-  #   else
-  #     forbidden(conn, @implementation)
-  #   end
-  # end
+    if resource == nil do
+      not_found(conn)
+    else
+      if implementation.authorize_action(conn, resource, :show) do
+        assigns = Show.assigns(implementation, resource, opts)
 
-  # defmacro render_form(conn, action, opts \\ []) do
-  #   quote do
-  #     opts = unquote(opts) |> Keyword.put_new(:implementation, @implementation)
-  #     action = unquote(action)
+        conn
+        |> render_template(Keyword.get(opts, :template, "show.html"), assigns)
+      else
+        forbidden(conn, implementation)
+      end
+    end
+  end
 
-  #     assigns = Form.assigns(@implementation, @resource, opts)
-  #     conn = unquote(conn)
+  @doc """
+  Renders the form to create a new table row
+  """
+  @spec render_new(Plug.Conn.t(), keyword()) :: Plug.Conn.t()
+  def render_new(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource}} = conn, opts \\ []) do
+    opts = get_module_opts(conn, opts, :new)
 
-  #     conn
-  #     |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@implementation))
-  #     |> Phoenix.Controller.put_view(AlkemistView)
-  #     |> Phoenix.Controller.render("#{action}.html", assigns)
-  #   end
-  # end
+    if implementation.authorize_action(conn, resource, :create) do
+      render_form(conn, :new, opts)
+    else
+      forbidden(conn, implementation)
+    end
+  end
+
+
+  @doc """
+  Renders the form to edit a table row
+  """
+  @spec render_edit(Plug.Conn.t(), String.t() | non_neg_integer() | map(), keyword()) :: Plug.Conn.t()
+  def render_edit(%{private: %{alkemist_implementation: implementation}} = conn, row, opts \\ []) do
+    opts = get_module_opts(conn, opts, :edit, row)
+    row = opts[:resource]
+
+    if row == nil do
+      not_found(conn)
+    else
+      if implementation.authorize_action(conn, row, :update) do
+        render_form(conn, :edit, opts)
+      else
+        forbidden(conn, implementation)
+      end
+    end
+  end
+
+  @doc """
+  Renders the form for the edit and new actions
+  """
+  @spec render_form(Plug.Conn.t(), atom(), keyword()) :: Plug.Conn.t()
+  def render_form(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource}} = conn, action, opts \\ []) do
+    opts = Keyword.put_new(opts, :implementation, implementation)
+    assigns = Form.assigns(implementation, resource, opts)
+
+    conn
+    |> render_template(Keyword.get(opts, :template, "#{action}.html"), assigns)
+  end
+
+
+  @spec render_template(Plug.Conn.t(), String.t(), keyword()) :: Plug.Conn.t()
+  defp render_template(%{private: %{alkemist_implementation: implementation}} = conn, template, assigns) do
+    conn
+    |> Phoenix.Controller.put_new_layout(Alkemist.Config.layout(implementation))
+    |> Phoenix.Controller.put_new_view(AlkemistView)
+    |> Phoenix.Controller.render(template, assigns)
+  end
+
 
   # @doc """
   # Creates a new resource
-  # TODO: document opts
   # """
   # defmacro do_create(conn, params, opts \\ []) do
   #   route_params = route_params(opts)
@@ -580,25 +587,25 @@ defmodule Alkemist.Controller do
     |> Phoenix.Controller.render("404.html")
   end
 
-  # @doc """
-  # Loads the resource from the repo and adds any preloads
-  # """
-  # def load_resource(resource, mod, opts, implementation) when is_bitstring(resource),
-  #   do: load_resource(String.to_integer(resource), mod, opts, implementation)
+  @doc """
+  Loads the resource from the repo and adds any preloads
+  """
+  def load_resource(resource, mod, opts, implementation) when is_bitstring(resource),
+    do: load_resource(String.to_integer(resource), mod, opts, implementation)
 
-  # def load_resource(resource, mod, opts, implementation) when is_integer(resource) do
-  #   repo = Keyword.get(opts, :repo, Alkemist.Config.repo(implementation))
-  #   load_resource(repo.get(mod, resource), mod, opts, implementation)
-  # end
+  def load_resource(resource, mod, opts, implementation) when is_integer(resource) do
+    repo = Keyword.get(opts, :repo, Alkemist.Config.repo(implementation))
+    load_resource(repo.get(mod, resource), mod, opts, implementation)
+  end
 
-  # def load_resource(resource, _mod, opts, implementation) do
-  #   if opts[:preload] do
-  #     repo = Keyword.get(opts, :repo, Alkemist.Config.repo(implementation))
-  #     resource |> repo.preload(opts[:preload])
-  #   else
-  #     resource
-  #   end
-  # end
+  def load_resource(resource, _mod, opts, implementation) do
+    if opts[:preload] do
+      repo = Keyword.get(opts, :repo, Alkemist.Config.repo(implementation))
+      resource |> repo.preload(opts[:preload])
+    else
+      resource
+    end
+  end
 
   defp opts_or_function(opts, mod, keys) do
     Enum.reduce(keys, opts, fn key, opts ->
@@ -622,124 +629,90 @@ defmodule Alkemist.Controller do
     end)
   end
 
-  def get_module_opts(module, opts, :global, conn) do
-    quote do
-      opts = unquote(opts)
-      conn = unquote(conn)
+  @spec get_module_opts(Plug.Conn.t(), keyword(), atom(), Alkemist.resource()) :: keyword()
+  def get_module_opts(conn, opts, type, resource \\ nil)
+  def get_module_opts(%{private: %{alkemist_controller: module}}, opts, :global, _resource) do
+    opts_or_function(opts, module, [
+      :repo,
+      :preload,
+      :collection_actions,
+      :member_actions,
+      :batch_actions,
+      :singular_name,
+      :plural_name
+    ])
+  end
 
-      opts_or_function(opts, module, [
-        :repo,
-        :preload,
-        :collection_actions,
-        :member_actions,
-        :batch_actions,
-        :singular_name,
-        :plural_name
-      ])
+  def get_module_opts(%{private: %{alkemist_controller: module}} = conn, opts, :index, _resource) do
+    opts = get_module_opts(conn, opts, :global)
+    opts_or_function(
+      opts,
+      module,
+      columns: [conn],
+      scopes: [conn],
+      filters: [conn],
+      search_provider: []
+    )
+  end
+
+  def get_module_opts(%{private: %{alkemist_controller: mod, alkemist_implementation: implementation, alkemist_resource: model}} = conn, opts, :show, resource) do
+    row = load_resource(resource, model, opts, implementation)
+
+    conn
+    |> get_module_opts(opts, :global)
+    |> opts_or_function(mod, show_panels: [conn, resource], rows: [conn, resource])
+    |> Keyword.put(:resource, row)
+  end
+
+  def get_module_opts(%{private: %{alkemist_controller: mod, alkemist_implementation: implementation, alkemist_resource: model}} = conn, opts, :new, _resource) do
+    opts = conn
+    |> get_module_opts(opts, :global)
+    |> opts_or_function(mod, form_partial: [conn, nil], fields: [conn, nil])
+    |> Keyword.put_new(:changeset, :changeset)
+
+    if is_atom(opts[:changeset]) do
+      changeset = apply(model, opts[:changeset], [model.__struct__, %{}])
+      Keyword.put(opts, :changeset, changeset)
+    else
+      opts
     end
   end
 
-  def get_module_opts(module, opts, :index, conn) do
-    opts = get_module_opts(module, opts, :global, conn)
+  def get_module_opts(%{private: %{alkemist_controller: mod}} = conn, opts, :export, _resource) do
+    conn
+    |> get_module_opts(opts, :global)
+    |> opts_or_function(mod, [
+      {:csv_columns, :columns, [conn]},
+      {:columns, [conn]}
+    ])
+  end
 
-    quote do
-      opts = unquote(opts)
-      conn = unquote(conn)
+  def get_module_opts(%{private: %{alkemist_controller: mod, alkemist_implementation: implementation, alkemist_resource: model}} = conn, opts, :show, resource) do
+    row = load_resource(resource, model, opts, implementation)
 
-      opts_or_function(
-        opts,
-        module,
-        columns: [conn],
-        scopes: [conn],
-        filters: [conn],
-        search_provider: []
-      )
+    conn
+    |> get_module_opts(opts, :global)
+    |> opts_or_function(mod, show_panels: [conn, resource], rows: [conn, resource])
+    |> Keyword.put(:resource, row)
+  end
+
+  def get_module_opts(%{private: %{alkemist_controller: mod, alkemist_implementation: implementation, alkemist_resource: model}} = conn, opts, :edit, resource) do
+    row = load_resource(resource, model, opts, implementation)
+
+    opts = conn
+    |> get_module_opts(opts, :global)
+    |> opts_or_function(mod, form_partial: [conn, resource], fields: [conn, resource])
+    |> Keyword.put_new(:changeset, :changeset)
+    |> Keyword.put(:resource, row)
+
+    if is_atom(opts[:changeset]) do
+      changeset = apply(model, opts[:changeset], [resource, %{}])
+      Keyword.put(opts, :changeset, changeset)
+    else
+      opts
     end
   end
 
-  # defp get_module_opts(opts, :new, conn) do
-  #   opts = get_module_opts(opts, :global, conn)
-
-  #   quote do
-  #     opts = unquote(opts)
-  #     conn = unquote(conn)
-
-  #     opts =
-  #       Alkemist.Controller.opts_or_function(
-  #         opts,
-  #         __MODULE__,
-  #         form_partial: [conn, nil],
-  #         fields: [conn, nil]
-  #       )
-  #       |> Keyword.put_new(:changeset, :changeset)
-
-  #     if is_atom(opts[:changeset]) do
-  #       changeset = apply(@resource, opts[:changeset], [@resource.__struct__, %{}])
-  #       Keyword.put(opts, :changeset, changeset)
-  #     else
-  #       opts
-  #     end
-  #   end
-  # end
-
-  # defp get_module_opts(opts, :export, conn) do
-  #   opts = get_module_opts(opts, :global, conn)
-
-  #   quote do
-  #     opts = unquote(opts)
-  #     conn = unquote(conn)
-
-  #     Alkemist.Controller.opts_or_function(opts, __MODULE__, [
-  #       {:csv_columns, :columns, [conn]},
-  #       {:columns, [conn]}
-  #     ])
-  #   end
-  # end
-
-  # defp get_module_opts(opts, :show, conn, resource) do
-  #   opts = get_module_opts(opts, :global, conn)
-
-  #   quote do
-  #     opts = unquote(opts)
-  #     resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts, @implementation)
-  #     conn = unquote(conn)
-
-  #     Alkemist.Controller.opts_or_function(
-  #       opts,
-  #       __MODULE__,
-  #       show_panels: [conn, resource],
-  #       rows: [conn, resource]
-  #     )
-  #     |> Keyword.put(:resource, resource)
-  #   end
-  # end
-
-  # defp get_module_opts(opts, :edit, conn, resource) do
-  #   opts = get_module_opts(opts, :global, conn)
-
-  #   quote do
-  #     opts = unquote(opts)
-  #     resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts, @implementation)
-  #     conn = unquote(conn)
-
-  #     opts =
-  #       opts
-  #       |> Alkemist.Controller.opts_or_function(
-  #         __MODULE__,
-  #         form_partial: [conn, resource],
-  #         fields: [conn, resource]
-  #       )
-  #       |> Keyword.put_new(:changeset, :changeset)
-  #       |> Keyword.put(:resource, resource)
-
-  #     if is_atom(opts[:changeset]) do
-  #       changeset = apply(@resource, opts[:changeset], [resource, %{}])
-  #       Keyword.put(opts, :changeset, changeset)
-  #     else
-  #       opts
-  #     end
-  #   end
-  # end
 
   # defp route_params(opts) do
   #   quote do
@@ -753,11 +726,11 @@ defmodule Alkemist.Controller do
   #   end
   # end
 
-  # @doc """
-  # Simple helper method to use link in callbacks
-  # """
-  # def link(label, path, opts \\ []) do
-  #   opts = Keyword.put(opts, :to, path)
-  #   Phoenix.HTML.Link.link(label, opts)
-  # end
+  @doc """
+  Simple helper method to use link in callbacks
+  """
+  def link(label, path, opts \\ []) do
+    opts = Keyword.put(opts, :to, path)
+    Phoenix.HTML.Link.link(label, opts)
+  end
 end
