@@ -18,7 +18,7 @@ defmodule Alkemist.Assign.Form do
       changeset: changeset,
       form_fields: fields
     ]
-    |> Keyword.merge(Keyword.take(opts, [:form_partial, :mod]))
+    |> Keyword.merge(Keyword.take(opts, [:form_partial, :mod, :resource]))
     |> Keyword.merge(Global.assigns(opts))
     |> Keyword.merge(Keyword.get(opts, :assigns, []))
   end

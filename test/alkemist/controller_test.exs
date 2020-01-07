@@ -163,6 +163,18 @@ defmodule Alkemist.ControllerTest do
     end
   end
 
+  describe "index" do
+    test "it shows table and pagination", %{conn: conn} do
+      conn =
+        conn
+        |> get(Routes.post_path(conn, :index))
+
+      html = html_response(conn, 200)
+
+      assert html =~ "index-table"
+    end
+  end
+
   describe "create" do
     @params %{title: "Title", body: "Body", published: true}
     test "it creates a resource", %{conn: conn} do
@@ -170,6 +182,15 @@ defmodule Alkemist.ControllerTest do
       |> post(Routes.post_path(conn, :create), %{post: @params})
 
       assert post = TestAlkemist.Repo.get_by(TestAlkemist.Post, title: @params.title)
+    end
+
+    test "it renders new when item is invalid", %{conn: conn} do
+      conn =
+        conn
+        |> post(Routes.post_path(conn, :create), %{post: %{}})
+
+      html = html_response(conn, 200)
+      assert html =~ "New Post"
     end
 
     @tag user: :user
@@ -190,6 +211,48 @@ defmodule Alkemist.ControllerTest do
       |> put(Routes.post_path(conn, :update, post), %{post: @params})
 
       assert post = TestAlkemist.Repo.get_by(TestAlkemist.Post, title: @params.title)
+    end
+
+    test "it shows edit when resource can not be updated", %{conn: conn} do
+      post = insert!(:post)
+
+      conn = conn
+      |> put(Routes.post_path(conn, :update, post), %{post: %{title: nil}})
+
+      html = html_response(conn, 200)
+      assert html =~ "<form"
+      assert html =~ "edit-model-form"
+    end
+
+    @tag user: :user
+    test "it returns forbidden when user has no permission", %{conn: conn} do
+      post = insert!(:post)
+
+      conn = conn
+      |> put(Routes.post_path(conn, :update, post), %{post: @params})
+
+      assert conn.status == 401
+    end
+  end
+
+  describe "delete" do
+    test "it deletes an existing item", %{conn: conn} do
+      post = insert!(:post)
+      assert TestAlkemist.Repo.get(TestAlkemist.Post, post.id)
+      conn
+      |> delete(Routes.post_path(conn, :delete, post))
+
+      refute TestAlkemist.Repo.get(TestAlkemist.Post, post.id)
+    end
+
+    @tag user: :user
+    test "it returns forbidden if user has no permission", %{conn: conn} do
+      post = insert!(:post)
+
+      conn = conn
+      |> delete(Routes.post_path(conn, :delete, post))
+
+      assert conn.status == 401
     end
   end
 end

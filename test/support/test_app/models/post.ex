@@ -17,5 +17,6 @@ defmodule TestAlkemist.Post do
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [:title, :body, :published, :category_id])
+    |> validate_required([:title])
   end
 end

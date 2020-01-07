@@ -152,7 +152,7 @@ defmodule Alkemist.Controller do
   end
   ```
   """
-  alias Alkemist.{Utils, Assign.Index, Assign.Show, Assign.Form}
+  alias Alkemist.{Utils, Config, Assign.Index, Assign.Show, Assign.Form}
 
   @callback columns(Plug.Conn.t()) :: [column()]
   @callback fields(Plug.Conn.t(), map() | nil) :: [field() | map()]
@@ -258,7 +258,7 @@ defmodule Alkemist.Controller do
 
       if Enum.member?(methods, :delete) do
         def delete(conn, %{"id" => id}) do
-          #do_delete(conn, id, [])
+          do_delete(conn, id, [])
         end
       end
 
@@ -388,7 +388,7 @@ defmodule Alkemist.Controller do
   @spec render_template(Plug.Conn.t(), String.t(), keyword()) :: Plug.Conn.t()
   defp render_template(%{private: %{alkemist_implementation: implementation}} = conn, template, assigns) do
     conn
-    |> Phoenix.Controller.put_layout(Alkemist.Config.layout(implementation))
+    |> Phoenix.Controller.put_layout(Config.layout(implementation))
     |> Phoenix.Controller.put_view(AlkemistView)
     |> Phoenix.Controller.render(template, assigns)
   end
@@ -412,7 +412,7 @@ defmodule Alkemist.Controller do
   def do_create(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource, phoenix_controller: controller}} = conn, params, opts \\ []) do
     if implementation.authorize_action(conn, resource, :create) do
       opts = get_module_opts(conn, opts, :create)
-      repo = Keyword.get(opts, :repo, Alkemist.Config.repo(implementation))
+      repo = Keyword.get(opts, :repo, Config.repo(implementation))
 
       changeset = if is_atom(opts[:changeset]) do
         apply(resource, opts[:changeset], [resource.__struct__, params])
@@ -472,7 +472,7 @@ defmodule Alkemist.Controller do
 
     if implementation.authorize_action(conn, row, :update) do
       opts = get_module_opts(conn, opts, :update, row)
-      repo = Keyword.get(opts, :repo, Alkemist.Config.repo(implementation))
+      repo = Keyword.get(opts, :repo, Config.repo(implementation))
 
       changeset = if is_atom(opts[:changeset]) do
         apply(resource, opts[:changeset], [row, params])
@@ -517,71 +517,24 @@ defmodule Alkemist.Controller do
   # end
   # ```
   # """
-  # defmacro do_delete(conn, resource, opts \\ []) do
-  #   route_params = route_params(opts)
-  #   quote do
-  #     conn = unquote(conn)
-  #     opts = unquote(opts) |> Keyword.put_new(:implementation, @implementation)
-  #     resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts, @implementation)
-  #     route_params = unquote(route_params)
+  @spec do_delete(Plug.Conn.t(), String.t() | non_neg_integer(), keyword()) :: Plug.Conn.t()
+  def do_delete(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource, phoenix_controller: controller}} = conn, row, opts \\ []) do
+    row = load_resource(row, resource, opts, implementation)
 
-  #     if resource == nil do
-  #       Alkemist.Controller.not_found(conn)
-  #     else
-  #       if @implementation.authorize_action(conn, resource, :delete) do
-  #         res =
-  #           if opts[:delete_func] do
-  #             opts[:delete_func].(resource)
-  #           else
-  #             repo = Keyword.get(opts, :repo, Alkemist.Config.repo(@implementation))
-  #             repo.delete(resource)
-  #           end
+    if implementation.authorize_action(conn, row, :delete) do
+      opts = get_module_opts(conn, opts, :delete, row)
 
-  #         case res do
-  #           {:ok, deleted} ->
-  #             if opts[:success_callback] do
-  #               opts[:success_callback].(deleted)
-  #             else
-  #               path = String.to_atom("#{Utils.default_resource_helper(@resource)}")
-  #               route_params = [conn, :index] ++ route_params
+      case opts[:delete_func].(row) do
+        {:ok, deleted} ->
+          opts[:success_callback].(deleted)
 
-  #               conn
-  #               |> Phoenix.Controller.put_flash(
-  #                 :info,
-  #                 Utils.singular_name(@resource) <> " deleted successfully"
-  #               )
-  #               |> Phoenix.Controller.redirect(
-  #                 to: apply(Alkemist.Config.router_helpers(@implementation), path, route_params)
-  #               )
-  #             end
-
-  #           {:error, message} ->
-  #             if opts[:error_callback] do
-  #               opts[:error_callback].(message)
-  #             else
-  #               path = String.to_atom("#{Utils.default_resource_helper(@resource, @implementation)}")
-  #               route_params = [conn, :index] ++ route_params
-  #               message =
-  #                 if message == :forbidden do
-  #                   "You are not authorized to delete this resource"
-  #                 else
-  #                   "Oops, something went wrong"
-  #                 end
-
-  #               conn
-  #               |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@implementation))
-  #               |> Phoenix.Controller.put_flash(:error, message)
-  #               |> Phoenix.Controller.redirect(
-  #                 to: apply(Alkemist.Config.router_helpers(@implementation), path, route_params)
-  #               )
-  #             end
-  #         end
-  #       else
-  #         Alkemist.Controller.forbidden(conn, @implementation)
-  #       end
-  #     end
-  #   end
-  # end
+        {:error, message} ->
+          opts[:error_callback].(message)
+      end
+    else
+      controller.forbidden(conn)
+    end
+  end
 
   # @doc """
   # Creates a csv export of all entries that match the current scope and filter.
@@ -607,20 +560,6 @@ defmodule Alkemist.Controller do
   #   end
   # end
 
-  # # TODO: see if we can make the methods below private somehow
-  # def add_opt(opts, controller, key, atts \\ []) do
-  #   cond do
-  #     Keyword.has_key?(opts, key) ->
-  #       opts
-
-  #     Keyword.has_key?(controller.__info__(:functions), key) ->
-  #       Keyword.put(opts, key, apply(controller, key, atts))
-
-  #     true ->
-  #       opts
-  #   end
-  # end
-
   @doc """
   Loads the resource from the repo and adds any preloads
   """
@@ -628,13 +567,13 @@ defmodule Alkemist.Controller do
     do: load_resource(String.to_integer(resource), mod, opts, implementation)
 
   def load_resource(resource, mod, opts, implementation) when is_integer(resource) do
-    repo = Keyword.get(opts, :repo, Alkemist.Config.repo(implementation))
+    repo = Keyword.get(opts, :repo, Config.repo(implementation))
     load_resource(repo.get!(mod, resource), mod, opts, implementation)
   end
 
   def load_resource(resource, _mod, opts, implementation) do
     if opts[:preload] do
-      repo = Keyword.get(opts, :repo, Alkemist.Config.repo(implementation))
+      repo = Keyword.get(opts, :repo, Config.repo(implementation))
       resource |> repo.preload(opts[:preload])
     else
       resource
@@ -722,7 +661,7 @@ defmodule Alkemist.Controller do
   end
 
   # new opts
-  def get_module_opts(%{private: %{phoenix_controller: mod, alkemist_implementation: implementation, alkemist_resource: model}} = conn, opts, :new, _resource) do
+  def get_module_opts(%{private: %{phoenix_controller: mod, alkemist_resource: model}} = conn, opts, :new, _resource) do
     opts = conn
     |> get_module_opts(opts, :global)
     |> assign_alkemist_config(conn, :new)
@@ -779,7 +718,7 @@ defmodule Alkemist.Controller do
 
         conn
         |> Phoenix.Controller.put_flash(:info, Utils.singular_name(resource) <> " created")
-        |> Phoenix.Controller.redirect(to: apply(Alkemist.Config.router_helpers(implementation), path, params))
+        |> Phoenix.Controller.redirect(to: apply(Config.router_helpers(implementation), path, params))
       end)
     |> Keyword.put_new(:error_callback, fn changeset ->
         params = [changeset: changeset, route_params: route_params(opts)]
@@ -799,12 +738,42 @@ defmodule Alkemist.Controller do
 
         conn
         |> Phoenix.Controller.put_flash(:info, Utils.singular_name(resource) <> " updated")
-        |> Phoenix.Controller.redirect(to: apply(Alkemist.Config.router_helpers(implementation), path, params))
+        |> Phoenix.Controller.redirect(to: apply(Config.router_helpers(implementation), path, params))
       end)
     |> Keyword.put_new(:error_callback, fn changeset ->
         params = [changeset: changeset, route_params: route_params(opts)]
         render_edit(conn, row, params)
       end)
+  end
+
+  # delete opts
+  def get_module_opts(%{private: %{alkemist_resource: resource, alkemist_implementation: implementation}} = conn, opts, :delete, _row) do
+    opts = conn
+    |> get_module_opts(opts, :global)
+    |> assign_alkemist_config(conn, :delete)
+
+    repo = Keyword.get(opts, :repo, Config.repo(implementation))
+
+    opts
+    |> Keyword.put_new(:delete_func, fn item ->
+      repo.delete(item)
+    end)
+    |> Keyword.put_new(:success_callback, fn _ ->
+      path = String.to_atom("#{Utils.default_resource_helper(resource, implementation)}")
+      route_params = [conn, :index] ++ route_params(opts)
+
+      conn
+      |> Phoenix.Controller.put_flash(:info, Utils.singular_name(resource) <> " deleted")
+      |> Phoenix.Controller.redirect(to: apply(Config.router_helpers(implementation), path, route_params))
+    end)
+    |> Keyword.put(:error_callback, fn message ->
+      path = String.to_atom("#{Utils.default_resource_helper(resource, implementation)}")
+      route_params = [conn, :index] ++ route_params(opts)
+
+      conn
+      |> Phoenix.Controller.put_flash(:error, to_string(message))
+      |> Phoenix.Controller.redirect(to: apply(Config.router_helpers(implementation), path, route_params))
+    end)
   end
 
 
