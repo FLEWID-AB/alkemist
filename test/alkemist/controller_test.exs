@@ -180,4 +180,16 @@ defmodule Alkemist.ControllerTest do
       assert conn.status == 401
     end
   end
+
+  describe "update" do
+    @params %{title: "New Title"}
+    test "it updates a resource", %{conn: conn} do
+      post = insert!(:post)
+
+      conn
+      |> put(Routes.post_path(conn, :update, post), %{post: @params})
+
+      assert post = TestAlkemist.Repo.get_by(TestAlkemist.Post, title: @params.title)
+    end
+  end
 end

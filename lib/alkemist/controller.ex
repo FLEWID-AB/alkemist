@@ -251,8 +251,8 @@ defmodule Alkemist.Controller do
 
       if Enum.member?(methods, :update) do
         def update(conn, %{"id" => id} = params) do
-          # resource_params = Map.get(params, "#{Utils.get_struct(@resource)}", %{})
-          # do_update(conn, id, resource_params, [])
+          resource_params = Map.get(params, "#{Utils.get_struct(@resource)}", %{})
+          do_update(conn, id, resource_params, [])
         end
       end
 
@@ -432,158 +432,65 @@ defmodule Alkemist.Controller do
     end
   end
 
+  @doc """
+  Performs an update to the resource
 
-  # @doc """
-  # Creates a new resource
-  # """
-  # defmacro do_create(conn, params, opts \\ []) do
-  #   route_params = route_params(opts)
-  #   quote do
-  #     conn = unquote(conn)
-  #     route_params = unquote(route_params)
+  ## Options:
 
-  #     if @implementation.authorize_action(conn, @resource, :create) do
-  #       opts =
-  #         unquote(opts)
-  #         |> Keyword.put_new(:changeset, :changeset)
-  #         |> Keyword.put_new(:implementation, @implementation)
+  * `changeset` - use a custom changeset.
+    Example: `changeset: :my_update_changeset`
+  * `success_callback` - custom function that will be performed on update success. Accepts the new resource as argument
+  * `error_callback` - custom function that will be performed on failure. Takes the changeset as argument.
 
-  #       opts =
-  #         if is_atom(opts[:changeset]) do
-  #           params = unquote(params)
-  #           changeset = apply(@resource, opts[:changeset], [@resource.__struct__, params])
-  #           Keyword.put(opts, :changeset, changeset)
-  #         else
-  #           opts
-  #         end
+  ## Examples:
 
-  #       repo = Keyword.get(opts, :repo, Alkemist.Config.repo(@implementation))
+  ```elixir
+  def update(conn, %{"id" => id, "resource" => resource_params}) do
+    do_update(conn, id, resource_params, changeset: :my_update_changeset)
+  end
+  ```
 
-  #       case repo.insert(opts[:changeset]) do
-  #         {:ok, new_resource} ->
-  #           if opts[:success_callback] do
-  #             opts[:success_callback].(new_resource)
-  #           else
-  #             path = String.to_atom("#{Utils.default_resource_helper(@resource, @implementation)}")
-  #             params = [conn, :show] ++ route_params ++ [new_resource]
-  #             conn
-  #             |> Phoenix.Controller.put_flash(
-  #               :info,
-  #               Utils.singular_name(@resource) <> " created successfully"
-  #             )
-  #             |> Phoenix.Controller.redirect(
-  #               to: apply(Alkemist.Config.router_helpers(@implementation), path, params)
-  #             )
-  #           end
+  Or use a custom success or error function:
 
-  #         {:error, changeset} ->
-  #           if opts[:error_callback] do
-  #             opts[:error_callback].(changeset)
-  #           else
-  #             opts = [changeset: changeset, route_params: route_params]
-  #             render_new(conn, opts)
-  #           end
-  #       end
-  #     else
-  #       Alkemist.Controller.forbidden(conn, @implementation)
-  #     end
-  #   end
-  # end
+  ```elixir
+  def update(conn, %{"id" => id, "resource" => resource_params}) do
+    opts = [
+      changeset: :my_udpate_changeset
+      success_callback: fn my_resource ->
+        conn
+        |> put_flash(:info, "Resource was successfully updated")
+        |> redirect(to: my_resource_path(conn, :index))
+      end
+    ]
+    do_update(conn, id, resource_params, opts)
+  end
+  ```
+  """
+  @spec do_update(Plug.Conn.t(), map(), map(), keyword()) :: Plug.Conn.t()
+  def do_update(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource, phoenix_controller: controller}} = conn, row, params, opts \\ []) do
+    row = load_resource(row, resource, opts, implementation)
 
-  # @doc """
-  # Performs an update to the resource
+    if implementation.authorize_action(conn, row, :update) do
+      opts = get_module_opts(conn, opts, :update, row)
+      repo = Keyword.get(opts, :repo, Alkemist.Config.repo(implementation))
 
-  # ## Options:
+      changeset = if is_atom(opts[:changeset]) do
+        apply(resource, opts[:changeset], [row, params])
+      else
+        opts[:changeset]
+      end
 
-  # * `changeset` - use a custom changeset.
-  #   Example: `changeset: :my_update_changeset`
-  # * `success_callback` - custom function that will be performed on update success. Accepts the new resource as argument
-  # * `error_callback` - custom function that will be performed on failure. Takes the changeset as argument.
+      case repo.update(changeset) do
+        {:ok, new_row} ->
+          opts[:success_callback].(new_row)
 
-  # ## Examples:
-
-  # ```elixir
-  # def update(conn, %{"id" => id, "resource" => resource_params}) do
-  #   do_update(conn, id, resource_params, changeset: :my_update_changeset)
-  # end
-  # ```
-
-  # Or use a custom success or error function:
-
-  # ```elixir
-  # def update(conn, %{"id" => id, "resource" => resource_params}) do
-  #   opts = [
-  #     changeset: :my_udpate_changeset
-  #     success_callback: fn my_resource ->
-  #       conn
-  #       |> put_flash(:info, "Resource was successfully updated")
-  #       |> redirect(to: my_resource_path(conn, :index))
-  #     end
-  #   ]
-  #   do_update(conn, id, resource_params, opts)
-  # end
-  # ```
-  # """
-  # defmacro do_update(conn, resource, params, opts \\ []) do
-  #   route_params = route_params(opts)
-  #   quote do
-  #     conn = unquote(conn)
-  #     opts = unquote(opts) |> Keyword.put_new(:implementation, @implementation)
-  #     resource = unquote(resource) |> Alkemist.Controller.load_resource(@resource, opts, @implementation)
-  #     route_params = unquote(route_params)
-
-  #     if resource == nil do
-  #       Alkemist.Controller.not_found(conn)
-  #     else
-  #       if @implementation.authorize_action(conn, resource, :update) do
-  #         params = unquote(params)
-
-  #         opts =
-  #           opts
-  #           |> Keyword.put_new(:changeset, :changeset)
-
-  #         opts =
-  #           if is_atom(opts[:changeset]) do
-  #             params = unquote(params)
-  #             changeset = apply(@resource, opts[:changeset], [resource, params])
-  #             Keyword.put(opts, :changeset, changeset)
-  #           else
-  #             opts
-  #           end
-
-  #         repo = Keyword.get(opts, :repo, Alkemist.Config.repo(@implementation))
-
-  #         case repo.update(opts[:changeset]) do
-  #           {:ok, new_resource} ->
-  #             if opts[:success_callback] do
-  #               opts[:success_callback].(new_resource)
-  #             else
-  #               path = String.to_atom("#{Utils.default_resource_helper(@resource, @implementation)}")
-  #               route_params = [conn, :show] ++ route_params ++ [new_resource]
-  #               conn
-  #               |> Phoenix.Controller.put_flash(
-  #                 :info,
-  #                 Utils.singular_name(@resource) <> " updated successfully"
-  #               )
-  #               |> Phoenix.Controller.redirect(
-  #                 to: apply(Alkemist.Config.router_helpers(@implementation), path, route_params)
-  #               )
-  #             end
-
-  #           {:error, changeset} ->
-  #             if opts[:error_callback] do
-  #               opts[:error_callback].(changeset)
-  #             else
-  #               opts = [changeset: changeset, route_params: route_params]
-  #               render_edit(conn, resource, opts)
-  #             end
-  #         end
-  #       else
-  #         Alkemist.Controller.forbidden(conn, @implementation)
-  #       end
-  #     end
-  #   end
-  # end
+        {:error, changeset} ->
+          opts[:error_callback].(changeset)
+      end
+    else
+      controller.forbidden(conn)
+    end
+  end
 
   # @doc """
   # Performs a delete of the current resource. When successful, it will redirect to index.
@@ -862,7 +769,7 @@ defmodule Alkemist.Controller do
 
   # create opts
   def get_module_opts(%{private: %{alkemist_resource: resource, alkemist_implementation: implementation}} = conn, opts, :create, _resource) do
-    opts = conn
+    conn
     |> get_module_opts(opts, :global)
     |> assign_alkemist_config(conn, :create)
     |> Keyword.put_new(:changeset, :changeset)
@@ -877,6 +784,26 @@ defmodule Alkemist.Controller do
     |> Keyword.put_new(:error_callback, fn changeset ->
         params = [changeset: changeset, route_params: route_params(opts)]
         render_new(conn, params)
+      end)
+  end
+
+  # update opts
+  def get_module_opts(%{private: %{alkemist_resource: resource, alkemist_implementation: implementation}} = conn, opts, :update, row) do
+    conn
+    |> get_module_opts(opts, :global)
+    |> assign_alkemist_config(conn, :update)
+    |> Keyword.put_new(:changeset, :changeset)
+    |> Keyword.put_new(:success_callback, fn row ->
+        path = String.to_atom("#{Utils.default_resource_helper(resource, implementation)}")
+        params = [conn, :show] ++ route_params(opts) ++ [row]
+
+        conn
+        |> Phoenix.Controller.put_flash(:info, Utils.singular_name(resource) <> " updated")
+        |> Phoenix.Controller.redirect(to: apply(Alkemist.Config.router_helpers(implementation), path, params))
+      end)
+    |> Keyword.put_new(:error_callback, fn changeset ->
+        params = [changeset: changeset, route_params: route_params(opts)]
+        render_edit(conn, row, params)
       end)
   end
 
