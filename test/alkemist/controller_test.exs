@@ -8,6 +8,37 @@ defmodule Alkemist.ControllerTest do
     use TestAlkemist.Alkemist.Controller, resource: TestAlkemist.Post
   end
 
+  defmodule ControllerConfigured do
+    use Phoenix.Controller
+    use TestAlkemist.Alkemist.Controller, resource: TestAlkemist.Post
+
+    alkemist_config(:index, columns: [:id, :title])
+    alkemist_config(:show, preload: [:category])
+  end
+
+  defmodule ControllerWithMethods do
+    use Phoenix.Controller
+    use TestAlkemist.Alkemist.Controller, resource: TestAlkemist.Post
+
+    def columns(_conn), do: [:id, :title]
+    def scopes(_conn) do
+      [
+        {:all, [default: true], fn q -> q end}
+      ]
+    end
+    def rows(_conn, _resource), do: [:id, :title]
+    def preload, do: [:category]
+  end
+
+  defmodule ControllerWithMethodsAndConfigure do
+    use Phoenix.Controller
+    use TestAlkemist.Alkemist.Controller, resource: TestAlkemist.Post
+
+    alkemist_config(:index, columns: [:id, :title, :published])
+
+    def columns(_), do: [:id, :title]
+  end
+
 
   describe "default implementation" do
     test "it creates default methods" do
@@ -60,4 +91,71 @@ defmodule Alkemist.ControllerTest do
     end
   end
 
+  describe "not found" do
+    test "show returns not found error when non existing id is passed", %{conn: conn} do
+      assert_raise Ecto.NoResultsError, fn ->
+        conn
+        |> get("/posts/-1")
+      end
+    end
+
+    test "edit raises not found error when trying to edit non existing resource", %{conn: conn} do
+      assert_raise Ecto.NoResultsError, fn ->
+        get(conn, "/posts/-1/edit")
+      end
+    end
+  end
+
+  describe "alkemist_configure" do
+    test "it returns empty list by default" do
+      assert ControllerWithDefaults.alkemist_config() == []
+    end
+
+    test "it accumulates and returns options" do
+      assert opts = ControllerConfigured.alkemist_config()
+      assert [preload: [:category]] == ControllerConfigured.alkemist_config(:show)
+
+      assert [] == ControllerConfigured.alkemist_config(:edit)
+    end
+  end
+
+  describe "get_module_opts" do
+    @defaults %{phoenix_controller: ControllerConfigured, alkemist_implementation: TestAlkemist.Alkemist, alkemist_resource: TestAlkemist.Post}
+
+    test "it merges configuration from alkemist_config", %{conn: conn} do
+      conn =
+        conn
+        |> Map.put(:private, @defaults)
+
+      assert opts = Controller.get_module_opts(conn, [], :index)
+      assert opts[:columns] == [:id, :title]
+
+      post = insert!(:post)
+
+      assert show_opts = Controller.get_module_opts(conn, [], :show, post)
+      assert show_opts[:preload] == [:category]
+    end
+
+    test "it merges configuration from global methods",  %{conn: conn} do
+      conn = Map.put(conn, :private, Map.put(@defaults, :phoenix_controller, ControllerWithMethods))
+
+      assert index_opts = Controller.get_module_opts(conn, [], :index)
+
+      assert index_opts[:preload] == [:category]
+      assert index_opts[:columns] == [:id, :title]
+      assert length(index_opts[:scopes]) == 1
+
+      assert show_opts = Controller.get_module_opts(conn, [], :show)
+
+      assert show_opts[:preload] == [:category]
+      assert show_opts[:rows] == [:id, :title]
+    end
+
+    test "it gives alkemist_config a higher prio than default methods", %{conn: conn} do
+      conn = Map.put(conn, :private, Map.put(@defaults, :phoenix_controller, ControllerWithMethodsAndConfigure))
+
+      assert opts = Controller.get_module_opts(conn, [], :index)
+      assert opts[:columns] == [:id, :title, :published]
+    end
+  end
 end

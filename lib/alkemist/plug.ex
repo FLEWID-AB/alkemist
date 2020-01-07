@@ -10,7 +10,6 @@ defmodule Alkemist.Plug do
     conn
     |> put_private(:alkemist_implementation, Keyword.get(opts, :implementation))
     |> put_private(:alkemist_resource, Keyword.get(opts, :resource))
-    |> put_private(:alkemist_controller, Keyword.get(opts, :controller))
   end
 
 end
