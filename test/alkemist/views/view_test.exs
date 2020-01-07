@@ -1,13 +1,15 @@
 defmodule Alkemist.ViewTest do
-  use ExUnit.Case, async: true
+  use Alkemist.ConnCase, async: true
 
   alias AlkemistView, as: View
   alias TestAlkemist.Alkemist, as: Implementation
   alias TestAlkemist.Post
   doctest View
 
-  setup do
-    conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.assign(:implementation, Implementation)
+  setup context do
+    conn = context.conn
+    |> Plug.Conn.assign(:implementation, Implementation)
+
     {:ok, conn: conn}
   end
 
@@ -49,23 +51,16 @@ defmodule Alkemist.ViewTest do
 
   describe "collection_action" do
     test "it creates a basic link", %{conn: conn} do
-      action = {:new, [label: "Test"]}
+      action = %Alkemist.Types.Action{action: :new, label: "Test", type: :collection}
       link = View.collection_action(conn, action, Post, [])
       assert Phoenix.HTML.safe_to_string(link) =~ "href=\"/posts/new\""
       assert Phoenix.HTML.safe_to_string(link) =~ "Test"
     end
 
     test "it adds class when link_opts are given", %{conn: conn} do
-      action = {:new, [label: "Test", link_opts: [class: "link"]]}
+      action = %Alkemist.Types.Action{type: :collection, action: :new, label: "Test", class: "link"}
       link = View.collection_action(conn, action, Post, [])
       assert Phoenix.HTML.safe_to_string(link) =~ "class=\"link\""
-    end
-
-    test "it handles icon class", %{conn: conn} do
-      resource = Post
-      action = {:new, [label: "new", icon: "pencil"]}
-      link = View.collection_action(conn, action, resource, []) |> Phoenix.HTML.safe_to_string()
-      assert link =~ "<i class=\"pencil\""
     end
   end
 

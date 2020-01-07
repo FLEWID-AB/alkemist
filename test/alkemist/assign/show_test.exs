@@ -1,7 +1,7 @@
 defmodule Alkemist.Assign.ShowTest do
   use Alkemist.DataCase, async: true
   alias Alkemist.Assign.Show
-  alias Alkemist.{Fixtures}
+  import Alkemist.Factory
   alias TestAlkemist.Post
   doctest Show
 
@@ -20,7 +20,7 @@ defmodule Alkemist.Assign.ShowTest do
 
   describe "assigns" do
     test "it creates default assigns" do
-      post = Fixtures.post_fixture()
+      post = insert!(:post)
 
       assert assigns = Show.assigns(TestAlkemist.Alkemist, post, [])
       assert assigns[:resource] == post
@@ -31,8 +31,8 @@ defmodule Alkemist.Assign.ShowTest do
     end
 
     test "it preloads resource" do
-      category = Fixtures.category_fixture()
-      post = Fixtures.post_fixture(%{category_id: category.id})
+      category = insert!(:category)
+      post = insert!(:post, category: category)
 
       assert assigns = Show.assigns(TestAlkemist.Alkemist, post, [preload: [:category]])
       assert assigns[:resource].category.id == category.id

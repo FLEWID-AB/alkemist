@@ -1,6 +1,6 @@
 defmodule Alkemist.Assign.FormTest do
   use Alkemist.DataCase, async: true
-
+  import Alkemist.Factory
   alias Alkemist.{Assign.Form}
   alias TestAlkemist.Post
   doctest Form
@@ -14,8 +14,8 @@ defmodule Alkemist.Assign.FormTest do
     end
 
     test "it preloads associations in changeset" do
-      category = Alkemist.Fixtures.category_fixture()
-      post = Alkemist.Fixtures.post_fixture(%{category_id: category.id})
+      category = insert!(:category)
+      post = insert!(:post, category: category)
       assigns = Form.assigns(TestAlkemist.Alkemist, Post, [preload: [:category], changeset: Post.changeset(post, %{})])
       assert %{data: data} = assigns[:changeset]
       assert data.category

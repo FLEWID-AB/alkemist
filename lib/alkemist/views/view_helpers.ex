@@ -15,6 +15,7 @@ defmodule Alkemist.ViewHelpers do
   @doc """
   Returns the current user if it is provided in the authorization provider
   """
+  @spec current_user(Plug.Conn.t()) :: map() | nil
   def current_user(conn) do
     implementation(conn).current_user(conn)
   end
@@ -22,6 +23,7 @@ defmodule Alkemist.ViewHelpers do
   @doc """
   Returns the current user's name if it is provided in the authorization provider
   """
+  @spec current_user_name(Plug.Conn.t()) :: String.t() | nil
   def current_user_name(conn) do
     implementation(conn).current_user_name(conn)
   end
@@ -35,6 +37,7 @@ defmodule Alkemist.ViewHelpers do
     * resource - Can be either a Module or a struct (Db.User or %Db.User{})
     * opts - options for the link (class, title, data-methods)
   """
+  @spec action_link(String.t(), Plug.Conn.t(), atom() | nil, Alkemist.resource(), keyword()) :: String.t() | Phoenix.HTML.safe()
   def action_link(label, conn, action, resource, opts \\ []) do
     implementation = conn.assigns.implementation
     route_params = Keyword.get(opts, :route_params, [])

@@ -81,26 +81,13 @@ defmodule AlkemistView do
   @doc """
   Creates a collection action link above the index table
   """
-  def collection_action(conn, action, resource, route_params) do
-    {action, opts} = action
-
-    label =
-      case Keyword.get(opts, :icon) do
-        nil ->
-          opts[:label]
-
-        icon_class ->
-          """
-          <i class="#{icon_class}"></i>
-          """
-      end
-
+  def collection_action(conn, %Alkemist.Types.Action{type: :collection} = action, resource, route_params) do
     link_opts =
-      Keyword.get(opts, :link_opts, [])
-      |> Keyword.put_new(:class, "nav-link")
+      action.link_opts
+      |> Keyword.put_new(:class, action.class)
       |> Keyword.put(:route_params, route_params)
 
-    action_link(label, conn, action, resource, link_opts)
+    action_link(action.label, conn, action.action, resource, link_opts)
   end
 
   @doc """
@@ -108,8 +95,6 @@ defmodule AlkemistView do
   """
   def export_action(conn, struct, _assigns \\ []) do
     query_params = get_default_link_params(conn)
-
-
     params = [conn, :index, Map.put(query_params, :export, "true")]
     action(conn, struct, params, label: "Export", link_opts: [class: "nav-link"])
   end
@@ -177,10 +162,10 @@ defmodule AlkemistView do
   Creates the header cell for the index table
   Accepts the conn, struct and actual column created by `Alkemist.Assign.map_column`
   """
-  def header_cell(conn, struct, opts)
-  def header_cell(conn, struct, {field, _cb, %{sortable: true} = opts}) do
+  def header_cell(conn, struct, column)
+  def header_cell(conn, struct, %Alkemist.Types.Column{sortable?: true} = column) do
     query_params = get_default_link_params(conn)
-    sort_field = Map.get(opts, :sort_field, field)
+    sort_field = Map.get(column, :sort_field, column.field)
     direction = if Map.get(query_params, "s") == "#{sort_field}+asc" do
           "desc"
         else
@@ -192,17 +177,16 @@ defmodule AlkemistView do
       true -> "fas fa-sort"
     end
     query_params = Map.put(query_params, "s", "#{sort_field}+#{direction}")
-    class = ["index-header", Map.get(opts, :type)]
+    class = ["index-header", column.type]
 
-    label = Map.get(opts, :label) <> " <i class=\"#{icon}\"></i>"
+    label = column.label <> " <i class=\"#{icon}\"></i>"
     content_tag(:th, class: Enum.join(class, " ")) do
-      params = [conn, :index] ++ route_params(opts[:route_params]) ++ [query_params]
+      params = [conn, :index] ++ route_params(column.opts[:route_params]) ++ [query_params]
       link(raw(label), to: action_path(conn, struct, params))
     end
   end
-  def header_cell(_conn, _struct, {_field, _callback, opts}, _implementation) do
-    label = Map.get(opts, :label)
-    class = ["index-header", Slugger.slugify_downcase(label), Map.get(opts, :type)]
+  def header_cell(_conn, _struct, %Alkemist.Types.Column{label: label, type: type, class: class}) do
+    class = ["index-header", Slugger.slugify_downcase(label), type, class]
     content_tag(:th, class: Enum.join(class, " ")) do
       label
     end

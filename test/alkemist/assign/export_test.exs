@@ -1,6 +1,6 @@
 defmodule Alkemist.Assign.ExportTest do
   use Alkemist.DataCase, async: true
-  alias Alkemist.{Fixtures}
+  import Alkemist.{Factory}
   alias TestAlkemist.Post
   alias Alkemist.Assign.Export
 
@@ -14,17 +14,15 @@ defmodule Alkemist.Assign.ExportTest do
     end
 
     test "it fetches data unpaginated" do
-      for _ <- 1..20 do
-        Fixtures.post_fixture()
-      end
+      insert_list!(20, :post)
       assigns = Export.assigns(TestAlkemist.Alkemist, Post, [], %{})
       assert length(assigns[:entries]) == 20
     end
 
     test "it applies sort and search params" do
-      Fixtures.post_fixture(%{title: "Z Post"})
-      Fixtures.post_fixture(%{title: "M Post"})
-      Fixtures.post_fixture(%{title: "Custom Title"})
+      insert!(:post, title: "Z Post")
+      insert!(:post, title: "M Post")
+      insert!(:post, title: "Custom Title")
 
       assigns = Export.assigns(TestAlkemist.Alkemist, Post, [], %{"s" => "title+asc", "q" => %{"title_ilike" => "post"}})
       assert length(assigns[:entries]) == 2

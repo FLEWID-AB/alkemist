@@ -65,6 +65,9 @@ defmodule Alkemist.MixProject do
       {:csv, "~> 2.0"},
       {:turbo_ecto, "~> 0.4.3"},
       {:phoenix_mtm, "~> 1.0"},
+      {:gettext, ">= 0.0.0"},
+      {:html_sanitize_ex, "~> 1.3.0-rc3"},
+      {:slugger, "~> 0.3"},
       # Test and dev
       {:plug_cowboy, "~> 2.0", only: [:test]},
       {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
@@ -73,9 +76,7 @@ defmodule Alkemist.MixProject do
       {:inch_ex, "~> 1.0", only: [:dev, :test, :doc]},
       {:postgrex, ">=0.0.0", only: :test},
       {:faker, "~> 0.13.0", only: :test},
-      {:gettext, ">= 0.0.0"},
-      {:html_sanitize_ex, "~> 1.3.0-rc3"},
-      {:slugger, "~> 0.3"}
+      {:wallaby, "~> 0.23.0", only: :test, runtime: false}
     ]
   end
 

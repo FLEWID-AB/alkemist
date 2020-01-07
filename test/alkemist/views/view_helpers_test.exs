@@ -1,12 +1,12 @@
 defmodule Alkemist.ViewHelpersTest do
-  use ExUnit.Case, async: true
+  use Alkemist.ConnCase, async: true
 
   alias Alkemist.ViewHelpers
   alias TestAlkemist.Alkemist, as: Implementation
   alias TestAlkemist.Post
 
-  setup do
-    conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.assign(:implementation, Implementation)
+  setup %{conn: conn} do
+    conn = conn |> Plug.Conn.assign(:implementation, Implementation)
     {:ok, conn: conn}
   end
 
@@ -42,6 +42,12 @@ defmodule Alkemist.ViewHelpersTest do
   test "action link accepts wrap to wrap it in a tag", %{conn: conn} do
     link = ViewHelpers.action_link("Posts", conn, :index, Post, wrap: {:li, []})
     assert Phoenix.HTML.safe_to_string(link) =~ "<li><a"
+  end
+
+  @tag user: :user
+  test "action_link returns empty string if user is not authorized", %{conn: conn} do
+    link = ViewHelpers.action_link("Posts", conn, :index, Post)
+    assert "" == link
   end
 
   test "get_default_link_params will automatically populate q, s and scope" do

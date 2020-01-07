@@ -18,6 +18,21 @@ defmodule Alkemist.ConnCase do
       Ecto.Adapters.SQL.Sandbox.mode(TestAlkemist.Repo, {:shared, self()})
     end
 
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
+
+    current_user = case tags[:user] do
+      :none -> nil
+
+      nil ->
+        %{username: "AdminUser", role: :admin}
+
+      role when is_atom(role) ->
+        %{username: "#{role}User", role: role}
+
+      _ -> %{username: "AdminUser", role: :admin}
+    end
+    conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.assign(:current_user, current_user)
+
+
+    {:ok, conn: conn}
   end
 end

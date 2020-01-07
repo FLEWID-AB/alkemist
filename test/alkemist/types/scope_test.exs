@@ -2,13 +2,14 @@ defmodule Alkemist.Types.ScopeTest do
   use Alkemist.DataCase, async: true
   alias TestAlkemist.Post
   alias Alkemist.Types.Scope
+  import Alkemist.Factory
 
   @default_opts %{query: Post, repo: Repo, search_provider: Alkemist.Query.Search, params: %{}}
 
   describe "map" do
     test "it fetches the correct count from the database" do
-      post_fixture(%{published: false})
-      post_fixture(%{published: true})
+      insert!(:post, published: false)
+      insert!(:post, published: true)
 
       assert %Scope{count: 2} = Scope.map({:all, [], fn q -> q end}, @default_opts)
       assert %Scope{count: 1} = Scope.map({:published, [], fn q -> from(p in q, where: p.published == true) end}, @default_opts)
@@ -77,17 +78,5 @@ defmodule Alkemist.Types.ScopeTest do
 
       assert Post == Scope.scope_by_active(Post, scopes)
     end
-  end
-
-  defp post_fixture(params \\ %{}) do
-    params =
-      params
-      |> Map.put_new(:title, "Lorem ipsum")
-      |> Map.put_new(:body, "Lorem ipsum body")
-      |> Map.put_new(:published, false)
-
-    %Post{}
-    |> Post.changeset(params)
-    |> Repo.insert!()
   end
 end

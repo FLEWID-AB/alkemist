@@ -161,7 +161,7 @@ defmodule Alkemist.Controller do
 
       if Enum.member?(methods, :new) do
         def new(conn, _params) do
-          #render_new(conn, [])
+          render_new(conn, [])
         end
       end
 
@@ -174,7 +174,7 @@ defmodule Alkemist.Controller do
 
       if Enum.member?(methods, :edit) do
         def edit(conn, %{"id" => id}) do
-          #render_edit(conn, id, [])
+          render_edit(conn, id, [])
         end
       end
 
@@ -191,7 +191,13 @@ defmodule Alkemist.Controller do
         end
       end
 
-      defoverridable([] ++ Enum.map(methods, & {&1, 2}))
+      def forbidden(conn) do
+        conn
+        |> put_status(401)
+        |> text("Forbidden")
+      end
+
+      defoverridable([forbidden: 1] ++ Enum.map(methods, & {&1, 2}))
     end
   end
 
@@ -199,7 +205,7 @@ defmodule Alkemist.Controller do
   Renders the index view based on the passed options
   """
   @spec render_index(Plug.Conn.t(), map(), keyword()) :: Plug.Conn.t()
-  def render_index(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource}} = conn, params, opts \\ []) do
+  def render_index(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource, alkemist_controller: controller}} = conn, params, opts \\ []) do
     opts = get_module_opts(conn, opts, :index)
 
     if implementation.authorize_action(conn, resource, :index) do
@@ -208,28 +214,28 @@ defmodule Alkemist.Controller do
       conn
       |> render_template(Keyword.get(opts, :template, "index.html"), assigns)
     else
-      forbidden(conn, implementation)
+      controller.forbidden(conn)
     end
   end
 
   @doc """
   Renders the show view based on the passed options
   """
-  @spec render_show(Plug.Conn.t(), String.t() | non_neg_integer() | map(), keyword()) :: Plug.Conn.t()
-  def render_show(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource}} = conn, resource, opts \\ []) do
-    opts = get_module_opts(conn, opts, :show, resource)
-    resource = opts[:resource]
+  @spec render_show(Plug.Conn.t(), any(), keyword()) :: Plug.Conn.t()
+  def render_show(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource, alkemist_controller: controller}} = conn, row, opts \\ []) do
+    opts = get_module_opts(conn, opts, :show, row)
+    row = opts[:resource]
 
-    if resource == nil do
+    if row == nil do
       not_found(conn)
     else
-      if implementation.authorize_action(conn, resource, :show) do
-        assigns = Show.assigns(implementation, resource, opts)
+      if implementation.authorize_action(conn, row, :show) do
+        assigns = Show.assigns(implementation, row, opts)
 
         conn
         |> render_template(Keyword.get(opts, :template, "show.html"), assigns)
       else
-        forbidden(conn, implementation)
+        controller.forbidden(conn)
       end
     end
   end
@@ -238,13 +244,13 @@ defmodule Alkemist.Controller do
   Renders the form to create a new table row
   """
   @spec render_new(Plug.Conn.t(), keyword()) :: Plug.Conn.t()
-  def render_new(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource}} = conn, opts \\ []) do
+  def render_new(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource, alkemist_controller: controller}} = conn, opts \\ []) do
     opts = get_module_opts(conn, opts, :new)
 
     if implementation.authorize_action(conn, resource, :create) do
       render_form(conn, :new, opts)
     else
-      forbidden(conn, implementation)
+      controller.forbidden(conn)
     end
   end
 
@@ -253,17 +259,17 @@ defmodule Alkemist.Controller do
   Renders the form to edit a table row
   """
   @spec render_edit(Plug.Conn.t(), String.t() | non_neg_integer() | map(), keyword()) :: Plug.Conn.t()
-  def render_edit(%{private: %{alkemist_implementation: implementation}} = conn, row, opts \\ []) do
+  def render_edit(%{private: %{alkemist_implementation: implementation, alkemist_controller: controller}} = conn, row, opts \\ []) do
     opts = get_module_opts(conn, opts, :edit, row)
     row = opts[:resource]
 
     if row == nil do
       not_found(conn)
     else
-      if implementation.authorize_action(conn, row, :update) do
+      if implementation.authorize_action(conn, row, :edit) do
         render_form(conn, :edit, opts)
       else
-        forbidden(conn, implementation)
+        controller.forbidden(conn)
       end
     end
   end
@@ -284,8 +290,8 @@ defmodule Alkemist.Controller do
   @spec render_template(Plug.Conn.t(), String.t(), keyword()) :: Plug.Conn.t()
   defp render_template(%{private: %{alkemist_implementation: implementation}} = conn, template, assigns) do
     conn
-    |> Phoenix.Controller.put_new_layout(Alkemist.Config.layout(implementation))
-    |> Phoenix.Controller.put_new_view(AlkemistView)
+    |> Phoenix.Controller.put_layout(Alkemist.Config.layout(implementation))
+    |> Phoenix.Controller.put_view(AlkemistView)
     |> Phoenix.Controller.render(template, assigns)
   end
 
@@ -571,15 +577,6 @@ defmodule Alkemist.Controller do
   #   end
   # end
 
-  def forbidden(conn, implementation) do
-    conn
-    |> Phoenix.Controller.put_layout(Alkemist.Config.layout(implementation))
-    |> Phoenix.Controller.put_flash(:error, "You are not authorized to access this page")
-    |> Phoenix.Controller.redirect(
-      to: Alkemist.Config.router_helpers(implementation).page_path(conn, :dashboard)
-    )
-  end
-
   def not_found(conn) do
     conn
     |> Plug.Conn.put_status(:not_found)
@@ -687,14 +684,6 @@ defmodule Alkemist.Controller do
     ])
   end
 
-  def get_module_opts(%{private: %{alkemist_controller: mod, alkemist_implementation: implementation, alkemist_resource: model}} = conn, opts, :show, resource) do
-    row = load_resource(resource, model, opts, implementation)
-
-    conn
-    |> get_module_opts(opts, :global)
-    |> opts_or_function(mod, show_panels: [conn, resource], rows: [conn, resource])
-    |> Keyword.put(:resource, row)
-  end
 
   def get_module_opts(%{private: %{alkemist_controller: mod, alkemist_implementation: implementation, alkemist_resource: model}} = conn, opts, :edit, resource) do
     row = load_resource(resource, model, opts, implementation)
@@ -706,7 +695,7 @@ defmodule Alkemist.Controller do
     |> Keyword.put(:resource, row)
 
     if is_atom(opts[:changeset]) do
-      changeset = apply(model, opts[:changeset], [resource, %{}])
+      changeset = apply(model, opts[:changeset], [row, %{}])
       Keyword.put(opts, :changeset, changeset)
     else
       opts

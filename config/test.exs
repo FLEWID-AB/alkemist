@@ -9,9 +9,11 @@ config :alkemist, TestAlkemist.Repo,
   pool: Ecto.Adapters.SQL.Sandbox
 
 config :alkemist, ecto_repos: [TestAlkemist.Repo]
+config :alkemist, :sql_sandbox, true
 
 config :alkemist, TestAlkemist.Endpoint,
   http: [port: 4002],
-  server: true
+  server: true,
+  secret_key_base: "PYtsRlPwjiqOjgzIBHCHxQ8CPk9utJdixrwYoQTWZ2FP3cRMlJ3OLJ0ZuJ2m7qwQ"
 
 config :logger, level: :error

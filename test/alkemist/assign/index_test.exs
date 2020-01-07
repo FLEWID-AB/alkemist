@@ -3,16 +3,14 @@ defmodule Alkemist.Assign.IndexTest do
 
   alias Alkemist.Assign.Index
   alias TestAlkemist.Post
-  alias Alkemist.Fixtures
+  import Alkemist.Factory
   doctest Index
 
   import Ecto.Query, only: [from: 2]
 
   describe "assigns" do
     test "it creates default index assigns" do
-      for _ <- 1..20 do
-        Fixtures.post_fixture()
-      end
+      insert_list!(20, :post)
 
       assigns = Index.assigns(TestAlkemist.Alkemist, Post, [], %{})
 
@@ -39,8 +37,8 @@ defmodule Alkemist.Assign.IndexTest do
     end
 
     test "it works with scopes" do
-      Fixtures.post_fixture()
-      Fixtures.post_fixture(%{published: false})
+      insert!(:post)
+      insert!(:post, published: false)
 
       opts = [
         scopes: [
