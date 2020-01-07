@@ -81,6 +81,27 @@ defmodule Alkemist.Controller do
     end
   ```
 
+  You can also pass a callback-function that can accept the current `conn`
+
+  ```elixir
+    defmodule MyAppWeb.PostController do
+      use MyAppWeb.Alkemist.Controller, resource: Post
+      ...
+
+      alkemist_config(:index, :index_options)
+
+      def index_options(conn) do
+        columns = if {condition} do
+          [:id, :title, :published]
+        else
+          [:id, :title]
+        end
+
+        [columns: columns]
+      end
+    end
+  ```
+
   In addition, you can use globally implemented methods (see below), which will give you the conn and in
   some cases also the current row
 
@@ -166,6 +187,17 @@ defmodule Alkemist.Controller do
   @type field :: atom() | {atom(), map()} | %{title: String.t(), fields: [{atom(), map()}]}
 
 
+  @doc """
+  Use Alkemist.Controller
+  Usually you won't call this directly, but instead use `MyApp.Alkemist.Controller` instead.
+  If used directly, you need to pass your Alkemist Implementation as follows:
+
+  ```
+    defmodule MyApp.Controller do
+      use Alkemist.Controller, implementation: MyApp.Alkemist, resource: MyApp.Model
+    end
+  ```
+  """
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
       @implementation Keyword.get(opts, :implementation)
@@ -206,8 +238,8 @@ defmodule Alkemist.Controller do
 
       if Enum.member?(methods, :create) do
         def create(conn, params \\ %{}) do
-          # resource_params = Map.get(params, "#{Utils.get_struct(@resource)}", %{})
-          # do_create(conn, resource_params, [])
+          resource_params = Map.get(params, "#{Utils.get_struct(@resource)}", %{})
+          do_create(conn, resource_params, [])
         end
       end
 
@@ -240,6 +272,7 @@ defmodule Alkemist.Controller do
     end
   end
 
+  # Create alkemist_config function before compilation
   defmacro __before_compile__(_env) do
     quote do
       def alkemist_config, do: @alkemist_config
@@ -252,8 +285,22 @@ defmodule Alkemist.Controller do
   end
 
 
+  @doc """
+  Use in your controller to configure one of the auto-generated methods
+
+  ## Example:
+
+  ```
+    defmodule MyApp.Controller do
+      ...
+
+      alkemist_config(:index, columns: [:id, :title])
+    end
+  ```
+  """
   defmacro alkemist_config(func, opts) do
     func = if is_bitstring(func), do: String.to_atom(func), else: func
+
     quote do
       @alkemist_config {unquote(func), unquote(opts)}
     end
@@ -344,6 +391,45 @@ defmodule Alkemist.Controller do
     |> Phoenix.Controller.put_layout(Alkemist.Config.layout(implementation))
     |> Phoenix.Controller.put_view(AlkemistView)
     |> Phoenix.Controller.render(template, assigns)
+  end
+
+  @doc """
+  Creats a new item (table row).
+
+  Params:
+
+  - `conn` - the conn from your controller
+  - `params` - new values to create the item with
+  - `opts` - a list with options (see below)
+
+  Options (optional):
+
+  - `changeset` - use a custom Ecto.Changeset. Can be an existing changeset, or an atom with the method name
+  - `success_callback` - anonymous function to execute on success
+  - `error_callback` - anonymous function to execute on error
+  """
+  @spec do_create(Plug.Conn.t(), map(), keyword()) :: Plug.Conn.t()
+  def do_create(%{private: %{alkemist_implementation: implementation, alkemist_resource: resource, phoenix_controller: controller}} = conn, params, opts \\ []) do
+    if implementation.authorize_action(conn, resource, :create) do
+      opts = get_module_opts(conn, opts, :create)
+      repo = Keyword.get(opts, :repo, Alkemist.Config.repo(implementation))
+
+      changeset = if is_atom(opts[:changeset]) do
+        apply(resource, opts[:changeset], [resource.__struct__, params])
+      else
+        opts[:changeset]
+      end
+
+      case repo.insert(changeset) do
+        {:ok, new_resource} ->
+          opts[:success_callback].(new_resource)
+
+        {:error, changeset} ->
+          opts[:error_callback].(changeset)
+      end
+    else
+      controller.forbidden(conn)
+    end
   end
 
 
@@ -670,8 +756,24 @@ defmodule Alkemist.Controller do
     end)
   end
 
+  defp assign_alkemist_config(opts, %{private: %{phoenix_controller: module}} = conn, method) do
+    alkemist_config = module.alkemist_config(method)
+
+    case alkemist_config do
+      callback when is_atom(callback) ->
+        config = apply(module, callback, [conn])
+        Keyword.merge(opts, config)
+
+      list when is_list(list) ->
+        Keyword.merge(opts, list)
+
+      _ -> opts
+    end
+  end
+
   @spec get_module_opts(Plug.Conn.t(), keyword(), atom(), Alkemist.resource()) :: keyword()
   def get_module_opts(conn, opts, type, resource \\ nil)
+  # global opts
   def get_module_opts(%{private: %{phoenix_controller: module}}, opts, :global, _resource) do
     opts_or_function(opts, module, [
       :repo,
@@ -684,11 +786,12 @@ defmodule Alkemist.Controller do
     ])
   end
 
+  # index opts
   def get_module_opts(%{private: %{phoenix_controller: module}} = conn, opts, :index, _resource) do
     opts =
       conn
       |> get_module_opts(opts, :global)
-      |> Keyword.merge(module.alkemist_config(:index))
+      |> assign_alkemist_config(conn, :index)
 
     opts_or_function(
       opts,
@@ -700,20 +803,22 @@ defmodule Alkemist.Controller do
     )
   end
 
+  # show opts
   def get_module_opts(%{private: %{phoenix_controller: mod, alkemist_implementation: implementation, alkemist_resource: model}} = conn, opts, :show, resource) do
     row = load_resource(resource, model, opts, implementation)
 
     conn
     |> get_module_opts(opts, :global)
-    |> Keyword.merge(mod.alkemist_config(:show))
+    |> assign_alkemist_config(conn, :show)
     |> opts_or_function(mod, show_panels: [conn, resource], rows: [conn, resource])
     |> Keyword.put(:resource, row)
   end
 
+  # new opts
   def get_module_opts(%{private: %{phoenix_controller: mod, alkemist_implementation: implementation, alkemist_resource: model}} = conn, opts, :new, _resource) do
     opts = conn
     |> get_module_opts(opts, :global)
-    |> Keyword.merge(mod.alkemist_config(:new))
+    |> assign_alkemist_config(conn, :new)
     |> opts_or_function(mod, form_partial: [conn, nil], fields: [conn, nil])
     |> Keyword.put_new(:changeset, :changeset)
 
@@ -725,23 +830,24 @@ defmodule Alkemist.Controller do
     end
   end
 
+  # export opts
   def get_module_opts(%{private: %{phoenix_controller: mod}} = conn, opts, :export, _resource) do
     conn
     |> get_module_opts(opts, :global)
-    |> Keyword.merge(mod.alkemist_config(:export))
+    |> assign_alkemist_config(conn, :export)
     |> opts_or_function(mod, [
       {:csv_columns, :columns, [conn]},
       {:columns, [conn]}
     ])
   end
 
-
+  # edit opts
   def get_module_opts(%{private: %{phoenix_controller: mod, alkemist_implementation: implementation, alkemist_resource: model}} = conn, opts, :edit, resource) do
     row = load_resource(resource, model, opts, implementation)
 
     opts = conn
     |> get_module_opts(opts, :global)
-    |> Keyword.merge(mod.alkemist_config(:edit))
+    |> assign_alkemist_config(conn, :edit)
     |> opts_or_function(mod, form_partial: [conn, resource], fields: [conn, resource])
     |> Keyword.put_new(:changeset, :changeset)
     |> Keyword.put(:resource, row)
@@ -754,18 +860,34 @@ defmodule Alkemist.Controller do
     end
   end
 
+  # create opts
+  def get_module_opts(%{private: %{alkemist_resource: resource, alkemist_implementation: implementation}} = conn, opts, :create, _resource) do
+    opts = conn
+    |> get_module_opts(opts, :global)
+    |> assign_alkemist_config(conn, :create)
+    |> Keyword.put_new(:changeset, :changeset)
+    |> Keyword.put_new(:success_callback, fn row ->
+        path = String.to_atom("#{Utils.default_resource_helper(resource, implementation)}")
+        params = [conn, :show] ++ route_params(opts) ++ [row]
 
-  # defp route_params(opts) do
-  #   quote do
-  #     opts = unquote(opts)
+        conn
+        |> Phoenix.Controller.put_flash(:info, Utils.singular_name(resource) <> " created")
+        |> Phoenix.Controller.redirect(to: apply(Alkemist.Config.router_helpers(implementation), path, params))
+      end)
+    |> Keyword.put_new(:error_callback, fn changeset ->
+        params = [changeset: changeset, route_params: route_params(opts)]
+        render_new(conn, params)
+      end)
+  end
 
-  #     case Keyword.get(opts, :route_params) do
-  #       a when is_list(a) -> a
-  #       b when is_nil(b) -> []
-  #       c -> [c]
-  #     end
-  #   end
-  # end
+
+  defp route_params(opts) do
+    case Keyword.get(opts, :route_params) do
+      a when is_list(a) -> a
+      b when is_nil(b) -> []
+      c -> [c]
+    end
+  end
 
   @doc """
   Simple helper method to use link in callbacks

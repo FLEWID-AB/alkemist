@@ -30,7 +30,9 @@ defmodule Alkemist.ConnCase do
 
       _ -> %{username: "AdminUser", role: :admin}
     end
-    conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.assign(:current_user, current_user)
+    conn =
+      Phoenix.ConnTest.build_conn()
+      |> Plug.Conn.assign(:current_user, current_user)
 
 
     {:ok, conn: conn}

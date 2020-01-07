@@ -12,8 +12,12 @@ defmodule Alkemist.ControllerTest do
     use Phoenix.Controller
     use TestAlkemist.Alkemist.Controller, resource: TestAlkemist.Post
 
-    alkemist_config(:index, columns: [:id, :title])
+    alkemist_config(:index, :index_options)
     alkemist_config(:show, preload: [:category])
+
+    def index_options(_conn) do
+      [columns: [:id, :title]]
+    end
   end
 
   defmodule ControllerWithMethods do
@@ -156,6 +160,24 @@ defmodule Alkemist.ControllerTest do
 
       assert opts = Controller.get_module_opts(conn, [], :index)
       assert opts[:columns] == [:id, :title, :published]
+    end
+  end
+
+  describe "create" do
+    @params %{title: "Title", body: "Body", published: true}
+    test "it creates a resource", %{conn: conn} do
+      conn
+      |> post(Routes.post_path(conn, :create), %{post: @params})
+
+      assert post = TestAlkemist.Repo.get_by(TestAlkemist.Post, title: @params.title)
+    end
+
+    @tag user: :user
+    test "it returns forbidden when not allowed", %{conn: conn} do
+      conn = conn
+        |> post(Routes.post_path(conn, :create), %{post: @params})
+
+      assert conn.status == 401
     end
   end
 end
