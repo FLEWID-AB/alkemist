@@ -389,7 +389,7 @@ defmodule Alkemist.Controller do
   defp render_template(%{private: %{alkemist_implementation: implementation}} = conn, template, assigns) do
     conn
     |> Phoenix.Controller.put_layout(Config.layout(implementation))
-    |> Phoenix.Controller.put_view(AlkemistView)
+    |> Phoenix.Controller.put_view(Alkemist.View)
     |> Phoenix.Controller.render(template, assigns)
   end
 

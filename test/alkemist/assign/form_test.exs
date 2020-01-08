@@ -44,7 +44,7 @@ defmodule Alkemist.Assign.FormTest do
     end
 
     test "it adds form_partial" do
-      partial = {AlkemistView, "custom_form.html"}
+      partial = {Alkemist.View, "custom_form.html"}
       opts = Form.default_opts([form_partial: partial], TestAlkemist.Alkemist, Post)
 
       refute opts[:fields]
@@ -52,7 +52,7 @@ defmodule Alkemist.Assign.FormTest do
     end
 
     test "it merges assigns when using form partial" do
-      partial = {AlkemistView, "form.html", foo: "bar"}
+      partial = {Alkemist.View, "form.html", foo: "bar"}
       opts = [
         form_partial: partial,
         assigns: [bar: "foo"]

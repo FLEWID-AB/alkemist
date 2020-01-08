@@ -56,7 +56,7 @@ defmodule Alkemist.Assign.Form do
     else
       opts
       |> Keyword.put_new(:fields, Utils.editable_fields(resource))
-      |> Keyword.put_new(:form_partial, {AlkemistView, "form.html"})
+      |> Keyword.put_new(:form_partial, {Alkemist.View, "form.html"})
     end
   end
 

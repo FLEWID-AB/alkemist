@@ -1,7 +1,7 @@
 defmodule Alkemist.ViewTest do
   use Alkemist.ConnCase, async: true
 
-  alias AlkemistView, as: View
+  alias Alkemist.View, as: View
   alias TestAlkemist.Alkemist, as: Implementation
   alias TestAlkemist.Post
   doctest View

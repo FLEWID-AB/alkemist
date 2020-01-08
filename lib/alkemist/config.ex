@@ -83,8 +83,8 @@ defmodule Alkemist.Config do
       right_header: {Alkemist.LayoutView, "_right_header.html"},
       left_header: {Alkemist.LayoutView, "_left_header.html"},
       sidebar: {Alkemist.LayoutView, "_sidebar_navigation.html"},
-      pagination: {AlkemistView, "_pagination.html"},
-      filter: {AlkemistView, "_filter_view.html"},
+      pagination: {Alkemist.View, "_pagination.html"},
+      filter: {Alkemist.View, "_filter_view.html"},
       aside: {Alkemist.LayoutView, "_aside.html"},
       styles: {Alkemist.LayoutView, "_styles.html"},
       scripts: {Alkemist.LayoutView, "_scripts.html"}
@@ -92,8 +92,8 @@ defmodule Alkemist.Config do
     decorators: [
       filter: {Alkemist.SearchView, :filter_field_decorator},
       form: {Alkemist.FormView, :form_field_decorator},
-      field_value: {AlkemistView, :field_string_value},
-      member_actions: {AlkemistView, :member_actions_decorator},
+      field_value: {Alkemist.View, :field_string_value},
+      member_actions: {Alkemist.View, :member_actions_decorator},
       row_class: {Alkemist.View, :row_class_decorator}
     ]
   ]

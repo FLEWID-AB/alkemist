@@ -1,4 +1,4 @@
-defmodule AlkemistView do
+defmodule Alkemist.View do
   @moduledoc """
   Global Alkemist View
   """
@@ -13,10 +13,10 @@ defmodule AlkemistView do
 
   ## Examples:
 
-    iex> AlkemistView.is_sortable?({:col, nil, [sortable: true]})
+    iex> Alkemist.View.is_sortable?({:col, nil, [sortable: true]})
     true
 
-    iex> AlkemistView.is_sortable?({:col, nil, []})
+    iex> Alkemist.View.is_sortable?({:col, nil, []})
     false
   """
   def is_sortable?({_col, _cb, opts}) do

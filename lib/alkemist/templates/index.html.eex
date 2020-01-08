@@ -29,7 +29,7 @@
   </div>
   <%= if any?(@batch_actions) do %>
   <div class="row batch-actions mt-1">
-    <%= form_for @conn, "", [id: "batch-action-form"], fn f -> %>
+    <%= form_for @conn, "", [id: "batch-action-form"], fn _f -> %>
 
     <% end %>
     <div class="col-2 dropdown">
@@ -68,7 +68,7 @@
                   <td class="selectable">
                     <input type="checkbox" class="collection-selection" value="<%= row.id %>" >
                   </td>
-                <%= else %>
+                <% else %>
                   <!-- TODO: refactor this -->
                   <td class="<%= column.type %> <%= Slugger.slugify_downcase(column.label) %>">
                     <%= if column.assoc do %>
