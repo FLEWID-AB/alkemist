@@ -97,7 +97,7 @@ defmodule Alkemist.Config do
       form: {Alkemist.FormView, :form_field_decorator},
       field_value: {AlkemistView, :field_string_value},
       member_actions: {AlkemistView, :member_actions_decorator},
-      row_class: {Alkemist.View, :row_class_decorator}
+      row_class: {AlkemistView, :row_class_decorator}
     ]
   ]
 
