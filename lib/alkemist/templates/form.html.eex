@@ -19,6 +19,9 @@
 		<% end %>
 
 		<div class="form-group row justify-content-end">
+			<div class="col text-left">
+				<a href="javascript:history.back()" class="btn btn-default">Cancel</a>
+			</div>
 			<div class="col text-right">
 				<%= submit "Save", class: "btn btn-primary" %>
 			</div>

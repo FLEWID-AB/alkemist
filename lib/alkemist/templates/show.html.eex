@@ -1,13 +1,13 @@
 <div class="model-show">
   <div class="row mt-5">
     <div class="col-md-12 page-actions">
-      <ul class="nav justify-content-end">
+      <ul class="nav justify-content-end mb-2">
         <li class="nav-item">
-          <%= action_link("Back to List", @conn, :index, @mod, [class: "nav-link"]) %>
+          <%= action_link("Back to List", @conn, :index, @mod, [class: "btn btn-default"]) %>
         </li>
         <%= if Keyword.has_key?(@member_actions, :edit) do %>
         <li class="nav-item">
-          <%= action_link("Edit", @conn, :edit, @resource, [class: "nav-link"]) %>
+          <%= action_link("Edit", @conn, :edit, @resource, [class: "btn btn-primary"]) %>
         </li>
         <% end %>
       </ul>

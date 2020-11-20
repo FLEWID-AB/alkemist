@@ -89,7 +89,6 @@ defmodule Alkemist.SearchView do
   end
 
   def input_field(form, field, _type, opts) do
-    IO.inspect opts
     text_input(form, field, class: "form-control form-control-sm", placeholder: opts[:label])
   end
 

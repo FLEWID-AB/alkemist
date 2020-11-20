@@ -1,20 +1,22 @@
 <div class="index-view">
   <div class="row mb-4 mt-4" id="<%= @struct %>-index">
-    <div class="col-md-10">
-      <%= if assigns[:filters] && any?(@filters) do %>
+    <%= if assigns[:filters] && any?(@filters) do %>
+      <div class="<%= if !Enum.empty?(@collection_actions) or assigns[:has_export] do %>col-md-10<% else %>col-md-12<% end %>">
         <% {mod, template} = filter_view() %>
         <%= render mod, template, assigns %>
-      <% end %>
-    </div>
-    <div class="col-md-2 text-right page-actions">
-      <h6 class="small">Actions</h6>
-      <%= for action <- @collection_actions do %>
-        <%= collection_action(@conn, action, @mod) %>
-      <% end %>
-      <%= if assigns[:has_export] do %>
-        <%= export_action(@conn, @struct, assigns) %>
-      <% end %>
-    </div>
+      </div>
+    <% end %>
+    <%= if !Enum.empty?(@collection_actions) or assigns[:has_export] do %>
+      <div class="<%= if assigns[:filters] && any?(@filters) do %>col-md-2<% else %>col-md-12<% end %> text-right page-actions">
+        <h6 class="small">Actions</h6>
+        <%= for action <- @collection_actions do %>
+          <%= collection_action(@conn, action, @mod) %>
+        <% end %>
+        <%= if assigns[:has_export] do %>
+          <%= export_action(@conn, @struct, assigns) %>
+        <% end %>
+      </div>
+    <% end %>
   </div>
 
 

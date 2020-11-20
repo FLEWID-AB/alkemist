@@ -88,7 +88,7 @@ defmodule AlkemistView do
 
     link_opts =
       Keyword.get(opts, :link_opts, [])
-      |> Keyword.put_new(:class, "nav-link")
+      |> Keyword.put_new(:class, "btn btn-sm btn-primary")
 
     action_link(label, conn, action, resource, link_opts)
   end
@@ -101,7 +101,7 @@ defmodule AlkemistView do
 
 
     params = [conn, :export, query_params]
-    action(struct, params, label: "Export", link_opts: [class: "nav-link"])
+    action(struct, params, label: "Export", link_opts: [class: "btn btn-sm btn-primary"])
   end
 
   @doc """

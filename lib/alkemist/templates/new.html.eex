@@ -1,6 +1,8 @@
-<h1>New <%= @singular_name %></h1>
+<div class="label text-uppercase mt-3 mb-2">New <%= @singular_name %></div>
 
 <%= if @form_partial do %>
-  <% {view, partial} = @form_partial %>
-  <%= render(view, partial, Map.put(assigns, :action, action_path(@struct, [@conn, :create]))) %>
+  <div class="row mt-3">
+    <% {view, partial} = @form_partial %>
+    <%= render(view, partial, Map.put(assigns, :action, action_path(@struct, [@conn, :create]))) %>
+  </div>
 <% end %>
