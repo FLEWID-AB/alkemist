@@ -88,7 +88,7 @@ defmodule Alkemist.MenuRegistry do
           end
         end)
 
-      result -> []
+      _ -> []
     end
   end
 
