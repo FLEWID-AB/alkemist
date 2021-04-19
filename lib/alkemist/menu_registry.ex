@@ -88,13 +88,19 @@ defmodule Alkemist.MenuRegistry do
           end
         end)
 
-      _ -> []
+      result -> []
     end
   end
 
   defp cache_path(path \\ nil) do
     path = if is_nil(path), do: Alkemist.Config.get(:web_interface), else: path
-    Path.join([System.tmp_dir!(), "#{path}", "alkemist"])
+    if(String.contains?(System.tmp_dir!(), "\\")) do
+      # fix for windows
+      Path.join([System.tmp_dir!(), "#{path}", "alkemist"])
+      |> String.replace("/", "\\")
+    else
+      Path.join([System.tmp_dir!(), "#{path}", "alkemist"])
+    end
   end
 
   defp app_from_module(module) do
@@ -103,7 +109,13 @@ defmodule Alkemist.MenuRegistry do
 
   defp module_path(module) do
     app_path = app_from_module(to_string(module))
-    Path.join([cache_path(app_path), to_string(module)])
+    if(String.contains?(System.tmp_dir!(), "\\")) do
+      # fix for windows
+      Path.join([cache_path(app_path), to_string(module)])
+      |> String.replace("/", "\\")
+    else
+      Path.join([cache_path(app_path), to_string(module)])
+    end
   end
 
   defp sort(menu_items) do

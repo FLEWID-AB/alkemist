@@ -3,7 +3,7 @@ use Mix.Config
 config :alkemist, Alkemist,
   router_helpers: AlkemistTest.Router.Helpers,
   repo: Alkemist.Repo,
-  web_interface: "AlkemistWeb"
+  web_interface: "Alkemist"
 
 config :alkemist, ecto_repos: [Alkemist.Repo]
 
