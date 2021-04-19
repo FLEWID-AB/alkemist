@@ -62,7 +62,7 @@ defmodule Alkemist.MixProject do
       {:phoenix_html, "~> 2.10"},
       {:ecto, "~> 3.0"},
       {:jason, "~> 1.1"},
-      {:inflex, "~> 1.10.0"},
+      {:inflex, "~> 2.1.0"},
       {:atomic_map, "~> 0.9.3"},
       {:csv, "~> 2.0"},
       {:turbo_ecto, "~> 0.4.0"},
