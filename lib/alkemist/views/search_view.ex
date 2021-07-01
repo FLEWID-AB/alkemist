@@ -95,6 +95,7 @@ defmodule Alkemist.SearchView do
 
   defp field_key(field, type) do
     case type do
+      :number -> "#{field}_eq"
       :boolean -> "#{field}_eq"
       :select -> "#{field}_eq"
       :select_multi -> "#{field}_eq"
