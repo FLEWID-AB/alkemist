@@ -73,7 +73,7 @@ defmodule Alkemist.MixProject do
       {:postgrex, ">=0.0.0", only: :test},
       {:gettext, ">= 0.0.0"},
       {:html_sanitize_ex, "~> 1.3.0-rc3"},
-      {:slugger, "~> 0.3"}
+      {:slugger, git: "https://github.com/programisti/slugger.git", override: true}
     ]
   end
 
