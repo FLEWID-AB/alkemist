@@ -3,7 +3,6 @@
     "build": "brunch build --production"
   },
   "dependencies": {
-    "@chenfengyuan/datepicker": "^1.0.0",
     "alkemist-default-theme": "git+ssh://git@github.com:FLEWID-AB/alkemist-default-theme.git",
     "@coreui/coreui": "2.1.16",
     "bootstrap": "^4.6.1",
