@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "alkemist-default-theme": "git+ssh://git@github.com:FLEWID-AB/alkemist-default-theme.git",
-    "@coreui/coreui": "2.1.16",
+    "@coreui/coreui": "*",
     "bootstrap": "^4.6.1",
     "jquery": "^3.3.1",
     "perfect-scrollbar": "^1.4.0",
