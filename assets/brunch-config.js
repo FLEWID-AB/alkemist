@@ -47,7 +47,7 @@ exports.config = {
     sass: {
       native: true,
       options: {
-        includePaths: ["node_modules/bootstrap/scss", "node_modules/@coreui/coreui/scss", "node_modules/@fortawesome/fontawesome-free/scss", "node_modules/@chenfengyuan/datepicker/src/css", "node_modules/alkemist-default-theme/scss"],
+        includePaths: ["node_modules/bootstrap/scss", "node_modules/@coreui/coreui/scss", "node_modules/@fortawesome/fontawesome-free/scss", "node_modules/alkemist-default-theme/scss"],
         precision: 8
       }
     },
