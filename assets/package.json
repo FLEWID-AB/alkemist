@@ -3,7 +3,7 @@
     "build": "brunch build --production"
   },
   "dependencies": {
-    "alkemist-default-theme": "git+ssh://git@github.com:FLEWID-AB/alkemist-default-theme.git",
+    "alkemist-default-theme": "git+ssh://git@github.com:FLEWID-AB/alkemist-default-theme.git#skimsafe",
     "@coreui/coreui": "*",
     "bootstrap": "^4.6.1",
     "jquery": "^3.3.1",
