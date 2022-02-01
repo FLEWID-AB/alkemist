@@ -5,20 +5,20 @@
   "dependencies": {
     "@chenfengyuan/datepicker": "^1.0.0",
     "alkemist-default-theme": "git+ssh://git@github.com:FLEWID-AB/alkemist-default-theme.git",
-    "@coreui/coreui": "2.0.6",
-    "bootstrap": "^4.1.1",
+    "@coreui/coreui": "2.1.16",
+    "bootstrap": "^4.6.1",
     "jquery": "^3.3.1",
     "perfect-scrollbar": "^1.4.0",
-    "popper.js": "^1.14.3"
+    "popper.js": "^1.16.1-lts"
   },
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.3.1",
-    "babel-brunch": "^6.1.1",
-    "babel-preset-env": "^1.7.0",
-    "brunch": "^2.10.16",
-    "clean-css-brunch": "^2.10.0",
+    "babel-brunch": "^7.0.1",
+    "@babel/preset-env": "*",
+    "brunch": "^4.0.0",
+    "clean-css-brunch": "^3.0.0",
     "copycat-brunch": "^1.1.1",
-    "sass-brunch": "^2.10.4",
+    "sass-brunch": "^3.0.1",
     "uglify-js-brunch": "^2.10.0"
   }
 }
