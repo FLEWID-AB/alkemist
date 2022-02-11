@@ -57,16 +57,16 @@ defmodule Alkemist.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:phoenix, "~> 1.3 or ~> 1.4"},
-      {:phoenix_ecto, "~> 4.0"},
-      {:phoenix_html, "~> 2.10"},
-      {:ecto, "~> 3.0"},
+      {:phoenix, "1.6.5"},
+      {:phoenix_ecto, "~> 4.4"},
+      {:phoenix_html, "~> 2.14.2 or ~> 3.0"},
+      {:ecto, "~> 3.3"},
       {:jason, "~> 1.1"},
       {:inflex, "~> 2.1.0"},
       {:atomic_map, "~> 0.9.3"},
       {:csv, "~> 2.0"},
       {:turbo_ecto, "~> 0.4.0"},
-      {:phoenix_mtm, "~> 1.0"},
+      {:phoenix_mtm, "~> 1.0", override: true},
       # Test and dev
       {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.0", only: :test},
