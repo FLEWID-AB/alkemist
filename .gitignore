@@ -30,3 +30,5 @@ assets/node_modules/
 
 priv/static
 .tool-versions
+.docker-files
+.docker-files/*

@@ -18,7 +18,7 @@
         <main role="main" class="main">
           <div class="container-fluid">
             <%= render "_flash.html", assigns %>
-            <%= render @view_module, @view_template, assigns %>
+            <%= @inner_content %>
           </div>
         </main>
         <% {mod, template} = aside_view(@alkemist_app) %>

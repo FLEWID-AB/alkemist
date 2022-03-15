@@ -57,24 +57,25 @@ defmodule Alkemist.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:phoenix, "~> 1.3 or ~> 1.4"},
-      {:phoenix_ecto, "~> 4.0"},
-      {:phoenix_html, "~> 2.10"},
-      {:ecto, "~> 3.0"},
+      {:phoenix, "~> 1.6"},
+      # {:phoenix, "~> 1.3 or ~> 1.4"},
+      {:phoenix_ecto, "~> 4.4"},
+      {:phoenix_html, "~> 3.0"},
+      {:ecto_sql, "~> 3.1"},
       {:jason, "~> 1.1"},
       {:inflex, "~> 2.1.0"},
       {:atomic_map, "~> 0.9.3"},
-      {:csv, "~> 2.0"},
-      {:turbo_ecto, "~> 0.4.0"},
-      {:phoenix_mtm, "~> 1.0"},
+      {:csv, "~> 2.4"},
+      {:turbo_ecto, "~> 1.0.1"},
+      {:phoenix_mtm, git: "https://github.com/adam12/phoenix_mtm.git", branch: "master"},
       # Test and dev
       {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10.0", only: :test},
       {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
       {:inch_ex, "~> 1.0", only: [:dev, :test, :doc]},
       {:postgrex, ">=0.0.0", only: :test},
-      {:gettext, ">= 0.0.0"},
-      {:html_sanitize_ex, "~> 1.3.0-rc3"},
+      {:gettext, "~>0.19.1"},
+      {:html_sanitize_ex, "~> 1.4.2"},
       {:slugger, "~> 0.3"}
     ]
   end

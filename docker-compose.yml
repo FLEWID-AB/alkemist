@@ -1,0 +1,14 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres:14.1
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 'dev'
+      POSTGRES_USER: 'dev'
+      POSTGRES_DB: 'alkemist_test'
+    volumes:
+      - '.docker-files/postgres/db:/var/lib/postgresql/data'
+    ports:
+      - '5432:5432'
