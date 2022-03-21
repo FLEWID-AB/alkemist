@@ -19,12 +19,12 @@ defmodule Alkemist.ViewHelpersTest do
   end
 
   test "resource_action_path returns the path from router helpers", %{conn: conn} do
-    assert ViewHelpers.resource_action_path(conn, Alkemist.Post, :index) == "/posts"
+    assert ViewHelpers.resource_action_path(conn, Alkemist.Post, :index, []) == "/posts"
   end
 
   test "resource_action_path returns the path for a single resource", %{conn: conn} do
     post = %Alkemist.Post{id: 1}
-    assert ViewHelpers.resource_action_path(conn, post, :show)
+    assert ViewHelpers.resource_action_path(conn, post, :show, [])
   end
 
   test "any returns if an enum contains items" do
