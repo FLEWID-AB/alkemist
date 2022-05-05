@@ -98,8 +98,8 @@ defmodule Alkemist.SearchView do
       :select       -> "#{field}_eq"
       :select_multi -> "#{field}_eq"
       :date         -> "#{field}_gteq"
-      :integer      -> "#{field}_eq"
-      :number       -> "#{field}_eq"
+      :integer      -> "#{String.trim(field)}_eq"
+      :number       -> "#{String.trim(field)}_eq"
       _             -> "#{field}_ilike"
     end
   end
