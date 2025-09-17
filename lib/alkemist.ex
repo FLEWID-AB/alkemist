@@ -8,12 +8,13 @@ defmodule Alkemist do
 
   def view do
     quote do
-      use Phoenix.View, root: "lib/alkemist/templates", namespace: Alkemist
-
+      # Phoenix 1.8 compatibility - views are now just modules
       import Phoenix.Controller, only: [get_flash: 2, view_module: 1]
       use Phoenix.HTML
-      import Alkemist.Router.Helpers
       import Alkemist.ViewHelpers
+
+      # Helper function to get router helpers from application config
+      defp alkemist_router_helpers, do: Application.get_env(:alkemist, :router_helpers)
     end
   end
 

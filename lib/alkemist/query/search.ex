@@ -82,10 +82,6 @@ defmodule Alkemist.Query.Search do
     |> Enum.filter(& &1)
   end
 
-  @doc """
-  Parse search field to extract field name, operator, and value
-  Handles datetime fields with time suffixes for range queries
-  """
   defp parse_search_field({key, value}) do
     # Check if this is a turbo_ecto style field with operator suffix
     regex = ~r/^(.+)_(eq|neq|lt|lteq|gt|gteq|in|cont|not_cont|start|not_start|end|not_end)$/
@@ -104,9 +100,6 @@ defmodule Alkemist.Query.Search do
     end
   end
 
-  @doc """
-  Map turbo_ecto operators to Flop operators
-  """
   defp map_turbo_operator_to_flop(operator) do
     case operator do
       "eq" -> :==
@@ -126,9 +119,6 @@ defmodule Alkemist.Query.Search do
     end
   end
 
-  @doc """
-  Process datetime values by adding time suffixes for range queries
-  """
   defp process_datetime_value(operator, value) when is_binary(value) do
     append =
       case operator do

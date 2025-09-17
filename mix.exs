@@ -1,14 +1,14 @@
 defmodule Alkemist.MixProject do
   use Mix.Project
 
-  @version "1.0.1-rc4.1"
+  @version "2.0.0-rc1"
 
   def project do
     [
       app: :alkemist,
       version: @version,
       elixir: "~> 1.16",
-      compilers: [:phoenix] ++ Mix.compilers(),
+      compilers: Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       build_embedded: Mix.env() == :prod,
       deps: deps(),

@@ -44,9 +44,6 @@ defmodule Alkemist.Query.Paginate do
     end
   end
 
-  @doc """
-  Convert legacy pagination parameters to Flop format
-  """
   defp convert_pagination_params(params) do
     per_page = format_integer(Map.get(params, "per_page", @per_page))
     page = format_integer(Map.get(params, "page", 1))
@@ -57,9 +54,6 @@ defmodule Alkemist.Query.Paginate do
     }
   end
 
-  @doc """
-  Convert Flop meta to Alkemist expected format
-  """
   defp convert_flop_meta_to_alkemist(meta) do
     %{
       current_page: meta.current_page,
@@ -84,9 +78,6 @@ defmodule Alkemist.Query.Paginate do
     |> Map.put_new(:page, format_integer(Map.get(params, "page", 1)))
   end
 
-  @doc """
-  Fallback pagination when Flop fails
-  """
   defp get_pagination_fallback(query, params, opts) do
     params = format_params(params)
     repo = opts[:repo] || raise("Repository must be provided in opts")
