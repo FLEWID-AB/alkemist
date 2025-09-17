@@ -7,7 +7,7 @@ defmodule Alkemist.MixProject do
     [
       app: :alkemist,
       version: @version,
-      elixir: "~> 1.6",
+      elixir: "~> 1.16",
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       build_embedded: Mix.env() == :prod,
