@@ -14,4 +14,5 @@ config :alkemist, Alkemist.Repo,
   password: System.get_env("PG_PASSWORD"),
   database: "alkemist_test",
   hostname: "localhost",
+  port: "1234",
   pool: Ecto.Adapters.SQL.Sandbox

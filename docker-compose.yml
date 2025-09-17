@@ -11,4 +11,4 @@ services:
     volumes:
       - '.docker-files/postgres/db:/var/lib/postgresql/data'
     ports:
-      - '5432:5432'
+      - '1234:5432'

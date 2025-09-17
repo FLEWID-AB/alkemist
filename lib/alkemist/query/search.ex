@@ -12,8 +12,9 @@ defmodule Alkemist.Query.Search do
   def searchq(query, params) do
     flop_params = convert_to_flop_params(params)
 
-    case Flop.query(query, flop_params) do
-      {:ok, new_query} -> new_query
+    # Create a proper Flop struct
+    case Flop.validate(flop_params) do
+      {:ok, flop} -> Flop.query(query, flop)
       {:error, _} -> query
     end
   end
@@ -21,8 +22,9 @@ defmodule Alkemist.Query.Search do
   def sortq(query, params) do
     flop_params = convert_to_flop_params(params)
 
-    case Flop.query(query, flop_params) do
-      {:ok, new_query} -> new_query
+    # Create a proper Flop struct
+    case Flop.validate(flop_params) do
+      {:ok, flop} -> Flop.query(query, flop)
       {:error, _} -> query
     end
   end
@@ -31,37 +33,38 @@ defmodule Alkemist.Query.Search do
   Convert legacy turbo_ecto style parameters to Flop format
   """
   def convert_to_flop_params(params) do
-    params
-    |> convert_search_params()
-    |> convert_sort_params()
+    # Start with a clean map containing only Flop-compatible keys
+    %{}
+    |> add_search_filters(params)
+    |> add_sort_params(params)
   end
 
-  defp convert_search_params(params) do
+  defp add_search_filters(flop_params, params) do
     search_params =
       params
       |> Map.get("q", %{})
       |> prepare_search_filters_with_datetime()
 
     if Enum.empty?(search_params) do
-      params
+      flop_params
     else
       filters = Enum.map(search_params, fn {field, value, op} ->
         %{field: field, op: op, value: value}
       end)
-      Map.put(params, :filters, filters)
+      Map.put(flop_params, :filters, filters)
     end
   end
 
-  defp convert_sort_params(params) do
+  defp add_sort_params(flop_params, params) do
     case params |> Map.get("s") do
-      nil -> params
+      nil -> flop_params
       sort_string ->
         case parse_sort_string(sort_string) do
           {field, direction} ->
-            params
+            flop_params
             |> Map.put(:order_by, [field])
             |> Map.put(:order_directions, [direction])
-          _ -> params
+          _ -> flop_params
         end
     end
   end
@@ -150,19 +153,16 @@ defmodule Alkemist.Query.Search do
   end
 
   def handle_special_fields({key, value}, _queryable) do
-    #regex = ~r/([a-z0-9_]+)_(#{BuildSearchQuery.search_types() |> Enum.join("|")})$/
+    # Extract operator from key and apply datetime processing if needed
+    regex = ~r/^(.+)_(eq|neq|lt|lteq|gt|gteq|in|cont|not_cont|start|not_start|end|not_end)$/
 
-    #{key, value} =
-    #  if Regex.match?(regex, key) do
-    #    #[_, match, type] = Regex.run(regex, key)
-    #    #value = handle_field({match, type}, value, queryable)
-    #    {key, value}
-    #  else
-    #    {key, value}
-    #  end
-
-    # TODO: find replacement for `schema_from_query`
-    {key, value}
+    case Regex.run(regex, key) do
+      [_, _field_name, operator] ->
+        processed_value = process_datetime_value(operator, value)
+        {key, processed_value}
+      nil ->
+        {key, value}
+    end
   end
 
   defp handle_field({match, type}, value, queryable) do

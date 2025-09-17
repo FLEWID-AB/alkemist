@@ -6,9 +6,14 @@ defmodule Alkemist.MenuRegistry do
   You can define custom labels and options in your resource controllers.
   See `Alkemist.Controller`
   """
+  use Agent
+
+  def start_link(_opts) do
+    Agent.start_link(fn -> %{} end, name: __MODULE__)
+  end
 
   def register_menu_item(module, label, opts) do
-    ensure_setup(module)
+    ensure_started()
 
     if label == false do
       unregister_menu_item(module)
@@ -20,91 +25,42 @@ defmodule Alkemist.MenuRegistry do
         |> Keyword.put_new(:parent, nil)
         |> Enum.into(%{})
 
-      add_menu(module, menu)
+      Agent.update(__MODULE__, fn state ->
+        Map.put(state, module, menu)
+      end)
     end
   end
 
   def unregister_menu_item(module) do
-    ensure_setup(module)
-    remove_menu(module)
+    ensure_started()
+    Agent.update(__MODULE__, fn state ->
+      Map.delete(state, module)
+    end)
   end
 
   def cleanup do
-    delete_all()
+    ensure_started()
+    Agent.update(__MODULE__, fn _state -> %{} end)
   end
 
   def menu_items do
-    ensure_setup()
+    ensure_started()
 
-    get_cached_menu_items()
-    |> Enum.map(fn {_, i} -> i end)
-    |> build_tree()
-    |> sort()
+    Agent.get(__MODULE__, fn state ->
+      state
+      |> Enum.map(fn {_, menu} -> menu end)
+      |> build_tree()
+      |> sort()
+    end)
   end
 
-  defp add_menu(module, menu) do
-    encoder = Alkemist.Config.json_provider
-    case encoder.encode(menu) do
-      {:ok, json} -> File.write(module_path(module), json)
-      _ -> :ok
+  defp ensure_started do
+    case Process.whereis(__MODULE__) do
+      nil -> start_link([])
+      _pid -> :ok
     end
   end
 
-  defp remove_menu(module) do
-    if File.exists?(module_path(module)) do
-      File.rm(module_path(module))
-    end
-  end
-
-  defp delete_all() do
-    ensure_setup()
-    case File.ls(cache_path()) do
-      {:ok, files} ->
-        files
-        |> Enum.each(fn f ->
-          path = Path.join([cache_path(), f])
-          File.rm(path)
-        end)
-      _ -> :error
-    end
-  end
-
-  defp get_cached_menu_items do
-    case File.ls(cache_path()) do
-      {:ok, files} ->
-        files
-        |> Enum.reduce([], fn f, acc ->
-          mod = String.to_atom(f)
-          content = File.read!(Path.join([cache_path(), f]))
-          case Poison.decode(content) do
-            {:ok, menu} ->
-              menu = AtomicMap.convert(menu, safe: false)
-              menu = case Map.get(menu, :resource) do
-                nil -> Map.put(menu, :resource, nil)
-                val -> Map.put(menu, :resource, String.to_atom(val))
-              end
-              acc ++ [{mod, menu}]
-            _ -> acc ++ [{mod, %{}}]
-          end
-        end)
-
-      _ -> []
-    end
-  end
-
-  defp cache_path(path \\ nil) do
-    path = if is_nil(path), do: Alkemist.Config.get(:web_interface), else: path
-    Path.join([System.tmp_dir!(), "#{path}", "alkemist"])
-  end
-
-  defp app_from_module(module) do
-    String.split(module, ".") |> Enum.at(1)
-  end
-
-  defp module_path(module) do
-    app_path = app_from_module(to_string(module))
-    Path.join([cache_path(app_path), to_string(module)])
-  end
 
   defp sort(menu_items) do
     Enum.sort_by(menu_items, fn i -> {i.index, String.first(i.label)} end)
@@ -162,10 +118,4 @@ defmodule Alkemist.MenuRegistry do
   defp build_tree([], results), do: results
 
 
-  defp ensure_setup(module \\ nil) do
-    unless is_nil(module), do: module = app_from_module(to_string(module))
-    unless File.exists?(cache_path(module)) do
-      File.mkdir_p(cache_path(module))
-    end
-  end
 end
