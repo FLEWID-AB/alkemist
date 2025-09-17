@@ -10,32 +10,58 @@ defmodule Alkemist do
     quote do
       # For Phoenix 1.8+, implement render function with EEx template compilation
       def render(template, assigns \\ %{}) do
-        # Find template file
-        template_file = template |> String.replace(".html", ".html.eex")
+        # Convert template name to .eex format if needed
+        template_file = if String.ends_with?(template, ".html") do
+          template |> String.replace(".html", ".html.eex")
+        else
+          template <> ".html.eex"
+        end
 
-        # Build template paths to check
+        # Get the alkemist app directory
+        app_dir = try do
+          Application.app_dir(:alkemist)
+        rescue
+          _ -> File.cwd!()
+        end
+
+        # Build comprehensive template paths to check
         template_paths = [
-          Path.join([Application.app_dir(:alkemist), "lib", "alkemist", "templates", template_file]),
-          Path.join([Application.app_dir(:alkemist), "lib", "alkemist", "templates", "layout", template_file]),
+          # Application directory paths
+          Path.join([app_dir, "lib", "alkemist", "templates", template_file]),
+          Path.join([app_dir, "lib", "alkemist", "templates", "layout", template_file]),
+          # Relative paths from current directory
           Path.join(["lib", "alkemist", "templates", template_file]),
-          Path.join(["lib", "alkemist", "templates", "layout", template_file])
+          Path.join(["lib", "alkemist", "templates", "layout", template_file]),
+          # Deps directory (for when alkemist is used as dependency)
+          Path.join(["deps", "alkemist", "lib", "alkemist", "templates", template_file]),
+          Path.join(["deps", "alkemist", "lib", "alkemist", "templates", "layout", template_file]),
+          # Priv directory fallback
+          Path.join([app_dir, "priv", "templates", template_file]),
+          Path.join([app_dir, "priv", "templates", "layout", template_file])
         ]
 
         # Find the first existing template
-        existing_template = Enum.find(template_paths, &File.exists?/1)
+        existing_template = Enum.find(template_paths, fn path ->
+          File.exists?(path)
+        end)
 
         case existing_template do
           nil ->
-            {:safe, "<div>Template #{template} not found</div>"}
+            # Debug output to help troubleshoot
+            paths_checked = Enum.map(template_paths, fn path ->
+              "#{path} (exists: #{File.exists?(path)})"
+            end) |> Enum.join("<br/>")
+            {:safe, "<div>Template #{template} not found. Paths checked:<br/>#{paths_checked}</div>"}
           template_path ->
             try do
               # Read and compile the EEx template
               template_content = File.read!(template_path)
-              compiled = EEx.eval_string(template_content, assigns: assigns)
+              # Evaluate with proper binding
+              compiled = EEx.eval_string(template_content, [assigns: assigns], functions: [{Phoenix.HTML, Phoenix.HTML.__info__(:functions)}])
               {:safe, compiled}
             rescue
               e ->
-                {:safe, "<div>Error rendering template #{template}: #{Exception.message(e)}</div>"}
+                {:safe, "<div>Error rendering template #{template} at #{template_path}: #{Exception.message(e)}<br/>#{Exception.format(:error, e, __STACKTRACE__)}</div>"}
             end
         end
       end
