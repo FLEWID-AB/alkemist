@@ -78,7 +78,7 @@ Tests mirror the library structure under `test/`:
 ## Dependencies
 
 Key dependencies include:
-- Phoenix framework (1.6+)
+- Phoenix framework (1.8+)
 - Ecto for database operations
 - Phoenix HTML for form helpers
 - Various utility libraries (atomic_map, flop, phoenix_mtm, etc.)

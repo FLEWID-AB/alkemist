@@ -1,3 +1,11 @@
 defmodule Alkemist.LayoutView do
-  use Alkemist, :view
+  # Phoenix 1.8 template rendering
+  use Phoenix.Template,
+    root: "lib/alkemist/templates/layout",
+    namespace: Alkemist
+
+  import Phoenix.HTML
+  import Phoenix.HTML.Link
+  import Phoenix.HTML.Tag
+  import Alkemist.ViewHelpers
 end

@@ -1,5 +1,14 @@
 defmodule AlkemistView do
-  use Alkemist, :view
+  # Phoenix 1.8 template rendering
+  use Phoenix.Template,
+    root: "lib/alkemist/templates",
+    namespace: Alkemist
+
+  # Import necessary functions
+  import Phoenix.HTML
+  import Phoenix.HTML.Link
+  import Phoenix.HTML.Tag
+  import Alkemist.ViewHelpers
   import Alkemist.SearchView
   import Alkemist.FormView
   import Alkemist.PaginationView
