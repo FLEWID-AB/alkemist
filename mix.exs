@@ -43,9 +43,9 @@ defmodule Alkemist.MixProject do
         :atomic_map,
         :turbo_ecto,
         :phoenix_mtm,
-        :html_sanitize_ex,
         :slugger,
-        :jason
+        :jason,
+        :floki
       ]
     ]
   end
