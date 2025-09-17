@@ -3,6 +3,9 @@ defmodule Alkemist.Export.CSV do
   Creates a CSV String for the export
   """
 
+  # It's good practice to alias the module you're using.
+  alias Floki
+
   @doc """
   Create a new CSV String
   Params:
@@ -20,18 +23,22 @@ defmodule Alkemist.Export.CSV do
   end
 
   defp add_header(rows, columns) do
-    cols = Enum.reduce(columns, [], fn({_, _, opts}, cols) ->
-      cols ++ [opts[:label]]
-    end)
+    cols =
+      Enum.reduce(columns, [], fn {_, _, opts}, cols ->
+        cols ++ [opts[:label]]
+      end)
+
     rows ++ [cols]
   end
 
   defp add_entries(rows, columns, entries) do
-    Enum.reduce(entries, rows, fn(entry, rows) ->
-      row = Enum.reduce(columns, [], fn({_, cb, _}, acc) ->
-        value = cb.(entry) |> format()
-        acc ++ [value]
-      end)
+    Enum.reduce(entries, rows, fn entry, rows ->
+      row =
+        Enum.reduce(columns, [], fn {_, cb, _}, acc ->
+          value = cb.(entry) |> format()
+          acc ++ [value]
+        end)
+
       rows ++ [row]
     end)
   end
@@ -42,10 +49,21 @@ defmodule Alkemist.Export.CSV do
   end
 
   defp format(content) when is_bitstring(content) do
+    # This is where the new logic is applied.
     content
-    |> HtmlSanitizeEx.strip_tags()
+    |> strip_html_tags()
   end
 
   defp format(content), do: "#{content}"
 
+  # The new private function to handle Floki parsing.
+  # It's a good approach to encapsulate this logic.
+  defp strip_html_tags(html) do
+    case Floki.parse_fragment(html) do
+      # If parsing is successful, use Floki.text to extract the plain text.
+      {:ok, parsed} -> Floki.text(parsed)
+      # If parsing fails, gracefully return the original HTML string to prevent errors.
+      {:error, _} -> html
+    end
+  end
 end

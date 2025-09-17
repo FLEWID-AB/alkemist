@@ -1,7 +1,7 @@
 defmodule Alkemist.MixProject do
   use Mix.Project
 
-  @version "1.0.1-rc3.0"
+  @version "1.0.1-rc4.0"
 
   def project do
     [
@@ -75,8 +75,8 @@ defmodule Alkemist.MixProject do
       {:inch_ex, "~> 1.0", only: [:dev, :test, :doc]},
       {:postgrex, ">=0.0.0", only: :test},
       {:gettext, ">= 0.0.0"},
-      {:html_sanitize_ex, "~> 1.4.2"},
-      {:slugger, "~> 0.3"}
+      {:slugger, "~> 0.3"},
+      {:floki, "~> 0.38.0"}
     ]
   end
 
