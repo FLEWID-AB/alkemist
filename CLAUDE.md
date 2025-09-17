@@ -81,5 +81,5 @@ Key dependencies include:
 - Phoenix framework (1.6+)
 - Ecto for database operations
 - Phoenix HTML for form helpers
-- Various utility libraries (atomic_map, turbo_ecto, phoenix_mtm, etc.)
+- Various utility libraries (atomic_map, flop, phoenix_mtm, etc.)
 - Floki for HTML parsing/sanitization
