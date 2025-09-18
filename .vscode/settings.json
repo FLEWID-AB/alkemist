@@ -1,3 +1,10 @@
 {
-  "deepscan.enable": true
+  "deepscan.enable": true,
+  "python-envs.pythonProjects": [
+    {
+      "path": ".docker-files/postgres/db",
+      "envManager": "ms-python.python:venv",
+      "packageManager": "ms-python.python:pip"
+    }
+  ]
 }

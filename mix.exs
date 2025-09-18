@@ -1,7 +1,7 @@
 defmodule Alkemist.MixProject do
   use Mix.Project
 
-  @version "2.0.6-rc1"
+  @version "2.0.7-rc1"
 
   def project do
     [

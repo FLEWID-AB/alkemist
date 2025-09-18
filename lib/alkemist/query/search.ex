@@ -14,7 +14,7 @@ defmodule Alkemist.Query.Search do
 
     # Create a proper Flop struct
     case Flop.validate(flop_params) do
-      {:ok, flop} -> Flop.query(query, flop)
+      {:ok, flop} -> Flop.query(query, flop, [])
       {:error, _} -> query
     end
   end
@@ -24,7 +24,7 @@ defmodule Alkemist.Query.Search do
 
     # Create a proper Flop struct
     case Flop.validate(flop_params) do
-      {:ok, flop} -> Flop.query(query, flop)
+      {:ok, flop} -> Flop.query(query, flop, [])
       {:error, _} -> query
     end
   end
