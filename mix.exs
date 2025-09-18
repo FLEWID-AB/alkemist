@@ -1,7 +1,7 @@
 defmodule Alkemist.MixProject do
   use Mix.Project
 
-  @version "2.0.5-rc1"
+  @version "2.0.6-rc1"
 
   def project do
     [
@@ -58,6 +58,7 @@ defmodule Alkemist.MixProject do
     [
       {:phoenix, "~> 1.6"},
       # {:phoenix, "~> 1.3 or ~> 1.4"},
+      {:phoenix_view, "~> 2.0"},
       {:phoenix_ecto, "~> 4.4"},
       {:phoenix_html, "~> 3.0"},
       {:ecto_sql, "~> 3.1"},
