@@ -25,21 +25,62 @@ defmodule Alkemist.Query.Paginate do
 
     # Convert parameters to Flop format
     flop_params = convert_pagination_params(params)
+    
+    # DEBUG: Log all input parameters to understand what's being passed
+    IO.inspect(params, label: "RAW PARAMS TO PAGINATION")
+    IO.inspect(flop_params, label: "CONVERTED FLOP PARAMS")
+    
+    # Debug: Check what query we're receiving and what the actual count is
+    # Properly clean the query for counting
+    clean_query = query
+    |> exclude(:select)
+    |> exclude(:preload) 
+    |> exclude(:order_by)
+    |> exclude(:limit)
+    |> exclude(:offset)
+    
+    actual_count = repo.one(from q in clean_query, select: count(q.id))
+    #IO.inspect(actual_count, label: "Actual record count in scoped query")
+    
+    # Inspect the actual query structure instead of trying to convert to SQL
+    #IO.inspect(clean_query, label: "Clean query structure for counting")
+    
+    # Flop options with higher max_limit to support larger page sizes
+    # Use for: nil to bypass any schema-based validation
+    # Try different options to prevent count limiting
+    flop_opts = [
+      repo: repo,
+      for: nil,
+      default_limit: 10,
+      max_limit: 1000,
+      count_limit: false,
+      default_count_limit: false,
+      max_count_limit: false
+    ]
 
-    case Flop.validate_and_run(query, flop_params, repo: repo) do
-      {:ok, {_results, meta}} ->
+    case Flop.validate_and_run(query, flop_params, flop_opts) do
+      {:ok, {results, meta}} ->
+        #IO.inspect(meta, label: "Flop Meta Success")
+        
+        # OVERRIDE Flop's incorrect count with our actual count
+        total_pages = (actual_count / meta.page_size) |> Float.ceil() |> trunc()
+        corrected_meta = %{meta | total_count: actual_count, total_pages: total_pages}
+        #IO.inspect(corrected_meta, label: "Corrected Meta with actual count")
+        
         # Apply the same filters/sorts to the query without pagination for further processing
-        case Flop.validate(flop_params) do
+        case Flop.validate(flop_params, flop_opts) do
           {:ok, flop_struct} ->
             filtered_query = Flop.query(query, flop_struct, [])
-            pagination = convert_flop_meta_to_alkemist(meta)
+            pagination = convert_flop_meta_to_alkemist(corrected_meta)
             {filtered_query, pagination}
-          {:error, _} ->
+          {:error, error} ->
+            IO.inspect(error, label: "Flop Validate Error - Using Fallback")
             pagination = get_pagination_fallback(query, params, opts)
             {query, pagination}
         end
 
-      {:error, _} ->
+      {:error, error} ->
+        IO.inspect(error, label: "Flop validate_and_run Error - Using Fallback")
         pagination = get_pagination_fallback(query, params, opts)
         {query, pagination}
     end
@@ -48,6 +89,9 @@ defmodule Alkemist.Query.Paginate do
   defp convert_pagination_params(params) do
     per_page = format_integer(Map.get(params, "per_page", @per_page))
     page = format_integer(Map.get(params, "page", 1))
+
+    # Debug output to understand what's being requested
+    #IO.inspect({page, per_page}, label: "Alkemist Pagination Request")
 
     %{
       page: page,
@@ -101,7 +145,7 @@ defmodule Alkemist.Query.Paginate do
     prev_page =
       if total_pages >= current_page && current_page > 1, do: current_page - 1, else: nil
 
-    %{
+    result = %{
       current_page: current_page,
       per_page: per_page,
       total_count: total_count,
@@ -109,6 +153,9 @@ defmodule Alkemist.Query.Paginate do
       next_page: next_page,
       prev_page: prev_page
     }
+    
+    IO.inspect(result, label: "Fallback Pagination Result")
+    result
   end
 
   defp get_total_count(query, repo) do
