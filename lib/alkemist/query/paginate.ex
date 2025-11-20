@@ -47,22 +47,31 @@ defmodule Alkemist.Query.Paginate do
     
     # Flop options with higher max_limit to support larger page sizes
     # Use for: nil to bypass any schema-based validation
+    # Try different options to prevent count limiting
     flop_opts = [
       repo: repo,
       for: nil,
       default_limit: 10,
       max_limit: 1000,
-      count_limit: :infinity
+      count_limit: false,
+      default_count_limit: false,
+      max_count_limit: false
     ]
 
     case Flop.validate_and_run(query, flop_params, flop_opts) do
-      {:ok, {_results, meta}} ->
+      {:ok, {results, meta}} ->
         IO.inspect(meta, label: "Flop Meta Success")
+        
+        # OVERRIDE Flop's incorrect count with our actual count
+        total_pages = (actual_count / meta.page_size) |> Float.ceil() |> trunc()
+        corrected_meta = %{meta | total_count: actual_count, total_pages: total_pages}
+        IO.inspect(corrected_meta, label: "Corrected Meta with actual count")
+        
         # Apply the same filters/sorts to the query without pagination for further processing
         case Flop.validate(flop_params, flop_opts) do
           {:ok, flop_struct} ->
             filtered_query = Flop.query(query, flop_struct, [])
-            pagination = convert_flop_meta_to_alkemist(meta)
+            pagination = convert_flop_meta_to_alkemist(corrected_meta)
             {filtered_query, pagination}
           {:error, error} ->
             IO.inspect(error, label: "Flop Validate Error - Using Fallback")
