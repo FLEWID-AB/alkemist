@@ -26,6 +26,11 @@ defmodule Alkemist.Query.Paginate do
     # Convert parameters to Flop format
     flop_params = convert_pagination_params(params)
     
+    # Debug: Check what query we're receiving and what the actual count is
+    actual_count = repo.one(from q in query, select: count(q.id))
+    IO.inspect(actual_count, label: "Actual record count in scoped query")
+    IO.inspect(Ecto.Query.to_sql(:all, repo, query), label: "Query being paginated")
+    
     # Flop options with higher max_limit to support larger page sizes
     # Use for: nil to bypass any schema-based validation
     flop_opts = [
