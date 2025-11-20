@@ -29,11 +29,7 @@ defmodule Alkemist.Query.Paginate do
     # Debug: Check what query we're receiving and what the actual count is
     # Properly clean the query for counting
     clean_query = query
-    |> exclude(:select)
-    |> exclude(:preload) 
-    |> exclude(:order_by)
     |> exclude(:limit)
-    |> exclude(:offset)
     
     actual_count = repo.one(from q in clean_query, select: count(q.id))
     IO.inspect(actual_count, label: "Actual record count in scoped query")
@@ -44,29 +40,29 @@ defmodule Alkemist.Query.Paginate do
     flop_opts = [
       repo: repo,
       for: nil,
-      default_limit: 10,
+      default_limit: @per_page,
       max_limit: 1000,
       count_limit: :infinity
     ]
 
-    case Flop.validate_and_run(query, flop_params, flop_opts) do
+    case Flop.validate_and_run(clean_query, flop_params, flop_opts) do
       {:ok, {_results, meta}} ->
         IO.inspect(meta, label: "Flop Meta Success")
         # Apply the same filters/sorts to the query without pagination for further processing
         case Flop.validate(flop_params, flop_opts) do
           {:ok, flop_struct} ->
-            filtered_query = Flop.query(query, flop_struct, [])
+            filtered_query = Flop.query(clean_query, flop_struct, [])
             pagination = convert_flop_meta_to_alkemist(meta)
             {filtered_query, pagination}
           {:error, error} ->
             IO.inspect(error, label: "Flop Validate Error - Using Fallback")
-            pagination = get_pagination_fallback(query, params, opts)
+            pagination = get_pagination_fallback(clean_query, params, opts)
             {query, pagination}
         end
 
       {:error, error} ->
         IO.inspect(error, label: "Flop validate_and_run Error - Using Fallback")
-        pagination = get_pagination_fallback(query, params, opts)
+        pagination = get_pagination_fallback(clean_query, params, opts)
         {query, pagination}
     end
   end
