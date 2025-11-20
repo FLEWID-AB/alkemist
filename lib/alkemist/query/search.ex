@@ -123,17 +123,60 @@ defmodule Alkemist.Query.Search do
   end
 
   defp process_datetime_value(operator, value) when is_binary(value) do
-    append =
-      case operator do
-        op when op in ["gteq", "gt"] -> " 00:00:00"
-        op when op in ["lteq", "lt"] -> " 23:59:59"
-        _ -> ""
-      end
-
-    value <> append
+    case parse_datetime_string(value) do
+      {:ok, naive_datetime} ->
+        case operator do
+          op when op in ["gteq", "gt"] ->
+            # For >= or >, set time to beginning of day if only date provided
+            if has_time_component?(value) do
+              naive_datetime
+            else
+              %{naive_datetime | hour: 0, minute: 0, second: 0, microsecond: {0, 0}}
+            end
+          op when op in ["lteq", "lt"] ->
+            # For <= or <, set time to end of day if only date provided
+            if has_time_component?(value) do
+              naive_datetime
+            else
+              %{naive_datetime | hour: 23, minute: 59, second: 59, microsecond: {999_999, 6}}
+            end
+          _ ->
+            naive_datetime
+        end
+      {:error, _} ->
+        # If parsing fails, return the original value
+        value
+    end
   end
 
   defp process_datetime_value(_operator, value), do: value
+
+  defp has_time_component?(value) do
+    String.contains?(value, [" ", "T"]) and String.contains?(value, ":")
+  end
+
+  defp parse_datetime_string(value) do
+    cond do
+      # Try full datetime format first (YYYY-MM-DD HH:MM:SS)
+      Regex.match?(~r/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, value) ->
+        NaiveDateTime.from_iso8601(String.replace(value, " ", "T"))
+      
+      # Try datetime without seconds (YYYY-MM-DD HH:MM)
+      Regex.match?(~r/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/, value) ->
+        NaiveDateTime.from_iso8601(String.replace(value, " ", "T") <> ":00")
+      
+      # Try date only format (YYYY-MM-DD)
+      Regex.match?(~r/^\d{4}-\d{2}-\d{2}$/, value) ->
+        NaiveDateTime.from_iso8601(value <> "T00:00:00")
+      
+      # Try ISO format (YYYY-MM-DDTHH:MM:SS)
+      Regex.match?(~r/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/, value) ->
+        NaiveDateTime.from_iso8601(value)
+      
+      true ->
+        {:error, :invalid_format}
+    end
+  end
 
   @doc """
   prepares the params so we can better handle naive_datetime and datetime fields
