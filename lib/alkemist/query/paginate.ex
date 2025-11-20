@@ -25,11 +25,18 @@ defmodule Alkemist.Query.Paginate do
 
     # Convert parameters to Flop format
     flop_params = convert_pagination_params(params)
+    
+    # Flop options with higher max_limit to support larger page sizes
+    flop_opts = [
+      repo: repo,
+      default_limit: 10,
+      max_limit: 1000
+    ]
 
-    case Flop.validate_and_run(query, flop_params, repo: repo) do
+    case Flop.validate_and_run(query, flop_params, flop_opts) do
       {:ok, {_results, meta}} ->
         # Apply the same filters/sorts to the query without pagination for further processing
-        case Flop.validate(flop_params) do
+        case Flop.validate(flop_params, flop_opts) do
           {:ok, flop_struct} ->
             filtered_query = Flop.query(query, flop_struct, [])
             pagination = convert_flop_meta_to_alkemist(meta)
