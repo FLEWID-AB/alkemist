@@ -10,12 +10,16 @@ defmodule Alkemist.Query.Search do
   end
 
   def searchq(query, params) do
-    flop_params = convert_to_flop_params(params)
+    # First apply any association-based filters manually
+    query_with_assoc_filters = apply_association_filters(query, params)
+    
+    # Then apply regular Flop filters (excluding association fields)
+    flop_params = convert_to_flop_params_excluding_associations(params)
 
     # Create a proper Flop struct
     case Flop.validate(flop_params) do
-      {:ok, flop} -> Flop.query(query, flop, [])
-      {:error, _} -> query
+      {:ok, flop} -> Flop.query(query_with_assoc_filters, flop, [])
+      {:error, _} -> query_with_assoc_filters
     end
   end
 
@@ -39,6 +43,47 @@ defmodule Alkemist.Query.Search do
     |> add_sort_params(params)
   end
 
+  @doc """
+  Convert to Flop params but exclude association fields that need manual handling
+  """
+  def convert_to_flop_params_excluding_associations(params) do
+    %{}
+    |> add_search_filters_excluding_associations(params)
+    |> add_sort_params(params)
+  end
+
+  @doc """
+  Apply association-based filters manually with proper joins
+  """
+  def apply_association_filters(query, params) do
+    import Ecto.Query
+    
+    search_params =
+      params
+      |> Map.get("q", %{})
+      |> prepare_search_filters_with_datetime()
+    
+    # Group association filters by association name to minimize joins
+    association_filters = 
+      search_params
+      |> Enum.filter(fn 
+        {{:assoc, _, _}, _, _} -> true
+        _ -> false
+      end)
+      |> Enum.group_by(fn {{:assoc, assoc, _}, _, _} -> assoc end)
+    
+    # Apply each association's filters
+    Enum.reduce(association_filters, query, fn {assoc_name, filters}, acc_query ->
+      # Add join for this association
+      joined_query = ensure_association_join(acc_query, assoc_name)
+      
+      # Apply all filters for this association
+      Enum.reduce(filters, joined_query, fn {{:assoc, ^assoc_name, field}, value, op}, q ->
+        apply_association_filter(q, assoc_name, field, value, op)
+      end)
+    end)
+  end
+
   defp add_search_filters(flop_params, params) do
     search_params =
       params
@@ -53,6 +98,76 @@ defmodule Alkemist.Query.Search do
       end)
       Map.put(flop_params, :filters, filters)
     end
+  end
+
+  defp add_search_filters_excluding_associations(flop_params, params) do
+    search_params =
+      params
+      |> Map.get("q", %{})
+      |> prepare_search_filters_with_datetime()
+      |> Enum.reject(fn 
+        {{:assoc, _, _}, _, _} -> true
+        _ -> false
+      end)
+
+    if Enum.empty?(search_params) do
+      flop_params
+    else
+      filters = Enum.map(search_params, fn {field, value, op} ->
+        %{field: field, op: op, value: value}
+      end)
+      Map.put(flop_params, :filters, filters)
+    end
+  end
+
+  defp ensure_association_join(query, assoc_name) do
+    import Ecto.Query
+    
+    # Check if association is already joined
+    joins = query.joins || []
+    has_join = Enum.any?(joins, fn
+      %{source: {_, _}, as: ^assoc_name} -> true
+      %{assoc: {_, ^assoc_name}} -> true
+      _ -> false
+    end)
+    
+    if has_join do
+      query
+    else
+      # Add left join with named binding
+      join(query, :left, [root], assoc in assoc(root, ^assoc_name), as: ^assoc_name)
+    end
+  end
+
+  defp apply_association_filter(query, assoc_name, field, value, op) do
+    import Ecto.Query
+    
+    # Convert Flop operators to Ecto query conditions
+    condition = case op do
+      :== -> 
+        dynamic([{^assoc_name, assoc}], field(assoc, ^field) == ^value)
+      :!= -> 
+        dynamic([{^assoc_name, assoc}], field(assoc, ^field) != ^value)
+      :> -> 
+        dynamic([{^assoc_name, assoc}], field(assoc, ^field) > ^value)
+      :>= -> 
+        dynamic([{^assoc_name, assoc}], field(assoc, ^field) >= ^value)
+      :< -> 
+        dynamic([{^assoc_name, assoc}], field(assoc, ^field) < ^value)
+      :<= -> 
+        dynamic([{^assoc_name, assoc}], field(assoc, ^field) <= ^value)
+      :ilike_and -> 
+        value_with_wildcards = "%#{value}%"
+        dynamic([{^assoc_name, assoc}], ilike(field(assoc, ^field), ^value_with_wildcards))
+      :not_ilike_and -> 
+        value_with_wildcards = "%#{value}%"
+        dynamic([{^assoc_name, assoc}], not ilike(field(assoc, ^field), ^value_with_wildcards))
+      _ -> 
+        # Fallback to equality
+        dynamic([{^assoc_name, assoc}], field(assoc, ^field) == ^value)
+    end
+    
+    where(query, ^condition)
   end
 
   defp add_sort_params(flop_params, params) do
@@ -91,16 +206,46 @@ defmodule Alkemist.Query.Search do
 
     case Regex.run(regex, key) do
       [_, field_name, operator] ->
-        field_atom = String.to_atom(field_name)
-        flop_op = map_turbo_operator_to_flop(operator)
-        processed_value = process_datetime_value(operator, value)
-        {field_atom, processed_value, flop_op}
+        # Check if this is an association field (contains underscore pattern like "association_field")
+        case parse_association_field(field_name) do
+          {assoc, field} ->
+            # This is an association field like "subscriber_personal_number_hash"
+            flop_op = map_turbo_operator_to_flop(operator)
+            processed_value = process_datetime_value(operator, value)
+            # Return special format for association fields
+            {{:assoc, assoc, field}, processed_value, flop_op}
+          
+          nil ->
+            # Regular field
+            field_atom = String.to_atom(field_name)
+            flop_op = map_turbo_operator_to_flop(operator)
+            processed_value = process_datetime_value(operator, value)
+            {field_atom, processed_value, flop_op}
+        end
 
       nil ->
         # Default field without operator suffix - use ilike for string matching
         field_atom = String.to_atom(key)
         {field_atom, value, :ilike_and}
     end
+  end
+
+  # Parse association fields using the pattern "schema_assoc_field" -> {:schema, :field}
+  # Example: "subscriber_assoc_personal_number_hash" -> {:subscriber, :personal_number_hash}
+  defp parse_association_field(field_name) do
+    # List of common association patterns - could be made configurable
+    associations = ["subscriber", "subscription"]
+    
+    Enum.find_value(associations, fn assoc ->
+      # Only handle "_assoc_" pattern for clear separation
+      if String.starts_with?(field_name, assoc <> "_assoc_") do
+        field_part = String.replace_prefix(field_name, assoc <> "_assoc_", "")
+        # Make sure we have a valid field name after the prefix
+        if field_part != "" do
+          {String.to_atom(assoc), String.to_atom(field_part)}
+        end
+      end
+    end)
   end
 
   defp map_turbo_operator_to_flop(operator) do
