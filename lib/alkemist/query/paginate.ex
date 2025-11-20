@@ -40,10 +40,10 @@ defmodule Alkemist.Query.Paginate do
     |> exclude(:offset)
     
     actual_count = repo.one(from q in clean_query, select: count(q.id))
-    IO.inspect(actual_count, label: "Actual record count in scoped query")
+    #IO.inspect(actual_count, label: "Actual record count in scoped query")
     
     # Inspect the actual query structure instead of trying to convert to SQL
-    IO.inspect(clean_query, label: "Clean query structure for counting")
+    #IO.inspect(clean_query, label: "Clean query structure for counting")
     
     # Flop options with higher max_limit to support larger page sizes
     # Use for: nil to bypass any schema-based validation
@@ -60,12 +60,12 @@ defmodule Alkemist.Query.Paginate do
 
     case Flop.validate_and_run(query, flop_params, flop_opts) do
       {:ok, {results, meta}} ->
-        IO.inspect(meta, label: "Flop Meta Success")
+        #IO.inspect(meta, label: "Flop Meta Success")
         
         # OVERRIDE Flop's incorrect count with our actual count
         total_pages = (actual_count / meta.page_size) |> Float.ceil() |> trunc()
         corrected_meta = %{meta | total_count: actual_count, total_pages: total_pages}
-        IO.inspect(corrected_meta, label: "Corrected Meta with actual count")
+        #IO.inspect(corrected_meta, label: "Corrected Meta with actual count")
         
         # Apply the same filters/sorts to the query without pagination for further processing
         case Flop.validate(flop_params, flop_opts) do
@@ -91,7 +91,7 @@ defmodule Alkemist.Query.Paginate do
     page = format_integer(Map.get(params, "page", 1))
 
     # Debug output to understand what's being requested
-    IO.inspect({page, per_page}, label: "Alkemist Pagination Request")
+    #IO.inspect({page, per_page}, label: "Alkemist Pagination Request")
 
     %{
       page: page,
