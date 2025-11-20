@@ -230,15 +230,20 @@ defmodule Alkemist.Query.Search do
     end
   end
 
-  # Parse association fields like "subscriber_personal_number_hash" -> {:subscriber, :personal_number_hash}
+  # Parse association fields using the pattern "schema_assoc_field" -> {:schema, :field}
+  # Example: "subscriber_assoc_personal_number_hash" -> {:subscriber, :personal_number_hash}
   defp parse_association_field(field_name) do
     # List of common association patterns - could be made configurable
-    associations = ["subscriber"]
+    associations = ["subscriber", "subscription"]
     
     Enum.find_value(associations, fn assoc ->
-      if String.starts_with?(field_name, assoc <> "assoc_") do
-        field_part = String.replace_prefix(field_name, assoc <> "assoc_", "")
-        {String.to_atom(assoc), String.to_atom(field_part)}
+      # Only handle "_assoc_" pattern for clear separation
+      if String.starts_with?(field_name, assoc <> "_assoc_") do
+        field_part = String.replace_prefix(field_name, assoc <> "_assoc_", "")
+        # Make sure we have a valid field name after the prefix
+        if field_part != "" do
+          {String.to_atom(assoc), String.to_atom(field_part)}
+        end
       end
     end)
   end
