@@ -37,7 +37,7 @@ defmodule Alkemist.Query.Paginate do
     
     actual_count = repo.one(from q in clean_query, select: count(q.id))
     IO.inspect(actual_count, label: "Actual record count in scoped query")
-    IO.inspect(Ecto.Query.to_sql(:all, repo, clean_query), label: "Clean query for counting")
+    IO.inspect(clean_query, label: "Clean query for counting")
     
     # Flop options with higher max_limit to support larger page sizes
     # Use for: nil to bypass any schema-based validation
