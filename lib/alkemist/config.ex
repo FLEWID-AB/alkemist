@@ -82,7 +82,7 @@ defmodule Alkemist.Config do
       paginate: Alkemist.Query.Paginate
     ],
     views: [
-      layout: {Alkemist.LayoutView, "app.html"},
+      layout: {Alkemist.LayoutView, :app},
       right_header: {Alkemist.LayoutView, "_right_header.html"},
       left_header: {Alkemist.LayoutView, "_left_header.html"},
       sidebar: {Alkemist.LayoutView, "_sidebar_navigation.html"},
