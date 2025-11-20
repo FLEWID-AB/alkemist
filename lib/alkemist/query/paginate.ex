@@ -27,26 +27,31 @@ defmodule Alkemist.Query.Paginate do
     flop_params = convert_pagination_params(params)
     
     # Flop options with higher max_limit to support larger page sizes
+    # Use for: nil to bypass any schema-based validation
     flop_opts = [
       repo: repo,
+      for: nil,
       default_limit: 10,
       max_limit: 1000
     ]
 
     case Flop.validate_and_run(query, flop_params, flop_opts) do
       {:ok, {_results, meta}} ->
+        IO.inspect(meta, label: "Flop Meta Success")
         # Apply the same filters/sorts to the query without pagination for further processing
         case Flop.validate(flop_params, flop_opts) do
           {:ok, flop_struct} ->
             filtered_query = Flop.query(query, flop_struct, [])
             pagination = convert_flop_meta_to_alkemist(meta)
             {filtered_query, pagination}
-          {:error, _} ->
+          {:error, error} ->
+            IO.inspect(error, label: "Flop Validate Error - Using Fallback")
             pagination = get_pagination_fallback(query, params, opts)
             {query, pagination}
         end
 
-      {:error, _} ->
+      {:error, error} ->
+        IO.inspect(error, label: "Flop validate_and_run Error - Using Fallback")
         pagination = get_pagination_fallback(query, params, opts)
         {query, pagination}
     end
@@ -55,6 +60,9 @@ defmodule Alkemist.Query.Paginate do
   defp convert_pagination_params(params) do
     per_page = format_integer(Map.get(params, "per_page", @per_page))
     page = format_integer(Map.get(params, "page", 1))
+
+    # Debug output to understand what's being requested
+    IO.inspect({page, per_page}, label: "Alkemist Pagination Request")
 
     %{
       page: page,
@@ -108,7 +116,7 @@ defmodule Alkemist.Query.Paginate do
     prev_page =
       if total_pages >= current_page && current_page > 1, do: current_page - 1, else: nil
 
-    %{
+    result = %{
       current_page: current_page,
       per_page: per_page,
       total_count: total_count,
@@ -116,6 +124,9 @@ defmodule Alkemist.Query.Paginate do
       next_page: next_page,
       prev_page: prev_page
     }
+    
+    IO.inspect(result, label: "Fallback Pagination Result")
+    result
   end
 
   defp get_total_count(query, repo) do
