@@ -83,14 +83,14 @@ defmodule Alkemist.Config do
     ],
     views: [
       layout: {Alkemist.LayoutView, :app},
-      right_header: {Alkemist.LayoutView, :right_header},
-      left_header: {Alkemist.LayoutView, :left_header},
-      sidebar: {Alkemist.LayoutView, :sidebar_navigation},
-      pagination: {AlkemistView, :pagination},
-      filter: {AlkemistView, :filter_view},
-      aside: {Alkemist.LayoutView, :aside},
-      styles: {Alkemist.LayoutView, :styles},
-      scripts: {Alkemist.LayoutView, :scripts}
+      right_header: {Alkemist.LayoutView, "_right_header.html"},
+      left_header: {Alkemist.LayoutView, "_left_header.html"},
+      sidebar: {Alkemist.LayoutView, "_sidebar_navigation.html"},
+      pagination: {AlkemistView, "_pagination.html"},
+      filter: {AlkemistView, "_filter_view.html"},
+      aside: {Alkemist.LayoutView, "_aside.html"},
+      styles: {Alkemist.LayoutView, "_styles.html"},
+      scripts: {Alkemist.LayoutView, "_scripts.html"}
     ],
     decorators: [
       filter: {Alkemist.SearchView, :filter_field_decorator},
