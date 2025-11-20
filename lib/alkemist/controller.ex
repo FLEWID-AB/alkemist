@@ -303,7 +303,7 @@ defmodule Alkemist.Controller do
           end
 
         conn
-        |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@otp_app))
+        |> Phoenix.Controller.put_layout(html: Alkemist.Config.layout(@otp_app))
         |> Phoenix.Controller.put_view(AlkemistView)
         |> Phoenix.Controller.render("index.html", assigns)
       else
@@ -395,7 +395,7 @@ defmodule Alkemist.Controller do
           assigns = Assign.show_assigns(resource, opts)
 
           conn
-          |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@otp_app))
+          |> Phoenix.Controller.put_layout(html: Alkemist.Config.layout(@otp_app))
           |> Phoenix.Controller.put_view(AlkemistView)
           |> Phoenix.Controller.render("show.html", assigns)
         else
@@ -510,7 +510,7 @@ defmodule Alkemist.Controller do
       conn = unquote(conn)
 
       conn
-      |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@otp_app))
+      |> Phoenix.Controller.put_layout(html: Alkemist.Config.layout(@otp_app))
       |> Phoenix.Controller.put_view(AlkemistView)
       |> Phoenix.Controller.render("#{action}.html", assigns)
     end
@@ -746,7 +746,7 @@ defmodule Alkemist.Controller do
                   end
 
                 conn
-                |> Phoenix.Controller.put_layout(Alkemist.Config.layout(@otp_app))
+                |> Phoenix.Controller.put_layout(html: Alkemist.Config.layout(@otp_app))
                 |> Phoenix.Controller.put_flash(:error, message)
                 |> Phoenix.Controller.redirect(
                   to: apply(Alkemist.Config.router_helpers(@otp_app), path, route_params)
@@ -800,7 +800,7 @@ defmodule Alkemist.Controller do
 
   def forbidden(conn, application) do
     conn
-    |> Phoenix.Controller.put_layout(Alkemist.Config.layout(application))
+    |> Phoenix.Controller.put_layout(html: Alkemist.Config.layout(application))
     |> Phoenix.Controller.put_flash(:error, "You are not authorized to access this page")
     |> Phoenix.Controller.redirect(
       to: Alkemist.Config.router_helpers(application).page_path(conn, :dashboard)
