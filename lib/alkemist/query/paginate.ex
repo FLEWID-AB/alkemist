@@ -27,9 +27,17 @@ defmodule Alkemist.Query.Paginate do
     flop_params = convert_pagination_params(params)
     
     # Debug: Check what query we're receiving and what the actual count is
-    actual_count = repo.one(from q in query, select: count(q.id))
+    # Properly clean the query for counting
+    clean_query = query
+    |> exclude(:select)
+    |> exclude(:preload) 
+    |> exclude(:order_by)
+    |> exclude(:limit)
+    |> exclude(:offset)
+    
+    actual_count = repo.one(from q in clean_query, select: count(q.id))
     IO.inspect(actual_count, label: "Actual record count in scoped query")
-    IO.inspect(Ecto.Query.to_sql(:all, repo, query), label: "Query being paginated")
+    IO.inspect(Ecto.Query.to_sql(:all, repo, clean_query), label: "Clean query for counting")
     
     # Flop options with higher max_limit to support larger page sizes
     # Use for: nil to bypass any schema-based validation
@@ -37,7 +45,8 @@ defmodule Alkemist.Query.Paginate do
       repo: repo,
       for: nil,
       default_limit: 10,
-      max_limit: 1000
+      max_limit: 1000,
+      count_limit: :infinity
     ]
 
     case Flop.validate_and_run(query, flop_params, flop_opts) do
