@@ -287,9 +287,9 @@ defmodule Alkemist.Assign do
 
     opts =
       opts
-      |> Keyword.put_new(:changeset, resource.changeset(resource.__struct__, %{}))
+      |> Keyword.put_new(:changeset, resource.changeset(resource.__struct__(), %{}))
       |> Keyword.put_new(:resource, resource)
-      |> Keyword.put_new(:mod, resource.__struct__)
+      |> Keyword.put_new(:mod, resource.__struct__())
 
     if Keyword.has_key?(opts, :form_partial) do
       {partial, assigns} =

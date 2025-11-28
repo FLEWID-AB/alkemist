@@ -202,7 +202,7 @@ defmodule Alkemist.Query.Search do
 
   defp parse_search_field({key, value}) do
     # Check if this is a turbo_ecto style field with operator suffix
-    regex = ~r/^(.+)_(eq|neq|lt|lteq|gt|gteq|in|cont|not_cont|start|not_start|end|not_end)$/
+    regex = ~r/^(.+)_(eq|neq|lt|lteq|gt|gteq|in|cont|not_cont|start|not_start|end|not_end|ilike|not_ilike)$/
 
     case Regex.run(regex, key) do
       [_, field_name, operator] ->
@@ -259,6 +259,8 @@ defmodule Alkemist.Query.Search do
       "in" -> :in
       "cont" -> :ilike_and
       "not_cont" -> :not_ilike_and
+      "ilike" -> :ilike_and
+      "not_ilike" -> :not_ilike_and
       "start" -> :like_and
       "not_start" -> :not_like_and
       "end" -> :like_and
@@ -342,7 +344,7 @@ defmodule Alkemist.Query.Search do
 
   def handle_special_fields({key, value}, _queryable) do
     # Extract operator from key and apply datetime processing if needed
-    regex = ~r/^(.+)_(eq|neq|lt|lteq|gt|gteq|in|cont|not_cont|start|not_start|end|not_end)$/
+    regex = ~r/^(.+)_(eq|neq|lt|lteq|gt|gteq|in|cont|not_cont|start|not_start|end|not_end|ilike|not_ilike)$/
 
     case Regex.run(regex, key) do
       [_, _field_name, operator] ->
