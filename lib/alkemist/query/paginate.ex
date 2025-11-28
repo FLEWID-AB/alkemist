@@ -87,8 +87,8 @@ defmodule Alkemist.Query.Paginate do
   end
 
   defp convert_pagination_params(params) do
-    per_page = format_integer(Map.get(params, "per_page", @per_page))
-    page = format_integer(Map.get(params, "page", 1))
+    per_page = format_integer(Map.get(params, "per_page", @per_page), @per_page)
+    page = format_integer(Map.get(params, "page", 1), 1)
 
     # Debug output to understand what's being requested
     #IO.inspect({page, per_page}, label: "Alkemist Pagination Request")
@@ -113,14 +113,14 @@ defmodule Alkemist.Query.Paginate do
   @spec get_pagination(Ecto.Query.t(), Map.t(), Keyword.t()) :: Map.t()
   def get_pagination(query, params, opts) do
     params = format_params(params)
-    repo = opts[:repo] || Db.Repo
+    repo = opts[:repo] || raise("Repository must be provided in opts")
     do_get_paginate(query, params, repo)
   end
 
   defp format_params(params) do
     params
-    |> Map.put_new(:per_page, format_integer(Map.get(params, "per_page", @per_page)))
-    |> Map.put_new(:page, format_integer(Map.get(params, "page", 1)))
+    |> Map.put_new(:per_page, format_integer(Map.get(params, "per_page", @per_page), @per_page))
+    |> Map.put_new(:page, format_integer(Map.get(params, "page", 1), 1))
   end
 
   defp get_pagination_fallback(query, params, opts) do
@@ -172,6 +172,12 @@ defmodule Alkemist.Query.Paginate do
     repo.one(from a in query, select: count(a.id))
   end
 
-  defp format_integer(value) when is_integer(value), do: value
-  defp format_integer(value) when is_bitstring(value), do: String.to_integer(value)
+  defp format_integer(value, _default) when is_integer(value) and value > 0, do: value
+  defp format_integer(value, default) when is_bitstring(value) do
+    case Integer.parse(value) do
+      {int, _} when int > 0 -> int
+      _ -> default
+    end
+  end
+  defp format_integer(_value, default), do: default
 end
