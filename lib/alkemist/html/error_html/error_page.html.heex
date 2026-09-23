@@ -1,0 +1,15 @@
+<div class="ak-error-page">
+  <span class="ak-error-page__code">{@status}</span>
+  <h1>{@message}</h1>
+  <p :if={@status == 404}>{gettext("The record you were looking for does not exist or was removed.")}</p>
+  <p :if={@status == 403}>{gettext("You are not authorized to access this page.")}</p>
+  <p :if={@status >= 500}>{gettext("Something went wrong on our side.")}</p>
+  <.button
+    href={Alkemist.Config.get(:home_path, assigns[:alkemist_app] || :alkemist)}
+    variant="secondary"
+    icon="hero-chevron-left"
+    class="mt-4"
+  >
+    {gettext("Back to the start")}
+  </.button>
+</div>

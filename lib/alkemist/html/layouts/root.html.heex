@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content={Plug.CSRFProtection.get_csrf_token()} />
+    <title>
+      {[assigns[:page_title], Alkemist.Config.get(:title, assigns[:alkemist_app] || :alkemist)]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.join(" · ")}
+    </title>
+    <Theme.head alkemist_app={assigns[:alkemist_app] || :alkemist} theme={assigns[:theme]} />
+  </head>
+  <body class="ak-body">
+    {@inner_content}
+  </body>
+</html>

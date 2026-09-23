@@ -18,12 +18,7 @@ defmodule Alkemist.Utils do
     iex> Utils.to_label(nil)
     ""
   """
-  def to_label(val) do
-    "#{val}"
-    |> String.split("_")
-    |> Enum.map(&Inflex.camelize/1)
-    |> Enum.join(" ")
-  end
+  def to_label(val), do: Alkemist.Naming.humanize(val)
 
   @doc ~S"""
   Returns the struct name as atom
@@ -36,29 +31,7 @@ defmodule Alkemist.Utils do
     iex> Utils.get_struct(%Alkemist.Post{})
     :post
   """
-  def get_struct(resource) when is_map(resource) do
-    get_struct(resource.__struct__)
-  end
-
-  def get_struct(resource) do
-    source =
-      resource.__schema__(:source)
-      |> singularize()
-
-    String.to_atom(source)
-  end
-
-  # This is a special case because inflex has some issues
-  defp singularize(val) when is_bitstring(val) do
-    val
-    |> Inflex.singularize()
-    |> handle_irregular()
-  end
-
-  defp handle_irregular(val) do
-    regex = ~r/(reser)f/i
-    Regex.replace(regex, val, "\\1ve")
-  end
+  def get_struct(resource), do: Alkemist.Naming.resource_key(resource)
 
   @doc ~S"""
   Returns the singular name for an Ecto Schema
@@ -71,13 +44,7 @@ defmodule Alkemist.Utils do
     iex> Utils.singular_name(Alkemist.Post)
     "Post"
   """
-  def singular_name(resource) when is_map(resource), do: singular_name(resource.__struct__)
-
-  def singular_name(resource) do
-    resource.__schema__(:source)
-    |> singularize()
-    |> to_label()
-  end
+  def singular_name(resource), do: Alkemist.Naming.singular_label(resource)
 
   @doc ~S"""
   Returns the plural name for an Ecto Schema
@@ -90,13 +57,7 @@ defmodule Alkemist.Utils do
     iex> Utils.plural_name(Alkemist.Post)
     "Posts"
   """
-  def plural_name(resource) when is_map(resource), do: plural_name(resource.__struct__)
-
-  def plural_name(resource) do
-    resource.__schema__(:source)
-    |> Inflex.pluralize()
-    |> to_label()
-  end
+  def plural_name(resource), do: Alkemist.Naming.plural_label(resource)
 
   @doc """
   Removes any empty values from the params
@@ -190,34 +151,5 @@ defmodule Alkemist.Utils do
     else
       {:error, :invalid_field}
     end
-  end
-
-  @doc """
-  Returns the default helper method for a resource to get the helper path. This can be overridden on a controller level
-
-  ## Examples
-
-    iex> Utils.default_resource_helper(Alkemist.Post)
-    :post_path
-  """
-  def default_resource_helper(resource) do
-    struct = get_struct(resource)
-    default_struct_helper(struct)
-  end
-
-  @doc """
-  Returns the default helper method based on teh struct
-
-  ## Examples
-
-    iex> Utils.default_struct_helper(:post)
-    :post_path
-  """
-  def default_struct_helper(struct) do
-    prefix = case Alkemist.Config.route_prefix() do
-      nil -> ""
-      val -> "#{val}_"
-    end
-    String.to_atom("#{prefix}#{struct}_path")
   end
 end

@@ -25,10 +25,11 @@ erl_crash.dump
 manager-*.tar
 
 assets/node_modules/
+/priv/static/assets/*.map
 
 .elixir_ls/
 
-priv/static
+# priv/static/assets holds the committed prebuilt CSS/JS bundle
 .tool-versions
 .docker-files
 .docker-files/*

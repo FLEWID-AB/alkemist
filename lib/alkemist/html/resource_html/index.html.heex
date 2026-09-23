@@ -1,0 +1,86 @@
+<Layouts.app
+  conn={@conn}
+  flash={@flash}
+  alkemist_app={@alkemist_app}
+  theme={assigns[:theme]}
+  page_title={@page_title}
+  current_path={@current_path}
+>
+  <.page_header title={@plural_name} description={@page_description}>
+    <:actions>
+      <.export_link
+        :if={assigns[:has_export]}
+        paths={@paths}
+        link_params={@link_params}
+        resource={@mod}
+        conn={@conn}
+        alkemist_app={@alkemist_app}
+      />
+      <.collection_actions
+        actions={@collection_actions}
+        resource={@mod}
+        paths={@paths}
+        conn={@conn}
+        alkemist_app={@alkemist_app}
+      />
+    </:actions>
+  </.page_header>
+
+  <div class="ak-content">
+    <div :if={@filters != [] or @batch_actions != []} class="ak-toolbar">
+      <Theme.filters
+        :if={@filters != []}
+        filters={@filters}
+        filter_form={@filter_form}
+        paths={@paths}
+        link_params={@link_params}
+        search={@search}
+        alkemist_app={@alkemist_app}
+        theme={assigns[:theme]}
+      />
+      <div class="flex items-center gap-3">
+        <.batch_actions :if={@batch_actions != []} actions={@batch_actions} paths={@paths} />
+        <Alkemist.Components.Filters.search_hint :if={@filters != []} />
+      </div>
+    </div>
+
+    <.scopes :if={@scopes != []} scopes={@scopes} paths={@paths} link_params={@link_params} />
+
+    <.columns>
+      <.card flush>
+        <.index_table
+          id={"#{@struct}-index"}
+          columns={@columns}
+          entries={@entries}
+          paths={@paths}
+          link_params={@link_params}
+          sort={@sort}
+          member_actions={@member_actions}
+          batch={@batch_actions != []}
+          struct={@struct}
+          conn={@conn}
+          alkemist_app={@alkemist_app}
+          theme={assigns[:theme]}
+        />
+        <.empty_state
+          :if={@entries == []}
+          title={if @search, do: gettext("No records match"), else: gettext("No records yet")}
+          message={if @search, do: gettext("Try another search or clear the filters.")}
+          icon="hero-magnifying-glass"
+        />
+        <Theme.pagination
+          :if={assigns[:pagination]}
+          pagination={@pagination}
+          entries_count={length(@entries)}
+          paths={@paths}
+          link_params={@link_params}
+          alkemist_app={@alkemist_app}
+          theme={assigns[:theme]}
+        />
+      </.card>
+      <:aside :if={@sidebars != []}>
+        <Theme.aside sidebars={@sidebars} page_assigns={assigns} alkemist_app={@alkemist_app} theme={assigns[:theme]} />
+      </:aside>
+    </.columns>
+  </div>
+</Layouts.app>

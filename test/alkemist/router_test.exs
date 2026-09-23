@@ -1,6 +1,7 @@
 defmodule Alkemist.RouterTest do
   use ExUnit.Case, async: true
-  use Plug.Test
+  import Plug.Test
+  import Plug.Conn
 
   defmodule PostController do
     use Phoenix.Controller
@@ -23,52 +24,52 @@ defmodule Alkemist.RouterTest do
 
   describe "alkemist_resources" do
     test "it matches all resource actions" do
-      conn = call(Router, :get, "posts")
+      conn = call(Router, :get, "/posts")
       assert conn.status == 200
       assert conn.resp_body == "index posts"
     end
 
     test "it matches export action" do
-      conn = call(Router, :get, "posts/export")
+      conn = call(Router, :get, "/posts/export")
       assert conn.status == 200
       assert conn.resp_body == "export posts"
     end
 
     test "it matches show action with params" do
-      conn = call(Router, :get, "posts/123")
+      conn = call(Router, :get, "/posts/123")
       assert conn.status == 200
       assert conn.resp_body == "show post"
       assert conn.params["id"] == "123"
     end
 
     test "it matches edit action with params" do
-      conn = call(Router, :get, "posts/123/edit")
+      conn = call(Router, :get, "/posts/123/edit")
       assert conn.status == 200
       assert conn.resp_body == "edit post"
       assert conn.params["id"] == "123"
     end
 
     test "it matches new action" do
-      conn = call(Router, :get, "posts/new")
+      conn = call(Router, :get, "/posts/new")
       assert conn.status == 200
       assert conn.resp_body == "new post"
     end
 
     test "it matches create action" do
-      conn = call(Router, :post, "posts")
+      conn = call(Router, :post, "/posts")
       assert conn.status == 200
       assert conn.resp_body == "create post"
     end
 
     test "it matches update action" do
-      conn = call(Router, :put, "posts/123")
+      conn = call(Router, :put, "/posts/123")
       assert conn.status == 200
       assert conn.resp_body == "update post"
       assert conn.params["id"] == "123"
     end
 
     test "it matches delete action" do
-      conn = call(Router, :delete, "posts/123")
+      conn = call(Router, :delete, "/posts/123")
       assert conn.status == 200
       assert conn.resp_body == "delete post"
       assert conn.params["id"] == "123"

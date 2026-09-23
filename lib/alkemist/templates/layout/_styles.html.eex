@@ -1,1 +1,0 @@
-<link rel="stylesheet" href="<%= static_path(@conn, "/alkemist/css/alkemist.css") %>">

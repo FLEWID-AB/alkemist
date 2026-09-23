@@ -1,0 +1,69 @@
+<Layouts.app
+  conn={@conn}
+  flash={@flash}
+  alkemist_app={@alkemist_app}
+  theme={assigns[:theme]}
+  page_title={@page_title}
+  current_path={@current_path}
+>
+  <.page_header title={@page_title} back_href={Paths.for(@paths, :index)} back_label={@plural_name}>
+    <:actions>
+      <.action_link
+        :if={edit_action(@member_actions)}
+        action={edit_action(@member_actions)}
+        resource={@resource}
+        paths={@paths}
+        conn={@conn}
+        alkemist_app={@alkemist_app}
+        variant="button"
+        button_variant="secondary"
+      />
+      <.dropdown
+        :if={more_actions(@member_actions) != []}
+        id="ak-record-actions"
+        label={gettext("More actions")}
+        icon="hero-ellipsis-horizontal"
+        icon_only
+      >
+        <.action_link
+          :for={action <- more_actions(@member_actions)}
+          action={action}
+          resource={@resource}
+          paths={@paths}
+          conn={@conn}
+          alkemist_app={@alkemist_app}
+        />
+      </.dropdown>
+    </:actions>
+    <:tabs :if={tab_items(@panels, @active_tab, @paths, @resource) != []}>
+      <.tabs items={tab_items(@panels, @active_tab, @paths, @resource)} label={gettext("Sections")} />
+    </:tabs>
+  </.page_header>
+
+  <div class="ak-content">
+    <.columns>
+      <.card :if={@active_tab in [nil, ""]} flush title={gettext("%{name} details", name: @singular_name)}>
+        <:actions>
+          <.button
+            :if={edit_action(@member_actions)}
+            href={Paths.for(@paths, :edit, @resource)}
+            variant="ghost"
+            size="xs"
+          >
+            {gettext("Edit")}
+          </.button>
+        </:actions>
+        <.details rows={@rows} resource={@resource} paths={@paths} alkemist_app={@alkemist_app} theme={assigns[:theme]} />
+      </.card>
+      <.panel
+        :for={{label, opts} <- panels_for_tab(@panels, @active_tab)}
+        title={to_string(label)}
+        opts={opts}
+        page_assigns={assigns}
+      />
+      <:aside :if={@sidebars != []}>
+        <Theme.aside sidebars={@sidebars} page_assigns={assigns} alkemist_app={@alkemist_app} theme={assigns[:theme]} />
+      </:aside>
+    </.columns>
+  </div>
+</Layouts.app>

@@ -17,6 +17,8 @@ defmodule Mix.Tasks.Alkemist.Gen.Controller do
     mix alkemist.gen.controller User MyApp.User Admin
 
   will create `lib/app_web/controllers/admin/user_controller.ex`
+
+  Existing files are not overwritten unless `--force` is given.
   """
 
   use Mix.Task
@@ -31,29 +33,35 @@ defmodule Mix.Tasks.Alkemist.Gen.Controller do
       Mix.raise("mix.alkemist.gen.controller needs the module name and model name")
     end
 
+    {opts, args, _} = OptionParser.parse(args, strict: [force: :boolean])
     resource = Enum.at(args, 0)
     model = Enum.at(args, 1)
     namespace = Enum.at(args, 2)
 
     schema = build_schema(resource, model, namespace)
-    context = %{schema: schema, context_app: Mix.Phoenix.context_app()}
+    context = %{schema: schema, context_app: Mix.Phoenix.context_app(), force: opts[:force] == true}
 
     copy_files(context)
   end
 
-  defp copy_files(%{schema: schema} = context) do
+  defp copy_files(%{schema: schema, force: force} = context) do
     files = files_to_generate(context)
     bindings = Map.to_list(schema)
     template_path = Path.join([package_path() | ~w(priv templates)])
 
     Enum.each(files, fn {tpl, dest_path} ->
+      if File.exists?(dest_path) and not force do
+        Mix.raise("#{dest_path} already exists. Pass --force to overwrite it.")
+      end
+
       source_file = Path.join([template_path, tpl])
-      source = source_file |> EEx.eval_file(bindings)
+      source = EEx.eval_file(source_file, bindings)
+      File.mkdir_p!(Path.dirname(dest_path))
       File.write!(dest_path, source)
-      IO.puts("Created controller at #{dest_path}")
-      IO.puts("")
-      IO.puts("Please add the route to your router.ex:")
-      IO.puts("alkemist_resources \"/#{schema.plural}\", #{schema.resource}Controller")
+      Mix.shell().info("Created controller at #{dest_path}")
+      Mix.shell().info("")
+      Mix.shell().info("Add the route to your router.ex:")
+      Mix.shell().info("    alkemist_resources \"/#{schema.plural}\", #{schema.controller_name}Controller")
     end)
   end
 
@@ -62,15 +70,14 @@ defmodule Mix.Tasks.Alkemist.Gen.Controller do
     web_path = to_string(schema.web_path)
 
     [
-      {"controller.ex",
-       Path.join([web_prefix, "controllers", web_path, "#{schema.singular}_controller.ex"])}
+      {"controller.ex", Path.join([web_prefix, "controllers", web_path, "#{schema.singular}_controller.ex"])}
     ]
   end
 
   defp build_schema(resource, model, namespace) do
     module = ("Elixir." <> resource) |> String.to_atom()
     singular = String.split(resource, ".") |> List.last() |> Phoenix.Naming.underscore()
-    source = Inflex.pluralize(singular)
+    source = Alkemist.Naming.pluralize(singular)
 
     %{
       controller_name: controller_name(namespace, resource),
@@ -82,7 +89,8 @@ defmodule Mix.Tasks.Alkemist.Gen.Controller do
       singular: singular,
       web_module: "#{web_module()}" |> String.replace("Elixir.", ""),
       web_namespace: namespace,
-      web_path: namespace && Phoenix.Naming.underscore(namespace)
+      web_path: namespace && Phoenix.Naming.underscore(namespace),
+      otp_app: Mix.Phoenix.otp_app()
     }
   end
 

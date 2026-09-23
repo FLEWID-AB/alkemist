@@ -16,5 +16,7 @@ defmodule Alkemist.Category do
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [:name])
+    |> validate_required([:name])
+    |> cast_assoc(:posts, drop_param: :posts_drop, with: &Alkemist.Post.changeset/2)
   end
 end

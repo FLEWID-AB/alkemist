@@ -1,234 +1,102 @@
 defmodule Alkemist.Config do
   @moduledoc """
-  This module encapsulates all config.exs options
+  Alkemist's configuration, validated with `NimbleOptions` and memoised per OTP app.
 
-  ## Usage:
+  Alkemist reads `config :<otp_app>, Alkemist, [...]` where `otp_app` is the option given
+  to `use Alkemist.Controller, otp_app: :my_app` (default `:alkemist`). Each app can thus
+  carry its own configuration.
 
-  ### config.exs:
+  ## Options
 
-    config :alkemist, Alkemist,
-      # required - set your app's Ecto Repo
-      repo: MyApp.Repo,
+  #{NimbleOptions.docs(Alkemist.Config.Schema.schema())}
 
-      # required - set your app's cache_folder, should be named the same as your Web Interface Module
-      web_interface: "MyAppWeb",
+  (Schema module: Alkemist.Config.Schema, internal.)
 
-      # required when using the auto generated code
-      router_helpers: MyAppWeb.Router.Helpers,
-
-      # set a prefix on the global level - this will be prepended to the auto-generated routes if it is set
-      route_prefix: :admin,
-
-      # Set a custom logo (optional), must be placed in the asset folder.
-      logo: "logo.svg",
-
-      # Set a custom title or brand name (optional)
-      title: "MyApp",
-
-      # implement a custom Authorization Provider (optional)
-      authorization_provider: MyApp.Authorization,
-
-      # custom implementations for search and pagination (optional)
-      query: [
-        search: Alkemist.Query.Search,
-        paginate: Alkemist.Query.Paginate
-      ],
-
-      # use custom views (optional)
-      views: [
-        # use a custom layout view, default is {Alkemist.LayoutView, "app.html"}
-        layout: {MyAppWeb.LayoutView, "app.html"},
-
-        # custom view partial for the right header menu, default {Alkemist.LayoutView, "_right_header.html"}
-        right_header: {MyAppWeb.SharedView, "header_right.html"},
-
-        # custom view partial for the left header menu, default {Alkemist.LayoutView, "_left_header.html"}
-        left_header: {MyAppWeb.SharedView, "header_left.html"}
-
-        # custom view partial for the sidebar to render the left menu, default `{Alkemist.LayoutView, "_sidebar_navigation.html"}`
-        sidebar: {MyAppWeb.SharedView, "sidebar.html"},
-
-        # custom view partial for the right sidebar. By default it renders the filters
-        aside: {MyAppWeb.SharedView, "aside.html"}
-
-        # use a custom css
-        styles: {MyApp.SharedView, "styles.html"}
-
-        # use a custom js
-        scripts: {MyApp.SharedView, "scripts.html"}
-      ],
-
-      # Render custom form templates for filter and new/edit forms
-      decorators: [
-        filter: {MyApp.SearchView, :filter_decorator},
-        form: {MyApp.FormView, :form_field_decorator},
-        # Custom display for values in the index and show actions
-        field_value: {MyApp.IndexView, :field_string_value},
-        row_class: {MyApp.IndexView, :row_decorator}
-      ]
+  Unknown keys raise at first use. The keys removed in 3.0 (`web_interface`,
+  `json_library`, `router_helpers`, `route_prefix`) raise with a pointer to their
+  replacement. Call `validate!/1` from your application start to fail at boot instead.
   """
 
-  @defaults [
-    repo: nil,
-    web_interface: "Alkemist",
-    title: "Alkemist",
-    logo: false,
-    router_helpers: Alkemist.Router.Helpers,
-    route_prefix: nil,
-    authorization_provider: Alkemist.Authorization,
-    json_library: Poison,
-    query: [
-      search: Alkemist.Query.Search,
-      paginate: Alkemist.Query.Paginate
-    ],
-    views: [
-      layout: {Alkemist.LayoutView, :app},
-      right_header: {Alkemist.LayoutView, "_right_header.html"},
-      left_header: {Alkemist.LayoutView, "_left_header.html"},
-      sidebar: {Alkemist.LayoutView, "_sidebar_navigation.html"},
-      pagination: {AlkemistView, "_pagination.html"},
-      filter: {AlkemistView, "_filter_view.html"},
-      aside: {Alkemist.LayoutView, "_aside.html"},
-      styles: {Alkemist.LayoutView, "_styles.html"},
-      scripts: {Alkemist.LayoutView, "_scripts.html"}
-    ],
-    decorators: [
-      filter: {Alkemist.SearchView, :filter_field_decorator},
-      form: {Alkemist.FormView, :form_field_decorator},
-      field_value: {AlkemistView, :field_string_value},
-      member_actions: {AlkemistView, :member_actions_decorator},
-      row_class: {AlkemistView, :row_class_decorator}
-    ]
-  ]
+  alias Alkemist.Config.Schema
+
+  @removed %{
+    web_interface: "it named the menu file cache, which no longer exists (menus come from the router)",
+    json_library: "it encoded the menu file cache, which no longer exists",
+    router_helpers: "paths are derived from the router by Alkemist.Routes",
+    route_prefix: "paths are derived from the router by Alkemist.Routes",
+    views: "templates are Phoenix components now; override them in a module that `use Alkemist.Theme` and set `theme:`",
+    decorators:
+      "rendering hooks are theme callbacks now (`value/1`, `row_class/2`, `member_actions/1`, `filter_field/1`, `form_field/1`); set `theme:`"
+  }
 
   @doc """
-  Returns a value from the configuration or the default value
+  The validated configuration for `otp_app`. Raises `NimbleOptions.ValidationError` on
+  invalid or unknown keys.
   """
-  def get(key, application \\ :alkemist) do
-    default = Keyword.get(@defaults, key)
-    config(key, default, application)
+  @spec fetch!(atom()) :: keyword()
+  def fetch!(otp_app \\ :alkemist) do
+    key = {__MODULE__, otp_app}
+
+    case :persistent_term.get(key, nil) do
+      nil ->
+        config = validate!(otp_app)
+        :persistent_term.put(key, config)
+        config
+
+      config ->
+        config
+    end
   end
 
-  @doc """
-  Returns the configured Repo from alkemist configuration
-  """
-  def repo(application \\ :alkemist) do
-    get(:repo, application)
+  @doc "Validates the configuration of `otp_app` without caching it. Returns the validated keyword list."
+  @spec validate!(atom()) :: keyword()
+  def validate!(otp_app \\ :alkemist) do
+    raw = Application.get_env(otp_app, Alkemist, [])
+
+    for {key, why} <- @removed, Keyword.has_key?(raw, key) do
+      raise ArgumentError,
+            "config :#{otp_app}, Alkemist, #{key}: was removed in Alkemist 3.0: #{why}. See guides/upgrading_to_3_0.md."
+    end
+
+    NimbleOptions.validate!(raw, Schema.schema())
   end
 
-  @doc """
-  Returns the configured router helpers from alkemist configuration
-  """
-  def router_helpers(application \\ :alkemist) do
-    get(:router_helpers, application)
+  @doc "Drops the cached configuration of `otp_app` (or of every app), e.g. after changing it in tests."
+  @spec reset(atom() | :all) :: :ok
+  def reset(otp_app \\ :all)
+
+  def reset(:all) do
+    for {{__MODULE__, _} = key, _} <- :persistent_term.get(), do: :persistent_term.erase(key)
+    :ok
   end
 
-  @doc """
-  Returns the prefix or scope for the routes
-  """
-  def route_prefix(application \\ :alkemist) do
-    get(:route_prefix, application)
+  def reset(otp_app) do
+    :persistent_term.erase({__MODULE__, otp_app})
+    :ok
   end
 
-  @doc """
-  Returns the decorator for given areaa
-  """
-  def filter_decorator(application \\ :alkemist) do
-    decorators = get(:decorators, application)
-    Keyword.get(decorators, :filter, @defaults[:decorators][:filter])
-  end
+  @doc "Returns one configuration value."
+  @spec get(atom(), atom()) :: term()
+  def get(key, otp_app \\ :alkemist), do: Keyword.get(fetch!(otp_app), key)
 
-  @doc """
-  Returns the decorator for form fields
-  """
-  def form_field_decorator(application \\ :alkemist) do
-    decorators = get(:decorators, application)
-    Keyword.get(decorators, :form, @defaults[:decorators][:form])
-  end
+  @doc "The Ecto repo."
+  def repo(otp_app \\ :alkemist), do: get(:repo, otp_app)
 
-  @doc """
-  Returns the field value decorator to render the string value for given field type(s)
-  """
-  def field_value_decorator(application \\ :alkemist) do
-    decorators = get(:decorators, application)
-    Keyword.get(decorators, :field_value, @defaults[:decorators][:field_value])
-  end
+  @doc "The authorization provider module, see `Alkemist.Authorization`."
+  def authorization_provider(otp_app \\ :alkemist), do: get(:authorization_provider, otp_app)
 
-  @doc """
-  Returns the Member Actions decorator so it can be customized in implementations
-  The method needs to have 2 implementations. One is for the header, the other one for the
-  Actions column.
-  `def member_actions(actions) do`
-  `def member_actions(conn, actions, resource) do
-  """
-  def member_actions_decorator(application \\ :alkemist) do
-    decorators = get(:decorators, application)
-    Keyword.get(decorators, :member_actions, @defaults[:decorators][:member_actions])
-  end
+  @doc "Where denied requests are sent: a path, `{module, fun}` or `:render`."
+  def forbidden_redirect_to(otp_app \\ :alkemist), do: get(:forbidden_redirect_to, otp_app)
 
-  @doc """
-  Returns the row class decorator, so classes can be overridden
-  """
-  def row_class_decorator(application \\ :alkemist) do
-    decorators = get(:decorators, application)
-    Keyword.get(decorators, :row_class, @defaults[:decorators][:row_class])
-  end
+  @doc "Pagination settings."
+  def pagination(otp_app \\ :alkemist), do: get(:pagination, otp_app)
 
-  @doc """
-  Returns the configured authorization provider from alkemist configuration
-  """
-  def authorization_provider(application \\ :alkemist) do
-    get(:authorization_provider, application)
-  end
+  @doc "CSV export settings."
+  def csv(otp_app \\ :alkemist), do: get(:csv, otp_app)
 
-  @doc """
-  Returns the configured layout from alkemist configuration or the default
-  """
-  def layout(application \\ :alkemist) do
-    views = get(:views, application)
-    Keyword.get(views, :layout, @defaults[:views][:layout])
-  end
+  @doc "The search provider module."
+  def search_provider(otp_app \\ :alkemist), do: get(:query, otp_app)[:search]
 
-  @doc """
-  Returns the search hook to use by default
-  """
-  def search_provider(application \\ :alkemist) do
-    query = get(:query, application)
-    Keyword.get(query, :search, @defaults[:query][:search])
-  end
-
-  @doc """
-  Returns the pagination provider to use by default
-  """
-  def pagination_provider(application \\ :alkemist) do
-    query = get(:query, application)
-    Keyword.get(query, :paginate, @defaults[:query][:paginate])
-  end
-
-  @doc """
-  Returns the json encoder to use by default
-  """
-  def json_provider(application \\ :alkemist) do
-    get(:json_library, application)
-  end
-
-  defp config(application) do
-    Application.get_env(application, Alkemist, [])
-  end
-
-  defp config(key, default, application) do
-    application
-    |> config()
-    |> Keyword.get(key, default)
-    |> merge_list(default)
-    |> resolve_config(default)
-  end
-
-  defp merge_list(config, default) when is_list(config) do
-    Keyword.merge(default, config)
-  end
-
-  defp merge_list(config, _default), do: config
-
-  defp resolve_config(value, _default), do: value
+  @doc "The pagination provider module."
+  def pagination_provider(otp_app \\ :alkemist), do: get(:query, otp_app)[:paginate]
 end

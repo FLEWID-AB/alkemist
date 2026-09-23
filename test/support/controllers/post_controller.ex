@@ -1,5 +1,5 @@
 defmodule AlkemistTest.PostController do
-  use Phoenix.Controller
+  use Phoenix.Controller, formats: [:html]
   @resource Alkemist.Post
   use Alkemist.Controller
 

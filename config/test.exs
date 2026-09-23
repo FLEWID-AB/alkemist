@@ -1,9 +1,6 @@
 import Config
 
-config :alkemist, Alkemist,
-  router_helpers: AlkemistTest.Router.Helpers,
-  repo: Alkemist.Repo,
-  web_interface: "AlkemistWeb"
+config :alkemist, Alkemist, repo: Alkemist.Repo
 
 config :alkemist, ecto_repos: [Alkemist.Repo]
 
@@ -15,4 +12,12 @@ config :alkemist, Alkemist.Repo,
   database: "alkemist_test",
   hostname: "localhost",
   port: System.get_env("PG_PORT") || "1234",
-  pool: Ecto.Adapters.SQL.Sandbox
+  pool: Ecto.Adapters.SQL.Sandbox,
+  priv: "test/support/repo"
+
+config :alkemist, AlkemistTest.Endpoint,
+  secret_key_base: String.duplicate("alkemist-test-secret", 4),
+  server: false,
+  render_errors: [formats: [html: Alkemist.ErrorHTML]]
+
+config :logger, level: :warning

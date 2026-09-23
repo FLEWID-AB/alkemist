@@ -11,17 +11,15 @@ defmodule Alkemist.Assign do
     :delete
   ]
   @default_action_opts [
-    show: [icon: "fas fa-fw fa-eye"],
-    edit: [icon: "fas fa-fw fa-edit"],
+    new: [icon: "hero-plus"],
+    show: [icon: "hero-eye"],
+    edit: [icon: "hero-pencil-square"],
     delete: [
-      icon: "fas fa-fw fa-trash",
+      icon: "hero-trash",
       link_opts: [method: :delete, data: [confirm: "Do you really want to delete this record?"]]
     ]
   ]
-  @default_search_provider Alkemist.Config.search_provider()
-  @default_pagination_provider Alkemist.Config.pagination_provider()
-  @sortable_types ~w(string integer float date datetime)a
-  @default_sort "id+desc"
+  @sortable_types ~w(string integer float number date datetime)a
 
   @doc """
   Creates the default assigns for a controller index action.
@@ -43,7 +41,7 @@ defmodule Alkemist.Assign do
   def index_assigns(params, resource, opts \\ []) do
     opts = default_index_opts(opts, resource)
     repo = opts[:repo]
-    params = Utils.clean_params(params) |> Map.put_new("s", opts[:sort_by])
+    params = params |> Utils.clean_params() |> put_default_sort(opts[:sort_by])
 
     query = opts[:query]
 
@@ -64,42 +62,83 @@ defmodule Alkemist.Assign do
         {field, cb, column_opts}
       end)
 
-    query = opts[:search_provider].run(query, params)
-    {query, pagination} = opts[:pagination_provider].run(query, params, repo: repo)
+    provider_opts = provider_opts(opts, resource)
+    query = opts[:search_provider].run(query, params, provider_opts)
+    {query, pagination} = opts[:pagination_provider].run(query, params, provider_opts)
+
     entries =
       query
       |> do_preload(opts[:preload])
       |> repo.all()
 
+    filters = Enum.map(opts[:filters], &normalize_filter/1)
+    q = params["q"]
+
     [
-      struct: Utils.get_struct(resource),
+      struct: opts[:struct] || Utils.get_struct(resource),
       resource: resource,
       entries: entries,
       pagination: pagination,
       columns: columns,
       scopes: scopes,
-      filters: opts[:filters],
+      filters: filters,
+      filter_form: Phoenix.Component.to_form(if(is_map(q), do: q, else: %{}), as: :q),
+      page_description: opts[:description],
+      sort: parse_sort(params["s"]),
+      link_params: link_params(params),
       sidebars: opts[:sidebars],
       batch_actions: opts[:batch_actions],
-      show_aside: opts[:show_aside],
-      search: Map.has_key?(params, "q"),
-      mod: opts[:mod]
+      search: is_map(q) and q != %{},
+      mod: opts[:mod],
+      page_title: opts[:plural_name]
     ]
     |> global_assigns(opts)
     |> additional_assigns(opts)
   end
 
+  # Filters are `:field` or `{:field, opts}` with keyword or map opts; normalise to `{field, map}`.
+  defp normalize_filter({field, opts}) when is_list(opts), do: {field, Map.new(opts)}
+  defp normalize_filter({field, opts}) when is_map(opts), do: {field, opts}
+  defp normalize_filter(field) when is_atom(field), do: {field, %{}}
+
+  defp parse_sort(sort) when is_binary(sort) do
+    case String.split(sort, ~r/[+ ]/, parts: 2, trim: true) do
+      [field, dir] -> {field, dir}
+      [field] -> {field, "asc"}
+      _ -> nil
+    end
+  end
+
+  defp parse_sort(_), do: nil
+
+  @doc "The request params worth carrying across index links: `scope`, `q`, `s` and `per_page`."
+  def link_params(params) do
+    params
+    |> Map.take(["scope", "q", "s", "per_page"])
+    |> Enum.reject(fn {_k, v} -> v in [nil, "", %{}, []] end)
+    |> Map.new()
+  end
+
   defp global_assigns(assigns, opts) do
+    otp_app = Keyword.get(opts, :otp_app, :alkemist)
+    conn = opts[:conn]
+
     global_opts = [
       member_actions: member_actions(opts),
       collection_actions: collection_actions(opts),
       singular_name: opts[:singular_name],
       plural_name: opts[:plural_name],
-      alkemist_app: Keyword.get(opts, :otp_app, :alkemist),
-      route_params: Keyword.get(opts, :route_params)
+      alkemist_app: otp_app,
+      otp_app: otp_app,
+      theme: opts[:theme],
+      route_params: Keyword.get(opts, :route_params),
+      paths: conn && opts[:controller] && Alkemist.Paths.new(conn, opts[:controller], opts[:route_params]),
+      current_path: conn && conn.request_path
     ]
 
-    Keyword.merge(assigns, global_opts)
+    assigns
+    |> Keyword.merge(global_opts)
+    |> Keyword.put_new(:page_title, opts[:plural_name])
   end
 
   defp member_actions(opts) do
@@ -125,45 +164,65 @@ defmodule Alkemist.Assign do
   end
 
   @doc """
-  Creates all the necessary values for the CSV generation
+  Builds the filtered, scoped and sorted query for a CSV export without running it.
+  Returns `%{query:, columns:, preload:, repo:}`.
   """
-  def csv_assigns(params, resource, opts \\ []) do
+  def csv_query(params, resource, opts \\ []) do
     opts = default_csv_opts(opts, resource)
-    repo = opts[:repo]
-
     query = opts[:query]
 
     scopes =
-      opts[:scopes]
-      |> Enum.map(fn scope ->
-        map_scope(scope, query, params, opts)
+      Enum.map(opts[:scopes], fn scope ->
+        map_scope(scope, query, params, Keyword.put(opts, :scope_counts, false))
       end)
 
-    query = query |> scope(scopes)
+    query = scope(query, scopes)
+    columns = Enum.map(opts[:columns], fn col -> map_column(col, resource) end)
+    query = opts[:search_provider].run(query, params, provider_opts(opts, resource))
 
-    columns =
-      opts[:columns]
-      |> Enum.map(fn col -> map_column(col, resource) end)
-
-    query = opts[:search_provider].run(query, params)
-
-    entries =
-      query
-      |> do_preload(opts[:preload])
-      |> repo.all()
-
-    [
-      entries: entries,
-      columns: columns
-    ]
+    %{query: query, columns: columns, preload: opts[:preload], repo: opts[:repo]}
   end
 
   @doc """
-  Creates the view assigns for the new and edit actions
+  Loads every entry of a CSV export into memory. Prefer `csv_query/3` with
+  `Alkemist.Export.CSV.send_stream/4`.
+  """
+  @deprecated "Use csv_query/3"
+  def csv_assigns(params, resource, opts \\ []) do
+    %{query: query, columns: columns, preload: preload, repo: repo} =
+      csv_query(params, resource, opts)
+
+    [entries: query |> do_preload(preload) |> repo.all(), columns: columns]
+  end
+
+  # Options every search/pagination provider call receives.
+  defp provider_opts(opts, resource) do
+    [
+      schema: resource,
+      repo: opts[:repo],
+      otp_app: Keyword.get(opts, :otp_app, :alkemist),
+      timezone: Alkemist.Config.get(:timezone, Keyword.get(opts, :otp_app, :alkemist))
+    ]
+  end
+
+  defp show_title(fun, resource, _singular) when is_function(fun, 1), do: to_string(fun.(resource))
+  defp show_title(title, _resource, _singular) when is_binary(title), do: title
+  defp show_title(_none, resource, singular), do: "#{singular} #{Alkemist.Components.Table.pk(resource)}"
+
+  defp put_default_sort(params, nil), do: params
+  defp put_default_sort(params, sort_by), do: Map.put_new(params, "s", sort_by)
+
+  @doc """
+  Creates the view assigns for the new and edit actions: `form` (a `Phoenix.HTML.Form`
+  built from the changeset), `form_fields` (groups of `{key, opts}`), `form_action` and
+  `form_method` (create or update, derived from the changeset data), `form_partial`.
   """
   def form_assigns(resource, opts \\ []) do
     opts = default_form_opts(opts, resource)
     changeset = generate_changeset(resource, opts)
+    record = changeset.data
+    new? = match?(%{__meta__: %{state: :built}}, record) or is_nil(Alkemist.Components.Table.pk(record))
+    paths = opts[:conn] && opts[:controller] && Alkemist.Paths.new(opts[:conn], opts[:controller], opts[:route_params])
 
     fields =
       if opts[:fields] do
@@ -173,15 +232,26 @@ defmodule Alkemist.Assign do
       end
 
     [
-      struct: Utils.get_struct(resource),
+      struct: opts[:struct] || Utils.get_struct(resource),
       changeset: changeset,
-      resource: changeset.data,
+      form: Phoenix.Component.to_form(changeset, as: opts[:struct] || Utils.get_struct(resource)),
+      resource: record,
       mod: opts[:mod],
       form_partial: opts[:form_partial],
-      form_fields: fields
+      form_fields: fields,
+      form_action:
+        paths && if(new?, do: Alkemist.Paths.for(paths, :create), else: Alkemist.Paths.for(paths, :update, record)),
+      form_method: if(new?, do: "post", else: "put"),
+      page_title:
+        if(new?,
+          do: "New #{opts[:singular_name]}",
+          else: "Edit #{opts[:singular_name]} #{Alkemist.Components.Table.pk(record)}"
+        )
     ]
+    |> Keyword.put(:action, nil)
     |> global_assigns(opts)
     |> additional_assigns(opts)
+    |> then(fn assigns -> Keyword.put(assigns, :action, assigns[:form_action]) end)
   end
 
   @doc """
@@ -199,14 +269,17 @@ defmodule Alkemist.Assign do
 
     resource =
       resource
-      |> do_preload_resource(opts[:preload], opts[:alkemist_app])
+      |> do_preload_resource(opts[:preload], opts[:repo])
 
     [
       struct: Utils.get_struct(struct),
       resource: resource,
       mod: resource.__struct__,
       rows: rows,
-      panels: Keyword.get(opts, :show_panels, [])
+      panels: Keyword.get(opts, :show_panels, []),
+      sidebars: Keyword.get(opts, :sidebars, []),
+      active_tab: opts[:conn] && opts[:conn].params["tab"],
+      page_title: show_title(opts[:title], resource, opts[:singular_name])
     ]
     |> global_assigns(opts)
     |> additional_assigns(opts)
@@ -233,13 +306,22 @@ defmodule Alkemist.Assign do
     |> Keyword.put_new(:scopes, [])
     |> Keyword.put_new(:filters, [])
     |> Keyword.put_new(:show_aside, show_aside)
-    |> Keyword.put_new(:search_provider, @default_search_provider)
-    |> Keyword.put_new(:pagination_provider, @default_pagination_provider)
+    |> Keyword.put_new_lazy(:search_provider, fn ->
+      Alkemist.Config.search_provider(otp_app(opts))
+    end)
+    |> Keyword.put_new_lazy(:pagination_provider, fn ->
+      Alkemist.Config.pagination_provider(otp_app(opts))
+    end)
     |> Keyword.put_new(:mod, resource)
     |> Keyword.put_new(:batch_actions, [])
     |> Keyword.put_new(:sidebars, [])
-    |> Keyword.put_new(:sort_by, @default_sort)
+    |> Keyword.put_new_lazy(:sort_by, fn -> Alkemist.Schema.default_sort(resource) end)
+    |> Keyword.put_new_lazy(:scope_counts, fn ->
+      Alkemist.Config.pagination(otp_app(opts))[:scope_counts]
+    end)
   end
+
+  defp otp_app(opts), do: Keyword.get(opts, :otp_app, :alkemist)
 
   defp default_csv_opts(opts, resource) do
     opts = global_opts(opts, resource)
@@ -248,7 +330,9 @@ defmodule Alkemist.Assign do
     |> Keyword.put_new(:query, resource)
     |> Keyword.put_new(:columns, get_default_columns(resource))
     |> Keyword.put_new(:scopes, [])
-    |> Keyword.put_new(:search_provider, @default_search_provider)
+    |> Keyword.put_new_lazy(:search_provider, fn ->
+      Alkemist.Config.search_provider(otp_app(opts))
+    end)
   end
 
   # Preloads any data
@@ -285,33 +369,24 @@ defmodule Alkemist.Assign do
   defp default_form_opts(opts, resource) do
     opts = global_opts(opts, resource)
 
-    opts =
-      opts
-      |> Keyword.put_new(:changeset, resource.changeset(resource.__struct__(), %{}))
-      |> Keyword.put_new(:resource, resource)
-      |> Keyword.put_new(:mod, resource.__struct__())
+    opts
+    |> Keyword.put_new_lazy(:changeset, fn -> resource.changeset(struct(resource), %{}) end)
+    |> Keyword.put_new(:resource, resource)
+    |> Keyword.put_new(:mod, resource)
+    |> Keyword.put_new_lazy(:fields, fn -> get_default_form_fields(resource) end)
+    |> Keyword.update(:form_partial, nil, &normalize_form_partial/1)
+  end
 
-    if Keyword.has_key?(opts, :form_partial) do
-      {partial, assigns} =
-        case Keyword.get(opts, :form_partial) do
-          {mod, template, assigns} -> {{mod, template}, assigns}
-          {mod, template} -> {{mod, template}, []}
-        end
+  # `form_partial` is a function component: `{Module, :fun}` or a capture. The 2.x
+  # `{View, "template.html"}` tuples cannot be rendered any more.
+  defp normalize_form_partial(nil), do: nil
+  defp normalize_form_partial({mod, fun}) when is_atom(mod) and is_atom(fun), do: {mod, fun}
+  defp normalize_form_partial(fun) when is_function(fun, 1), do: fun
 
-      if Enum.empty?(assigns) do
-        Keyword.put(opts, :form_partial, partial)
-      else
-        assigns = Keyword.merge(Keyword.get(opts, :assigns, []), assigns)
-
-        opts
-        |> Keyword.put(:form_partial, partial)
-        |> Keyword.put(:assigns, assigns)
-      end
-    else
-      opts
-      |> Keyword.put_new(:fields, get_default_form_fields(resource))
-      |> Keyword.put(:form_partial, {AlkemistView, "form.html"})
-    end
+  defp normalize_form_partial(other) do
+    raise ArgumentError,
+          "form_partial must be a function component ({Module, :fun} or &Module.fun/1), got #{inspect(other)}. " <>
+            "Alkemist 3.0 renders forms with Phoenix.Component; see guides/upgrading_to_3_0.md."
   end
 
   defp default_show_opts(opts, resource) do
@@ -331,14 +406,8 @@ defmodule Alkemist.Assign do
     end
   end
 
-  defp do_preload_resource(resource, preloads, application) do
-    if preloads == nil do
-      resource
-    else
-      resource |> Alkemist.Config.repo(application).preload(preloads)
-    end
-  end
-
+  defp do_preload_resource(resource, nil, _repo), do: resource
+  defp do_preload_resource(resource, preloads, repo), do: repo.preload(resource, preloads)
 
   # Creates a List with the default columns to display
   def get_default_columns(resource) do
@@ -398,7 +467,9 @@ defmodule Alkemist.Assign do
         else
           opts
         end
-      _ -> opts
+
+      _ ->
+        opts
     end
   end
 
@@ -532,32 +603,46 @@ defmodule Alkemist.Assign do
 
   defp get_field_type(field, resource) do
     case resource.__schema__(:type, field) do
-      val when val in [:boolean, :integer, :date, :datetime, :float] -> val
-      {:embed, _} -> :embed
-      :id -> if field == :id do
-        :integer
-      else
-        :select
-      end
-      _ -> :string
+      val when val in [:boolean, :integer, :date, :float] ->
+        val
+
+      val when val in [:naive_datetime, :naive_datetime_usec, :utc_datetime, :utc_datetime_usec] ->
+        :datetime
+
+      :decimal ->
+        :number
+
+      {:embed, _} ->
+        :embed
+
+      :id ->
+        if field == :id do
+          :integer
+        else
+          :select
+        end
+
+      _ ->
+        :string
     end
   end
 
   # normalizes the scopes and retrieves the scope counts
   defp map_scope({scope, opts, callback}, query, params, search_opts) do
-    query =
-      query
-      |> callback.()
+    query = callback.(query)
 
-    count_query =
-      search_opts[:search_provider].searchq(query, params)
-      |> exclude(:limit)
-      |> exclude(:order_by)
-      |> exclude(:preload)
-      |> exclude(:select)
-      |> exclude(:order_by)
-
-    count = search_opts[:repo].one(from a in count_query, select: count(a.id))
+    count =
+      if search_opts[:scope_counts] == false do
+        nil
+      else
+        search_opts[:search_provider]
+        |> apply(:filter, [
+          query,
+          params,
+          provider_opts(search_opts, search_opts[:mod] || search_opts[:query])
+        ])
+        |> Alkemist.Query.count(search_opts[:repo])
+      end
 
     current = Map.get(params, "scope")
 
@@ -576,10 +661,11 @@ defmodule Alkemist.Assign do
     {scope, opts, callback}
   end
 
-  defp map_scope({scope, opts}, query, params, repo),
-    do: map_scope({scope, opts, fn q -> q end}, query, params, repo)
+  defp map_scope({scope, opts}, query, params, search_opts),
+    do: map_scope({scope, opts, fn q -> q end}, query, params, search_opts)
 
-  defp map_scope(scope, query, params, repo), do: map_scope({scope, []}, query, params, repo)
+  defp map_scope(scope, query, params, search_opts),
+    do: map_scope({scope, []}, query, params, search_opts)
 
   # Merges the scope callback into the query
   defp scope(query, scopes) do
@@ -604,20 +690,23 @@ defmodule Alkemist.Assign do
   end
 
   def format_action({action, opts}, singular) do
-    opts = case Keyword.get(@default_action_opts, action) do
-      nil -> opts
-      default -> Keyword.merge(default, opts)
-    end
-    opts = if singular do
-      Keyword.put(opts, :singular_name, singular)
-    else
-      opts
-    end
+    opts =
+      case Keyword.get(@default_action_opts, action) do
+        nil -> opts
+        default -> Keyword.merge(default, opts)
+      end
+
+    opts =
+      if singular do
+        Keyword.put(opts, :singular_name, singular)
+      else
+        opts
+      end
+
     format_action({action, opts})
   end
 
   def format_action(action, singular) when is_atom(action) do
-
     format_action({action, []}, singular)
   end
 end

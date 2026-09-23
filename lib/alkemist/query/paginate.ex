@@ -1,183 +1,61 @@
 defmodule Alkemist.Query.Paginate do
   @moduledoc """
-  Handles pagination using Flop. Expects to return a tuple with the new query and a map with the following structure:
+  Default `Alkemist.Query.PaginationProvider`.
 
-  ```elixir
-  %{
-    current_page: 1,
-    next_page: 2,
-    per_page: 10,
-    prev_page: nil,
-    total_count: 20,
-    total_pages: 2
-  }
-  ```
+  Reads `page` and `per_page`, clamps them to the configured limits, runs exactly one
+  count query and returns the limited/offset query with an `Alkemist.Query.Page`.
+
+  Configuration (`config :my_app, Alkemist, pagination: [...]`):
+
+    * `:default_per_page` (10)
+    * `:max_per_page` (100)
+    * `:per_page_options` ([10, 25, 50, 100]) shown in the per-page selector
+    * `:scope_counts` (true) whether index scopes show counts
   """
-  @per_page 10
+  @behaviour Alkemist.Query.PaginationProvider
+
   import Ecto.Query
+  alias Alkemist.Query.Page
 
-  @doc """
-  Runs the pagination and returns the new Query and a map with pagination values
-  """
-  @spec run(Ecto.Query.t(), Map.t(), Keyword.t()) :: {Ecto.Query.t(), Map.t()}
-  def run(query, params, opts \\ []) do
-    repo = opts[:repo] || raise("Repository must be provided in opts")
+  @impl true
+  def run(queryable, params, opts) do
+    repo = Keyword.fetch!(opts, :repo)
+    config = Alkemist.Config.pagination(Keyword.get(opts, :otp_app, :alkemist))
+    params = params || %{}
 
-    # Convert parameters to Flop format
-    flop_params = convert_pagination_params(params)
-    
-    # DEBUG: Log all input parameters to understand what's being passed
-    IO.inspect(params, label: "RAW PARAMS TO PAGINATION")
-    IO.inspect(flop_params, label: "CONVERTED FLOP PARAMS")
-    
-    # Debug: Check what query we're receiving and what the actual count is
-    # Properly clean the query for counting
-    clean_query = query
-    |> exclude(:select)
-    |> exclude(:preload) 
-    |> exclude(:order_by)
-    |> exclude(:limit)
-    |> exclude(:offset)
-    
-    actual_count = repo.one(from q in clean_query, select: count(q.id))
-    #IO.inspect(actual_count, label: "Actual record count in scoped query")
-    
-    # Inspect the actual query structure instead of trying to convert to SQL
-    #IO.inspect(clean_query, label: "Clean query structure for counting")
-    
-    # Flop options with higher max_limit to support larger page sizes
-    # Use for: nil to bypass any schema-based validation
-    # Try different options to prevent count limiting
-    flop_opts = [
-      repo: repo,
-      for: nil,
-      default_limit: 10,
-      max_limit: 1000,
-      count_limit: false,
-      default_count_limit: false,
-      max_count_limit: false
-    ]
+    per_page =
+      params
+      |> positive_integer("per_page", :per_page, config[:default_per_page])
+      |> min(config[:max_per_page])
 
-    case Flop.validate_and_run(query, flop_params, flop_opts) do
-      {:ok, {results, meta}} ->
-        #IO.inspect(meta, label: "Flop Meta Success")
-        
-        # OVERRIDE Flop's incorrect count with our actual count
-        total_pages = (actual_count / meta.page_size) |> Float.ceil() |> trunc()
-        corrected_meta = %{meta | total_count: actual_count, total_pages: total_pages}
-        #IO.inspect(corrected_meta, label: "Corrected Meta with actual count")
-        
-        # Apply the same filters/sorts to the query without pagination for further processing
-        case Flop.validate(flop_params, flop_opts) do
-          {:ok, flop_struct} ->
-            filtered_query = Flop.query(query, flop_struct, [])
-            pagination = convert_flop_meta_to_alkemist(corrected_meta)
-            {filtered_query, pagination}
-          {:error, error} ->
-            IO.inspect(error, label: "Flop Validate Error - Using Fallback")
-            pagination = get_pagination_fallback(query, params, opts)
-            {query, pagination}
+    requested_page = positive_integer(params, "page", :page, 1)
+    total = Alkemist.Query.count(queryable, repo)
+    page = Page.new(total, requested_page, per_page)
+
+    paged =
+      queryable
+      |> Ecto.Queryable.to_query()
+      |> limit(^per_page)
+      |> offset(^Page.offset(page))
+
+    {paged, page}
+  end
+
+  defp positive_integer(params, key, atom_key, default) do
+    value = Map.get(params, key) || Map.get(params, atom_key)
+
+    case value do
+      int when is_integer(int) and int > 0 ->
+        int
+
+      string when is_binary(string) ->
+        case Integer.parse(string) do
+          {int, ""} when int > 0 -> int
+          _ -> default
         end
 
-      {:error, error} ->
-        IO.inspect(error, label: "Flop validate_and_run Error - Using Fallback")
-        pagination = get_pagination_fallback(query, params, opts)
-        {query, pagination}
+      _ ->
+        default
     end
   end
-
-  defp convert_pagination_params(params) do
-    per_page = format_integer(Map.get(params, "per_page", @per_page), @per_page)
-    page = format_integer(Map.get(params, "page", 1), 1)
-
-    # Debug output to understand what's being requested
-    #IO.inspect({page, per_page}, label: "Alkemist Pagination Request")
-
-    %{
-      page: page,
-      page_size: per_page
-    }
-  end
-
-  defp convert_flop_meta_to_alkemist(meta) do
-    %{
-      current_page: meta.current_page,
-      next_page: meta.next_page,
-      per_page: meta.page_size,
-      prev_page: meta.previous_page,
-      total_count: meta.total_count,
-      total_pages: meta.total_pages
-    }
-  end
-
-  @spec get_pagination(Ecto.Query.t(), Map.t(), Keyword.t()) :: Map.t()
-  def get_pagination(query, params, opts) do
-    params = format_params(params)
-    repo = opts[:repo] || raise("Repository must be provided in opts")
-    do_get_paginate(query, params, repo)
-  end
-
-  defp format_params(params) do
-    params
-    |> Map.put_new(:per_page, format_integer(Map.get(params, "per_page", @per_page), @per_page))
-    |> Map.put_new(:page, format_integer(Map.get(params, "page", 1), 1))
-  end
-
-  defp get_pagination_fallback(query, params, opts) do
-    params = format_params(params)
-    repo = opts[:repo] || raise("Repository must be provided in opts")
-    do_get_paginate(query, params, repo)
-  end
-
-  defp do_get_paginate(query, params, repo) do
-    per_page = Map.get(params, :per_page)
-    total_count = get_total_count(query, repo)
-
-    total_pages =
-      total_count
-      |> (&(&1 / per_page)).()
-      |> Float.ceil()
-      |> trunc()
-
-    current_page = Map.get(params, :page)
-    next_page = if total_pages - current_page >= 1, do: current_page + 1, else: nil
-
-    prev_page =
-      if total_pages >= current_page && current_page > 1, do: current_page - 1, else: nil
-
-    result = %{
-      current_page: current_page,
-      per_page: per_page,
-      total_count: total_count,
-      total_pages: total_pages,
-      next_page: next_page,
-      prev_page: prev_page
-    }
-    
-    IO.inspect(result, label: "Fallback Pagination Result")
-    result
-  end
-
-  defp get_total_count(query, repo) do
-    query
-    |> exclude(:select)
-    |> exclude(:preload)
-    |> exclude(:order_by)
-    |> exclude(:limit)
-    |> exclude(:offset)
-    |> get_count(repo)
-  end
-
-  defp get_count(query, repo) do
-    repo.one(from a in query, select: count(a.id))
-  end
-
-  defp format_integer(value, _default) when is_integer(value) and value > 0, do: value
-  defp format_integer(value, default) when is_bitstring(value) do
-    case Integer.parse(value) do
-      {int, _} when int > 0 -> int
-      _ -> default
-    end
-  end
-  defp format_integer(_value, default), do: default
 end

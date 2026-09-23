@@ -1,0 +1,13 @@
+<Layouts.app
+  conn={@conn}
+  flash={@flash}
+  alkemist_app={@alkemist_app}
+  theme={assigns[:theme]}
+  page_title={@page_title}
+  current_path={@current_path}
+>
+  <.page_header title={@page_title} back_href={Paths.for(@paths, :index)} back_label={@plural_name} />
+  <div class="ak-content">
+    {form_partial(assigns)}
+  </div>
+</Layouts.app>

@@ -1,0 +1,119 @@
+/* Alkemist design tokens.
+ *
+ * Ten semantic colours (bg, surface, border, text, muted, brand, ok, info, warn, danger)
+ * plus the shades the components derive from them. Controls use a 6px radius, cards 8px,
+ * spacing follows a 4px scale. Override any variable in a stylesheet loaded after
+ * Alkemist's, e.g. `:root { --ak-brand: #C8102E; }`; no rebuild needed.
+ *
+ * Dark values apply with prefers-color-scheme unless <html class="light"> forces light;
+ * <html class="dark"> forces dark.
+ */
+@layer base {
+  :root {
+    color-scheme: light dark;
+
+    --ak-bg: #F4F4F5;
+    --ak-surface: #FFFFFF;
+    --ak-surface-2: #FAFAFA;        /* card headers, table head, sidebar */
+    --ak-surface-3: #EDEDEF;        /* active nav item, count chips, avatars */
+    --ak-border: #E4E4E7;
+    --ak-border-strong: #D4D4D8;    /* inputs and secondary buttons */
+    --ak-divider: #EEEEF0;          /* rows inside cards */
+    --ak-text: #18181B;
+    --ak-text-2: #3F3F46;
+    --ak-muted: #63636B;
+    --ak-faint: #A1A1AA;
+    --ak-primary: #18181B;          /* primary buttons, active tab, current page */
+    --ak-on-primary: #FFFFFF;
+    --ak-brand: #18181B;            /* the brand name in the sidebar, nothing else */
+    --ak-focus: #1D4ED8;
+
+    --ak-ok: #047857;      --ak-ok-soft: #ECFDF5;      --ak-ok-dot: #10B981;
+    --ak-info: #1D4ED8;    --ak-info-soft: #EFF6FF;    --ak-info-dot: #3B82F6;
+    --ak-warn: #92400E;    --ak-warn-soft: #FEF3C7;    --ak-warn-dot: #F59E0B;
+    --ak-danger: #B91C1C;  --ak-danger-soft: #FEF2F2;  --ak-danger-dot: #EF4444;
+
+    --ak-radius: 6px;
+    --ak-radius-card: 8px;
+    --ak-sidebar-w: 232px;
+    --ak-aside-w: 372px;
+    --ak-font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ak-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not(.light) {
+      --ak-bg: #09090B;
+      --ak-surface: #18181B;
+      --ak-surface-2: #1F1F23;
+      --ak-surface-3: #2A2A2F;
+      --ak-border: #27272A;
+      --ak-border-strong: #3F3F46;
+      --ak-divider: #232327;
+      --ak-text: #FAFAFA;
+      --ak-text-2: #D4D4D8;
+      --ak-muted: #A1A1AA;
+      --ak-faint: #71717A;
+      --ak-primary: #FAFAFA;
+      --ak-on-primary: #18181B;
+      --ak-brand: #FAFAFA;
+      --ak-focus: #60A5FA;
+      --ak-ok: #34D399;      --ak-ok-soft: #052E1F;      --ak-ok-dot: #10B981;
+      --ak-info: #93C5FD;    --ak-info-soft: #0B1F3F;    --ak-info-dot: #3B82F6;
+      --ak-warn: #FCD34D;    --ak-warn-soft: #3A2A06;    --ak-warn-dot: #F59E0B;
+      --ak-danger: #FCA5A5;  --ak-danger-soft: #3B1111;  --ak-danger-dot: #EF4444;
+    }
+  }
+
+  .dark {
+    --ak-bg: #09090B;
+    --ak-surface: #18181B;
+    --ak-surface-2: #1F1F23;
+    --ak-surface-3: #2A2A2F;
+    --ak-border: #27272A;
+    --ak-border-strong: #3F3F46;
+    --ak-divider: #232327;
+    --ak-text: #FAFAFA;
+    --ak-text-2: #D4D4D8;
+    --ak-muted: #A1A1AA;
+    --ak-faint: #71717A;
+    --ak-primary: #FAFAFA;
+    --ak-on-primary: #18181B;
+    --ak-brand: #FAFAFA;
+    --ak-focus: #60A5FA;
+    --ak-ok: #34D399;      --ak-ok-soft: #052E1F;      --ak-ok-dot: #10B981;
+    --ak-info: #93C5FD;    --ak-info-soft: #0B1F3F;    --ak-info-dot: #3B82F6;
+    --ak-warn: #FCD34D;    --ak-warn-soft: #3A2A06;    --ak-warn-dot: #F59E0B;
+    --ak-danger: #FCA5A5;  --ak-danger-soft: #3B1111;  --ak-danger-dot: #EF4444;
+  }
+}
+
+@theme inline {
+  --color-ak-bg: var(--ak-bg);
+  --color-ak-surface: var(--ak-surface);
+  --color-ak-surface-2: var(--ak-surface-2);
+  --color-ak-surface-3: var(--ak-surface-3);
+  --color-ak-border: var(--ak-border);
+  --color-ak-border-strong: var(--ak-border-strong);
+  --color-ak-divider: var(--ak-divider);
+  --color-ak-text: var(--ak-text);
+  --color-ak-text-2: var(--ak-text-2);
+  --color-ak-muted: var(--ak-muted);
+  --color-ak-faint: var(--ak-faint);
+  --color-ak-primary: var(--ak-primary);
+  --color-ak-on-primary: var(--ak-on-primary);
+  --color-ak-brand: var(--ak-brand);
+  --color-ak-focus: var(--ak-focus);
+  --color-ak-ok: var(--ak-ok);
+  --color-ak-ok-soft: var(--ak-ok-soft);
+  --color-ak-info: var(--ak-info);
+  --color-ak-info-soft: var(--ak-info-soft);
+  --color-ak-warn: var(--ak-warn);
+  --color-ak-warn-soft: var(--ak-warn-soft);
+  --color-ak-danger: var(--ak-danger);
+  --color-ak-danger-soft: var(--ak-danger-soft);
+  --radius-ak: var(--ak-radius);
+  --radius-ak-card: var(--ak-radius-card);
+  --font-sans: var(--ak-font-sans);
+  --font-mono: var(--ak-font-mono);
+}

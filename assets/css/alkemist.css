@@ -1,0 +1,14 @@
+/* Entry point for the prebuilt Alkemist stylesheet (mode A).
+ *
+ * Hosts that compile Tailwind themselves (mode B) instead add to their app.css:
+ *   @source "../../deps/alkemist/lib";
+ *   @import "../../deps/alkemist/assets/css/alkemist-theme.css";
+ *   @import "../../deps/alkemist/assets/css/alkemist-components.css";
+ * and load IBM Plex themselves (or override --ak-font-sans / --ak-font-mono).
+ */
+@import "tailwindcss";
+@import "./alkemist-fonts.css";
+@import "./alkemist-theme.css";
+@import "./alkemist-components.css";
+@source "../../lib/alkemist";
+@custom-variant dark (&:where(.dark, .dark *));
