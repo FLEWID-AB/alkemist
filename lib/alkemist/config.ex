@@ -51,7 +51,7 @@ defmodule Alkemist.Config do
   @doc "Validates the configuration of `otp_app` without caching it. Returns the validated keyword list."
   @spec validate!(atom()) :: keyword()
   def validate!(otp_app \\ :alkemist) do
-    raw = Application.get_env(otp_app, Alkemist, [])
+    raw = Application.compile_env(otp_app, Alkemist, [])
 
     for {key, why} <- @removed, Keyword.has_key?(raw, key) do
       raise ArgumentError,
